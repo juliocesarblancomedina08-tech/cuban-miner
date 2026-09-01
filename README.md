@@ -1,1 +1,2 @@
 # cuban-miner
+Redeploy trigger
