@@ -2,195 +2,202 @@
 
 import { useState } from "react";
 
+type Section = "mine" | "shop" | "rewards" | "profile" | "friends";
+
 export default function GamePage() {
+  const [section, setSection] = useState<Section>("mine");
   const [coins, setCoins] = useState(0);
   const [energy, setEnergy] = useState(100);
 
   const mine = () => {
     if (energy <= 0) return;
 
-    setCoins((current) => current + 1);
-    setEnergy((current) => current - 1);
+    setCoins((value) => value + 1);
+    setEnergy((value) => value - 1);
+  };
+
+  const renderSection = () => {
+    switch (section) {
+      case "shop":
+        return (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-center text-white">
+              <div className="text-5xl mb-4">🛒</div>
+              <h2 className="text-2xl font-black">TIENDA</h2>
+              <p className="mt-2 text-sm text-white/60">
+                Próximamente
+              </p>
+            </div>
+          </div>
+        );
+
+      case "rewards":
+        return (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-center text-white">
+              <div className="text-5xl mb-4">🏆</div>
+              <h2 className="text-2xl font-black">PREMIOS</h2>
+              <p className="mt-2 text-sm text-white/60">
+                Próximamente
+              </p>
+            </div>
+          </div>
+        );
+
+      case "profile":
+        return (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-center text-white">
+              <div className="text-5xl mb-4">👤</div>
+              <h2 className="text-2xl font-black">PERFIL</h2>
+              <p className="mt-2 text-sm text-white/60">
+                Jugador
+              </p>
+            </div>
+          </div>
+        );
+
+      case "friends":
+        return (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-center text-white">
+              <div className="text-5xl mb-4">👥</div>
+              <h2 className="text-2xl font-black">AMIGOS</h2>
+              <p className="mt-2 text-sm text-white/60">
+                Invita amigos y consigue recompensas.
+              </p>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <main className="min-h-screen bg-[#07110b] text-white flex flex-col">
+    <main className="min-h-screen bg-black flex justify-center overflow-hidden">
 
-      {/* ========================= */}
-      {/* BARRA SUPERIOR */}
-      {/* ========================= */}
+      <div className="relative w-full max-w-[430px] h-[100dvh] overflow-hidden">
 
-      <header className="flex items-center justify-between px-4 py-4 border-b border-white/10 bg-black/30">
+        {/* ================================================== */}
+        {/* IMAGEN COMPLETA DEL JUEGO */}
+        {/* ================================================== */}
 
-        <div>
-          <p className="text-xs text-white/50">
-            CUBAN-MINER
-          </p>
+        <img
+          src="/images/game-screen.png"
+          alt="🇨🇺 CUBAN-MINER ⛏️"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          draggable={false}
+        />
 
-          <h1 className="text-xl font-black">
-            🇨🇺 CUBAN-MINER ⛏️
-          </h1>
-        </div>
+        {/* ================================================== */}
+        {/* INFORMACIÓN DINÁMICA */}
+        {/* ================================================== */}
 
-        <div className="text-right">
-          <p className="text-xs text-white/50">
-            NIVEL
-          </p>
+        {section === "mine" && (
+          <>
+            {/* MONEDAS */}
+            <div className="absolute top-[10%] left-[8%] text-white font-black text-xl pointer-events-none">
+              🪙 {coins.toLocaleString()}
+            </div>
 
-          <p className="font-black text-lg">
-            1
-          </p>
-        </div>
+            {/* ENERGÍA */}
+            <div className="absolute top-[10%] right-[8%] text-white font-black text-xl pointer-events-none">
+              ⚡ {energy}
+            </div>
 
-      </header>
+            {/* CONTADOR DE ENERGÍA */}
+            <div className="absolute bottom-[12%] left-[10%] right-[10%] pointer-events-none">
+              <div className="h-2 rounded-full bg-black/50 overflow-hidden">
+                <div
+                  className="h-full bg-green-400 transition-all duration-200"
+                  style={{
+                    width: `${energy}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </>
+        )}
 
+        {/* ================================================== */}
+        {/* CONTENIDO DE SECCIONES */}
+        {/* ================================================== */}
 
-      {/* ========================= */}
-      {/* CONTENIDO PRINCIPAL */}
-      {/* ========================= */}
+        {section !== "mine" && renderSection()}
 
-      <section className="flex-1 px-4 py-6 pb-28">
+        {/* ================================================== */}
+        {/* ZONA TÁCTIL — MINAR */}
+        {/* ================================================== */}
 
-        {/* SALDO */}
-
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5 mb-5">
-
-          <p className="text-sm text-white/50">
-            🪙 MONEDAS
-          </p>
-
-          <div className="flex items-center justify-between mt-2">
-
-            <p className="text-4xl font-black">
-              {coins.toLocaleString()}
-            </p>
-
-            <span className="text-4xl">
-              🪙
-            </span>
-
-          </div>
-
-        </div>
-
-
-        {/* MINERO */}
-
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-6 text-center">
-
-          <p className="text-sm text-white/50 mb-4">
-            MINA CUBANA
-          </p>
-
-          <div className="text-8xl mb-6">
-            ⛏️
-          </div>
-
-          <h2 className="text-2xl font-black mb-2">
-            ¡A MINAR!
-          </h2>
-
-          <p className="text-sm text-white/50 mb-6">
-            Toca el botón para extraer monedas.
-          </p>
-
-
-          {/* BOTÓN MINAR */}
-
+        {section === "mine" && (
           <button
+            type="button"
+            aria-label="Minar"
             onClick={mine}
             disabled={energy <= 0}
-            className={`w-full rounded-2xl py-5 text-xl font-black transition-all active:scale-95 ${
-              energy > 0
-                ? "bg-green-500 text-black"
-                : "bg-white/10 text-white/30"
-            }`}
-          >
-            {energy > 0 ? "⛏️ MINAR +1" : "⚡ SIN ENERGÍA"}
-          </button>
+            className="absolute left-[25%] top-[36%] w-[50%] h-[30%] rounded-full bg-transparent active:scale-95 transition-transform disabled:pointer-events-none"
+          />
+        )}
 
-        </div>
+        {/* ================================================== */}
+        {/* ZONA TÁCTIL — TIENDA */}
+        {/* ================================================== */}
 
+        <button
+          type="button"
+          aria-label="Tienda"
+          onClick={() => setSection("shop")}
+          className="absolute bottom-0 left-0 w-[20%] h-[11%] bg-transparent"
+        />
 
-        {/* ENERGÍA */}
+        {/* ================================================== */}
+        {/* ZONA TÁCTIL — PREMIOS */}
+        {/* ================================================== */}
 
-        <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-5">
+        <button
+          type="button"
+          aria-label="Premios"
+          onClick={() => setSection("rewards")}
+          className="absolute bottom-0 left-[20%] w-[20%] h-[11%] bg-transparent"
+        />
 
-          <div className="flex justify-between mb-3">
+        {/* ================================================== */}
+        {/* ZONA TÁCTIL — MINAR */}
+        {/* ================================================== */}
 
-            <span className="font-bold">
-              ⚡ Energía
-            </span>
+        <button
+          type="button"
+          aria-label="Minería"
+          onClick={() => setSection("mine")}
+          className="absolute bottom-0 left-[40%] w-[20%] h-[11%] bg-transparent"
+        />
 
-            <span className="text-white/60">
-              {energy}/100
-            </span>
+        {/* ================================================== */}
+        {/* ZONA TÁCTIL — PERFIL */}
+        {/* ================================================== */}
 
-          </div>
+        <button
+          type="button"
+          aria-label="Perfil"
+          onClick={() => setSection("profile")}
+          className="absolute bottom-0 left-[60%] w-[20%] h-[11%] bg-transparent"
+        />
 
-          <div className="h-3 rounded-full bg-black/50 overflow-hidden">
+        {/* ================================================== */}
+        {/* ZONA TÁCTIL — AMIGOS */}
+        {/* ================================================== */}
 
-            <div
-              className="h-full bg-green-500 transition-all"
-              style={{
-                width: `${energy}%`,
-              }}
-            />
+        <button
+          type="button"
+          aria-label="Amigos"
+          onClick={() => setSection("friends")}
+          className="absolute bottom-0 left-[80%] w-[20%] h-[11%] bg-transparent"
+        />
 
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ========================= */}
-      {/* MENÚ INFERIOR */}
-      {/* ========================= */}
-
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/90 backdrop-blur-md">
-
-        <div className="mx-auto max-w-md grid grid-cols-5">
-
-          <button className="flex flex-col items-center py-3 text-green-400">
-            <span className="text-xl">⛏️</span>
-            <span className="text-[10px] mt-1 font-bold">
-              MINAR
-            </span>
-          </button>
-
-          <button className="flex flex-col items-center py-3 text-white/50">
-            <span className="text-xl">🛒</span>
-            <span className="text-[10px] mt-1">
-              TIENDA
-            </span>
-          </button>
-
-          <button className="flex flex-col items-center py-3 text-white/50">
-            <span className="text-xl">🏆</span>
-            <span className="text-[10px] mt-1">
-              PREMIOS
-            </span>
-          </button>
-
-          <button className="flex flex-col items-center py-3 text-white/50">
-            <span className="text-xl">👤</span>
-            <span className="text-[10px] mt-1">
-              PERFIL
-            </span>
-          </button>
-
-          <button className="flex flex-col items-center py-3 text-white/50">
-            <span className="text-xl">👥</span>
-            <span className="text-[10px] mt-1">
-              AMIGOS
-            </span>
-          </button>
-
-        </div>
-
-      </nav>
+      </div>
 
     </main>
   );
-      }
+        }
