@@ -6,20 +6,41 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-black flex justify-center overflow-hidden">
-      <div className="relative w-full max-w-[430px] h-[100dvh]">
+    <main className="fixed inset-0 bg-black overflow-hidden">
+      <div className="relative w-full h-[100dvh]">
+
+        {/* =========================================
+            PANTALLA DE INICIO
+        ========================================= */}
 
         <img
           src="/images/start-screen.png"
           alt="🇨🇺 CUBAN-MINER ⛏️"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          draggable={false}
         />
 
-        {/* START MINING */}
+        {/* =========================================
+            BOTÓN INVISIBLE START MINING
+        ========================================= */}
+
         <button
-          onClick={() => router.push("/game")}
+          type="button"
           aria-label="Start Mining"
-          className="absolute left-[15%] right-[15%] top-[58%] h-[15%] bg-transparent rounded-3xl active:scale-95"
+          onClick={() => router.push("/game")}
+          className="
+            absolute
+            left-[20%]
+            top-[77%]
+            w-[60%]
+            h-[14%]
+            bg-transparent
+            border-0
+            outline-none
+            cursor-pointer
+            active:scale-95
+            transition-transform
+          "
         />
 
       </div>
