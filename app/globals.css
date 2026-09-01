@@ -1,64 +1,118 @@
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-  background:#111;
-  color:white;
-  font-family:Arial, sans-serif;
+body {
+  font-family: Arial, sans-serif;
 }
 
-.container{
-  min-height:100vh;
-  background:linear-gradient(
-    180deg,
-    #1b1b1b,
-    #0d0d0d
+.container {
+  min-height: 100vh;
+
+  background-image:
+    linear-gradient(
+      rgba(0, 0, 0, 0.65),
+      rgba(0, 0, 0, 0.85)
+    ),
+    url("/images/cuban-miner-bg.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.topBar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px;
+}
+
+.coin {
+  background: linear-gradient(
+    135deg,
+    #ffd700,
+    #f5c542
   );
+
+  color: #111;
+
+  padding: 12px 22px;
+  border-radius: 30px;
+  font-weight: bold;
+
+  box-shadow:
+    0 0 15px rgba(255, 215, 0, 0.5);
 }
 
-.topBar{
-  display:flex;
-  justify-content:flex-end;
-  padding:20px;
+.miner {
+  text-align: center;
+  margin-top: 100px;
+  padding: 20px;
 }
 
-.coin{
-  background:#f5c542;
-  color:black;
-  padding:12px 20px;
-  border-radius:30px;
-  font-weight:bold;
+.minerIcon {
+  font-size: 110px;
+  animation: float 3s ease-in-out infinite;
 }
 
-.miner{
-  text-align:center;
-  margin-top:120px;
+h1 {
+  color: #ffd700;
+  font-size: 48px;
+  margin-top: 20px;
+
+  text-shadow:
+    0 0 10px #ffd700,
+    0 0 20px #ffae00;
 }
 
-.minerIcon{
-  font-size:100px;
+p {
+  margin-top: 12px;
+  font-size: 18px;
+  color: #e0e0e0;
 }
 
-h1{
-  color:#f5c542;
-  margin-top:20px;
+.startBtn {
+  margin-top: 35px;
+
+  padding: 18px 45px;
+
+  border: none;
+  border-radius: 15px;
+
+  background: linear-gradient(
+    135deg,
+    #ffd700,
+    #f5c542
+  );
+
+  color: #111;
+  font-size: 22px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 0.6);
+
+  transition: 0.3s;
 }
 
-p{
-  margin-top:10px;
-  color:#ccc;
+.startBtn:hover {
+  transform: scale(1.05);
 }
 
-.startBtn{
-  margin-top:30px;
-  padding:16px 40px;
-  border:none;
-  border-radius:15px;
-  background:#f5c542;
-  font-size:20px;
-  font-weight:bold;
-  cursor:pointer;
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
