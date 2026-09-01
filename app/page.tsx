@@ -7,16 +7,21 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Evitar gestos de zoom del navegador
+    // Bloquear gestos de zoom
     const preventGesture = (event: Event) => {
       event.preventDefault();
     };
 
-    // Evitar zoom con Ctrl + rueda
+    // Bloquear zoom con Ctrl + rueda
     const preventWheelZoom = (event: WheelEvent) => {
       if (event.ctrlKey) {
         event.preventDefault();
       }
+    };
+
+    // Bloquear desplazamiento táctil
+    const preventTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
     };
 
     document.addEventListener("gesturestart", preventGesture);
@@ -27,7 +32,11 @@ export default function Home() {
       passive: false,
     });
 
-    // Intentar expandir la Mini App de Telegram
+    document.addEventListener("touchmove", preventTouchMove, {
+      passive: false,
+    });
+
+    // Telegram Mini App
     const telegram = (
       window as typeof window & {
         Telegram?: {
@@ -50,8 +59,13 @@ export default function Home() {
       document.removeEventListener("gestureend", preventGesture);
 
       document.removeEventListener("wheel", preventWheelZoom);
+      document.removeEventListener("touchmove", preventTouchMove);
     };
   }, []);
+
+  // =========================================
+  // START MINING
+  // =========================================
 
   const startMining = () => {
     router.push("/game");
@@ -59,35 +73,20 @@ export default function Home() {
 
   return (
     <main
-      className="
-        fixed
-        inset-0
-        w-screen
-        h-[100dvh]
-        overflow-hidden
-        bg-black
-        overscroll-none
-        select-none
-      "
+      className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-black"
       style={{
         touchAction: "none",
       }}
     >
       <div
-        className="
-          relative
-          w-full
-          h-full
-          overflow-hidden
-        "
+        className="relative w-full h-full overflow-hidden"
         style={{
           touchAction: "none",
         }}
       >
-
-        {/* =====================================
-            IMAGEN DE INICIO
-        ===================================== */}
+        {/* =========================================
+            IMAGEN COMPLETA DE INICIO
+        ========================================= */}
 
         <img
           src="/images/start-screen.png"
@@ -98,15 +97,15 @@ export default function Home() {
             inset-0
             w-full
             h-full
-            object-cover
+            object-fill
             pointer-events-none
             select-none
           "
         />
 
-        {/* =====================================
+        {/* =========================================
             BOTÓN INVISIBLE START MINING
-        ===================================== */}
+        ========================================= */}
 
         <button
           type="button"
@@ -114,14 +113,13 @@ export default function Home() {
           onClick={startMining}
           className="
             absolute
-            z-10
+            z-20
             bg-transparent
             border-0
             outline-none
             p-0
             m-0
             cursor-pointer
-            active:scale-[0.97]
           "
           style={{
             left: "17%",
@@ -131,8 +129,7 @@ export default function Home() {
             touchAction: "manipulation",
           }}
         />
-
       </div>
     </main>
   );
-}
+        }
