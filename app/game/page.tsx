@@ -2,202 +2,304 @@
 
 import { useState } from "react";
 
-type Section = "mine" | "shop" | "rewards" | "profile" | "friends";
+type Tab =
+  | "mine"
+  | "shop"
+  | "rewards"
+  | "profile"
+  | "friends";
 
 export default function GamePage() {
-  const [section, setSection] = useState<Section>("mine");
+  const [tab, setTab] = useState<Tab>("mine");
+
   const [coins, setCoins] = useState(0);
+
   const [energy, setEnergy] = useState(100);
 
   const mine = () => {
     if (energy <= 0) return;
 
     setCoins((value) => value + 1);
-    setEnergy((value) => value - 1);
-  };
 
-  const renderSection = () => {
-    switch (section) {
-      case "shop":
-        return (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center text-white">
-              <div className="text-5xl mb-4">🛒</div>
-              <h2 className="text-2xl font-black">TIENDA</h2>
-              <p className="mt-2 text-sm text-white/60">
-                Próximamente
-              </p>
-            </div>
-          </div>
-        );
-
-      case "rewards":
-        return (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center text-white">
-              <div className="text-5xl mb-4">🏆</div>
-              <h2 className="text-2xl font-black">PREMIOS</h2>
-              <p className="mt-2 text-sm text-white/60">
-                Próximamente
-              </p>
-            </div>
-          </div>
-        );
-
-      case "profile":
-        return (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center text-white">
-              <div className="text-5xl mb-4">👤</div>
-              <h2 className="text-2xl font-black">PERFIL</h2>
-              <p className="mt-2 text-sm text-white/60">
-                Jugador
-              </p>
-            </div>
-          </div>
-        );
-
-      case "friends":
-        return (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center text-white">
-              <div className="text-5xl mb-4">👥</div>
-              <h2 className="text-2xl font-black">AMIGOS</h2>
-              <p className="mt-2 text-sm text-white/60">
-                Invita amigos y consigue recompensas.
-              </p>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
+    setEnergy((value) => Math.max(0, value - 1));
   };
 
   return (
-    <main className="min-h-screen bg-black flex justify-center overflow-hidden">
+    <main className="fixed inset-0 bg-black overflow-hidden">
 
-      <div className="relative w-full max-w-[430px] h-[100dvh] overflow-hidden">
+      <div className="relative w-full h-[100dvh]">
 
-        {/* ================================================== */}
-        {/* IMAGEN COMPLETA DEL JUEGO */}
-        {/* ================================================== */}
+        {/* =========================================
+            IMAGEN PRINCIPAL DEL JUEGO
+        ========================================= */}
 
         <img
           src="/images/game-screen.png"
-          alt="🇨🇺 CUBAN-MINER ⛏️"
+          alt="🇨🇺 CUBAN-MINER"
           className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
           draggable={false}
         />
 
-        {/* ================================================== */}
-        {/* INFORMACIÓN DINÁMICA */}
-        {/* ================================================== */}
+        {/* =========================================
+            DATOS DEL JUGADOR
+        ========================================= */}
 
-        {section === "mine" && (
-          <>
-            {/* MONEDAS */}
-            <div className="absolute top-[10%] left-[8%] text-white font-black text-xl pointer-events-none">
-              🪙 {coins.toLocaleString()}
-            </div>
+        <div className="absolute top-[7%] left-[8%] text-white font-black text-lg pointer-events-none">
+          🪙 {coins.toLocaleString()}
+        </div>
 
-            {/* ENERGÍA */}
-            <div className="absolute top-[10%] right-[8%] text-white font-black text-xl pointer-events-none">
-              ⚡ {energy}
-            </div>
+        <div className="absolute top-[7%] right-[8%] text-white font-black text-lg pointer-events-none">
+          ⚡ {energy}
+        </div>
 
-            {/* CONTADOR DE ENERGÍA */}
-            <div className="absolute bottom-[12%] left-[10%] right-[10%] pointer-events-none">
-              <div className="h-2 rounded-full bg-black/50 overflow-hidden">
-                <div
-                  className="h-full bg-green-400 transition-all duration-200"
-                  style={{
-                    width: `${energy}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </>
-        )}
+        {/* =========================================
+            ÁREA CENTRAL DE MINERÍA
+        ========================================= */}
 
-        {/* ================================================== */}
-        {/* CONTENIDO DE SECCIONES */}
-        {/* ================================================== */}
-
-        {section !== "mine" && renderSection()}
-
-        {/* ================================================== */}
-        {/* ZONA TÁCTIL — MINAR */}
-        {/* ================================================== */}
-
-        {section === "mine" && (
+        {tab === "mine" && (
           <button
             type="button"
             aria-label="Minar"
             onClick={mine}
             disabled={energy <= 0}
-            className="absolute left-[25%] top-[36%] w-[50%] h-[30%] rounded-full bg-transparent active:scale-95 transition-transform disabled:pointer-events-none"
+            className="
+              absolute
+              left-[22%]
+              top-[31%]
+              w-[56%]
+              h-[38%]
+              bg-transparent
+              border-0
+              outline-none
+              active:scale-95
+              transition-transform
+              disabled:pointer-events-none
+            "
           />
         )}
 
-        {/* ================================================== */}
-        {/* ZONA TÁCTIL — TIENDA */}
-        {/* ================================================== */}
+        {/* =========================================
+            CONTADOR DE ENERGÍA
+        ========================================= */}
+
+        {tab === "mine" && (
+          <div className="absolute left-[12%] right-[12%] bottom-[14%] pointer-events-none">
+
+            <div className="h-2 rounded-full bg-black/60 overflow-hidden">
+
+              <div
+                className="h-full bg-yellow-400 transition-all duration-200"
+                style={{
+                  width: `${energy}%`,
+                }}
+              />
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =========================================
+            PANEL TIENDA
+        ========================================= */}
+
+        {tab === "shop" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+
+            <div className="rounded-3xl bg-black/75 border border-yellow-400/30 px-8 py-7 text-center text-white">
+
+              <div className="text-5xl mb-3">
+                🛒
+              </div>
+
+              <h2 className="text-2xl font-black">
+                TIENDA
+              </h2>
+
+              <p className="mt-2 text-sm text-white/60">
+                Próximamente
+              </p>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =========================================
+            PANEL PREMIOS
+        ========================================= */}
+
+        {tab === "rewards" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+
+            <div className="rounded-3xl bg-black/75 border border-yellow-400/30 px-8 py-7 text-center text-white">
+
+              <div className="text-5xl mb-3">
+                🏆
+              </div>
+
+              <h2 className="text-2xl font-black">
+                PREMIOS
+              </h2>
+
+              <p className="mt-2 text-sm text-white/60">
+                Próximamente
+              </p>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =========================================
+            PANEL PERFIL
+        ========================================= */}
+
+        {tab === "profile" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+
+            <div className="rounded-3xl bg-black/75 border border-yellow-400/30 px-8 py-7 text-center text-white">
+
+              <div className="text-5xl mb-3">
+                👤
+              </div>
+
+              <h2 className="text-2xl font-black">
+                PERFIL
+              </h2>
+
+              <p className="mt-2 text-sm text-white/60">
+                Tu cuenta de jugador
+              </p>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =========================================
+            PANEL AMIGOS / REFERIDOS
+        ========================================= */}
+
+        {tab === "friends" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+
+            <div className="rounded-3xl bg-black/75 border border-yellow-400/30 px-8 py-7 text-center text-white">
+
+              <div className="text-5xl mb-3">
+                👥
+              </div>
+
+              <h2 className="text-2xl font-black">
+                AMIGOS
+              </h2>
+
+              <p className="mt-2 text-sm text-white/60">
+                Invita amigos y consigue recompensas.
+              </p>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =========================================
+            MENÚ INFERIOR — TIENDA
+        ========================================= */}
 
         <button
           type="button"
           aria-label="Tienda"
-          onClick={() => setSection("shop")}
-          className="absolute bottom-0 left-0 w-[20%] h-[11%] bg-transparent"
+          onClick={() => setTab("shop")}
+          className="
+            absolute
+            left-0
+            bottom-0
+            w-[20%]
+            h-[12%]
+            bg-transparent
+            border-0
+          "
         />
 
-        {/* ================================================== */}
-        {/* ZONA TÁCTIL — PREMIOS */}
-        {/* ================================================== */}
+        {/* =========================================
+            MENÚ INFERIOR — PREMIOS
+        ========================================= */}
 
         <button
           type="button"
           aria-label="Premios"
-          onClick={() => setSection("rewards")}
-          className="absolute bottom-0 left-[20%] w-[20%] h-[11%] bg-transparent"
+          onClick={() => setTab("rewards")}
+          className="
+            absolute
+            left-[20%]
+            bottom-0
+            w-[20%]
+            h-[12%]
+            bg-transparent
+            border-0
+          "
         />
 
-        {/* ================================================== */}
-        {/* ZONA TÁCTIL — MINAR */}
-        {/* ================================================== */}
+        {/* =========================================
+            MENÚ INFERIOR — MINAR
+        ========================================= */}
 
         <button
           type="button"
-          aria-label="Minería"
-          onClick={() => setSection("mine")}
-          className="absolute bottom-0 left-[40%] w-[20%] h-[11%] bg-transparent"
+          aria-label="Minar"
+          onClick={() => setTab("mine")}
+          className="
+            absolute
+            left-[40%]
+            bottom-0
+            w-[20%]
+            h-[12%]
+            bg-transparent
+            border-0
+          "
         />
 
-        {/* ================================================== */}
-        {/* ZONA TÁCTIL — PERFIL */}
-        {/* ================================================== */}
+        {/* =========================================
+            MENÚ INFERIOR — PERFIL
+        ========================================= */}
 
         <button
           type="button"
           aria-label="Perfil"
-          onClick={() => setSection("profile")}
-          className="absolute bottom-0 left-[60%] w-[20%] h-[11%] bg-transparent"
+          onClick={() => setTab("profile")}
+          className="
+            absolute
+            left-[60%]
+            bottom-0
+            w-[20%]
+            h-[12%]
+            bg-transparent
+            border-0
+          "
         />
 
-        {/* ================================================== */}
-        {/* ZONA TÁCTIL — AMIGOS */}
-        {/* ================================================== */}
+        {/* =========================================
+            MENÚ INFERIOR — AMIGOS
+        ========================================= */}
 
         <button
           type="button"
           aria-label="Amigos"
-          onClick={() => setSection("friends")}
-          className="absolute bottom-0 left-[80%] w-[20%] h-[11%] bg-transparent"
+          onClick={() => setTab("friends")}
+          className="
+            absolute
+            left-[80%]
+            bottom-0
+            w-[20%]
+            h-[12%]
+            bg-transparent
+            border-0
+          "
         />
 
       </div>
 
     </main>
   );
-        }
+}
