@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Cuban Miner",
-  description: "Mini App",
+  description: "Mining Game",
 };
 
 export default function RootLayout({
