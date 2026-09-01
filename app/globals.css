@@ -1,10 +1,64 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
 
-body {
-  background: #111;
-  color: white;
+body{
+  background:#111;
+  color:white;
+  font-family:Arial, sans-serif;
+}
+
+.container{
+  min-height:100vh;
+  background:linear-gradient(
+    180deg,
+    #1b1b1b,
+    #0d0d0d
+  );
+}
+
+.topBar{
+  display:flex;
+  justify-content:flex-end;
+  padding:20px;
+}
+
+.coin{
+  background:#f5c542;
+  color:black;
+  padding:12px 20px;
+  border-radius:30px;
+  font-weight:bold;
+}
+
+.miner{
+  text-align:center;
+  margin-top:120px;
+}
+
+.minerIcon{
+  font-size:100px;
+}
+
+h1{
+  color:#f5c542;
+  margin-top:20px;
+}
+
+p{
+  margin-top:10px;
+  color:#ccc;
+}
+
+.startBtn{
+  margin-top:30px;
+  padding:16px 40px;
+  border:none;
+  border-radius:15px;
+  background:#f5c542;
+  font-size:20px;
+  font-weight:bold;
+  cursor:pointer;
 }
