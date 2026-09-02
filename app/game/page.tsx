@@ -14,7 +14,7 @@ export default function GamePage() {
   const [tab, setTab] = useState<Tab>("mine");
 
   // ==========================================
-  // SALDO
+  // SALDO DEL JUGADOR
   // ==========================================
 
   const [balance, setBalance] = useState(0);
@@ -44,7 +44,7 @@ export default function GamePage() {
   };
 
   // ==========================================
-  // INGRESAR
+  // ABRIR INGRESO
   // ==========================================
 
   const openDeposit = () => {
@@ -52,7 +52,7 @@ export default function GamePage() {
   };
 
   // ==========================================
-  // VOLVER A MINAR
+  // VOLVER A MINERÍA
   // ==========================================
 
   const backToMine = () => {
@@ -60,340 +60,594 @@ export default function GamePage() {
   };
 
   return (
-    <main className="game-container">
+    <main
+      className="
+        fixed
+        inset-0
+        w-screen
+        h-[100dvh]
+        overflow-hidden
+        bg-black
+        select-none
+        touch-none
+      "
+    >
+      {/* ========================================
+          CONTENEDOR PRINCIPAL
+      ======================================== */}
 
-      {/* ======================================
-          PANTALLA PRINCIPAL
-      ====================================== */}
+      <div
+        className="
+          relative
+          w-full
+          h-full
+          overflow-hidden
+          bg-black
+          flex
+          items-center
+          justify-center
+        "
+      >
 
-      <div className="game-screen">
+        {/* ========================================
+            IMAGEN COMPLETA DEL JUEGO
 
-        {/* ====================================
-            IMAGEN DE FONDO
-        ==================================== */}
+            object-contain evita que se recorte.
+            La imagen siempre se mantiene completa.
+        ======================================== */}
 
         <img
           src="/images/game-screen.png"
           alt="CUBAN-MINER"
-          className="game-background"
           draggable={false}
+          className="
+            absolute
+            inset-0
+            w-full
+            h-full
+            object-contain
+            object-center
+            select-none
+            pointer-events-none
+          "
         />
 
-        {/* ====================================
-            SALDO
-        ==================================== */}
+        {/* ========================================
+            CAPA DE CONTROLES
+        ======================================== */}
 
-        <div className="balance-display">
-          🪙 {balance.toFixed(2)}
-        </div>
+        <div
+          className="
+            absolute
+            inset-0
+            w-full
+            h-full
+          "
+        >
 
-        {/* ====================================
-            BOTÓN INVISIBLE DEL +
-        ==================================== */}
+          {/* ======================================
+              SALDO DINÁMICO
+          ====================================== */}
 
-        <button
-          type="button"
-          aria-label="Ingresar dinero"
-          onClick={openDeposit}
-          className="deposit-button"
-        />
+          <div
+            className="
+              absolute
+              top-[6%]
+              right-[15%]
+              text-white
+              font-black
+              text-xl
+              pointer-events-none
+              drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
+              whitespace-nowrap
+            "
+          >
+            🪙 {balance.toFixed(2)}
+          </div>
 
-        {/* ====================================
-            MONEDAS
-        ==================================== */}
+          {/* ======================================
+              BOTÓN INVISIBLE DEL +
+              ====================================== */}
 
-        <div className="coins-display">
-          💎 {coins.toLocaleString()}
-        </div>
+          <button
+            type="button"
+            aria-label="Ingresar dinero"
+            onClick={openDeposit}
+            className="
+              absolute
+              top-[4%]
+              right-[2%]
+              w-[12%]
+              h-[9%]
+              bg-transparent
+              border-0
+              outline-none
+              cursor-pointer
+              active:scale-90
+              transition-transform
+            "
+          />
 
-        {/* ====================================
-            ENERGÍA
-        ==================================== */}
+          {/* ======================================
+              MONEDAS DEL JUEGO
+          ====================================== */}
 
-        <div className="energy-display">
-          ⚡ {energy}
-        </div>
+          <div
+            className="
+              absolute
+              top-[12%]
+              left-[8%]
+              text-white
+              font-black
+              text-lg
+              pointer-events-none
+              drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
+              whitespace-nowrap
+            "
+          >
+            💎 {coins.toLocaleString()}
+          </div>
 
-        {/* ====================================
-            ZONA DE MINERÍA
-        ==================================== */}
+          {/* ======================================
+              ENERGÍA
+          ====================================== */}
 
-        {tab === "mine" && (
-          <>
-            <button
-              type="button"
-              aria-label="Minar"
-              onClick={mine}
-              disabled={energy <= 0}
-              className="mine-button"
-            />
+          <div
+            className="
+              absolute
+              top-[12%]
+              right-[8%]
+              text-white
+              font-black
+              text-lg
+              pointer-events-none
+              drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
+              whitespace-nowrap
+            "
+          >
+            ⚡ {energy}
+          </div>
 
-            {/* BARRA DE ENERGÍA */}
+          {/* ======================================
+              ZONA PRINCIPAL PARA MINAR
+          ====================================== */}
 
-            <div className="energy-bar-container">
+          {tab === "mine" && (
+            <>
+              <button
+                type="button"
+                aria-label="Minar"
+                onClick={mine}
+                disabled={energy <= 0}
+                className="
+                  absolute
+                  left-[22%]
+                  top-[30%]
+                  w-[56%]
+                  h-[38%]
+                  bg-transparent
+                  border-0
+                  outline-none
+                  cursor-pointer
+                  active:scale-95
+                  transition-transform
+                  disabled:cursor-default
+                "
+              />
 
-              <div className="energy-bar-background">
+              {/* ==================================
+                  BARRA DE ENERGÍA
+              ================================== */}
 
+              <div
+                className="
+                  absolute
+                  left-[12%]
+                  right-[12%]
+                  bottom-[14%]
+                  pointer-events-none
+                "
+              >
                 <div
-                  className="energy-bar-fill"
-                  style={{
-                    width: `${energy}%`,
-                  }}
-                />
-
+                  className="
+                    h-2
+                    rounded-full
+                    bg-black/60
+                    overflow-hidden
+                  "
+                >
+                  <div
+                    className="
+                      h-full
+                      bg-yellow-400
+                      transition-all
+                      duration-200
+                    "
+                    style={{
+                      width: `${energy}%`,
+                    }}
+                  />
+                </div>
               </div>
+            </>
+          )}
 
-            </div>
-          </>
-        )}
+          {/* ======================================
+              INGRESAR DINERO
+          ====================================== */}
 
-        {/* ====================================
-            DEPÓSITO
-        ==================================== */}
+          {tab === "deposit" && (
+            <div
+              className="
+                absolute
+                inset-0
+                bg-black/80
+                flex
+                items-center
+                justify-center
+                p-4
+              "
+            >
+              <div
+                className="
+                  w-[86%]
+                  max-w-[380px]
+                  rounded-3xl
+                  bg-[#17120a]
+                  border
+                  border-yellow-500/40
+                  p-6
+                  text-white
+                  shadow-2xl
+                "
+              >
 
-        {tab === "deposit" && (
-          <div className="modal-overlay">
+                <div className="text-center">
 
-            <div className="modal-box">
+                  <div className="text-5xl mb-3">
+                    🪙
+                  </div>
 
-              <div className="modal-icon">
-                🪙
-              </div>
+                  <h2 className="text-2xl font-black">
+                    INGRESAR
+                  </h2>
 
-              <h2>
-                INGRESAR
-              </h2>
+                  <p className="text-sm text-white/60 mt-2">
+                    Añade fondos a tu cuenta.
+                  </p>
 
-              <p>
-                Añade fondos a tu cuenta.
-              </p>
+                </div>
 
-              <div className="deposit-grid">
+                <div className="grid grid-cols-2 gap-3 mt-6">
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBalance((value) => value + 1)
+                    }
+                    className="
+                      rounded-2xl
+                      bg-yellow-500
+                      text-black
+                      py-4
+                      font-black
+                      active:scale-95
+                    "
+                  >
+                    +1
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBalance((value) => value + 5)
+                    }
+                    className="
+                      rounded-2xl
+                      bg-yellow-500
+                      text-black
+                      py-4
+                      font-black
+                      active:scale-95
+                    "
+                  >
+                    +5
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBalance((value) => value + 10)
+                    }
+                    className="
+                      rounded-2xl
+                      bg-yellow-500
+                      text-black
+                      py-4
+                      font-black
+                      active:scale-95
+                    "
+                  >
+                    +10
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBalance((value) => value + 20)
+                    }
+                    className="
+                      rounded-2xl
+                      bg-yellow-500
+                      text-black
+                      py-4
+                      font-black
+                      active:scale-95
+                    "
+                  >
+                    +20
+                  </button>
+
+                </div>
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setBalance((value) => value + 1)
-                  }
+                  onClick={backToMine}
+                  className="
+                    w-full
+                    mt-4
+                    rounded-2xl
+                    bg-white/10
+                    py-4
+                    font-bold
+                    active:scale-95
+                  "
                 >
-                  +1 USDT
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setBalance((value) => value + 5)
-                  }
-                >
-                  +5 USDT
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setBalance((value) => value + 10)
-                  }
-                >
-                  +10 USDT
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setBalance((value) => value + 20)
-                  }
-                >
-                  +20 USDT
+                  VOLVER
                 </button>
 
               </div>
-
-              <button
-                type="button"
-                className="modal-back-button"
-                onClick={backToMine}
-              >
-                VOLVER
-              </button>
-
             </div>
+          )}
 
-          </div>
-        )}
+          {/* ======================================
+              TIENDA
+          ====================================== */}
 
-        {/* ====================================
-            TIENDA
-        ==================================== */}
+          {tab === "shop" && (
+            <div
+              className="
+                absolute
+                inset-0
+                bg-black/75
+                flex
+                items-center
+                justify-center
+                pointer-events-none
+              "
+            >
+              <div className="text-center text-white">
 
-        {tab === "shop" && (
-          <div className="section-overlay">
+                <div className="text-6xl">
+                  🛒
+                </div>
 
-            <div className="section-content">
+                <h2 className="text-3xl font-black mt-3">
+                  TIENDA
+                </h2>
 
-              <div className="section-icon">
-                🛒
+                <p className="text-white/60 mt-2">
+                  Próximamente
+                </p>
+
               </div>
-
-              <h2>
-                TIENDA
-              </h2>
-
-              <p>
-                Próximamente
-              </p>
-
-              <button
-                type="button"
-                onClick={backToMine}
-              >
-                VOLVER
-              </button>
-
             </div>
+          )}
 
-          </div>
-        )}
+          {/* ======================================
+              PREMIOS
+          ====================================== */}
 
-        {/* ====================================
-            PREMIOS
-        ==================================== */}
+          {tab === "rewards" && (
+            <div
+              className="
+                absolute
+                inset-0
+                bg-black/75
+                flex
+                items-center
+                justify-center
+                pointer-events-none
+              "
+            >
+              <div className="text-center text-white">
 
-        {tab === "rewards" && (
-          <div className="section-overlay">
+                <div className="text-6xl">
+                  🏆
+                </div>
 
-            <div className="section-content">
+                <h2 className="text-3xl font-black mt-3">
+                  PREMIOS
+                </h2>
 
-              <div className="section-icon">
-                🏆
+                <p className="text-white/60 mt-2">
+                  Próximamente
+                </p>
+
               </div>
-
-              <h2>
-                PREMIOS
-              </h2>
-
-              <p>
-                Próximamente
-              </p>
-
-              <button
-                type="button"
-                onClick={backToMine}
-              >
-                VOLVER
-              </button>
-
             </div>
+          )}
 
-          </div>
-        )}
+          {/* ======================================
+              PERFIL
+          ====================================== */}
 
-        {/* ====================================
-            PERFIL
-        ==================================== */}
+          {tab === "profile" && (
+            <div
+              className="
+                absolute
+                inset-0
+                bg-black/75
+                flex
+                items-center
+                justify-center
+                pointer-events-none
+              "
+            >
+              <div className="text-center text-white">
 
-        {tab === "profile" && (
-          <div className="section-overlay">
+                <div className="text-6xl">
+                  👤
+                </div>
 
-            <div className="section-content">
+                <h2 className="text-3xl font-black mt-3">
+                  PERFIL
+                </h2>
 
-              <div className="section-icon">
-                👤
+                <p className="text-white/60 mt-2">
+                  Tu cuenta
+                </p>
+
               </div>
-
-              <h2>
-                PERFIL
-              </h2>
-
-              <p>
-                Tu cuenta
-              </p>
-
-              <button
-                type="button"
-                onClick={backToMine}
-              >
-                VOLVER
-              </button>
-
             </div>
+          )}
 
-          </div>
-        )}
+          {/* ======================================
+              AMIGOS
+          ====================================== */}
 
-        {/* ====================================
-            AMIGOS
-        ==================================== */}
+          {tab === "friends" && (
+            <div
+              className="
+                absolute
+                inset-0
+                bg-black/75
+                flex
+                items-center
+                justify-center
+                pointer-events-none
+              "
+            >
+              <div className="text-center text-white">
 
-        {tab === "friends" && (
-          <div className="section-overlay">
+                <div className="text-6xl">
+                  👥
+                </div>
 
-            <div className="section-content">
+                <h2 className="text-3xl font-black mt-3">
+                  AMIGOS
+                </h2>
 
-              <div className="section-icon">
-                👥
+                <p className="text-white/60 mt-2">
+                  Invita amigos y gana recompensas.
+                </p>
+
               </div>
-
-              <h2>
-                AMIGOS
-              </h2>
-
-              <p>
-                Invita amigos y gana recompensas.
-              </p>
-
-              <button
-                type="button"
-                onClick={backToMine}
-              >
-                VOLVER
-              </button>
-
             </div>
+          )}
 
-          </div>
-        )}
+          {/* ======================================
+              BOTÓN INVISIBLE — TIENDA
+          ====================================== */}
 
-        {/* ====================================
-            BARRA INFERIOR
-        ==================================== */}
+          <button
+            type="button"
+            aria-label="Tienda"
+            onClick={() => setTab("shop")}
+            className="
+              absolute
+              bottom-0
+              left-0
+              w-[20%]
+              h-[12%]
+              bg-transparent
+              border-0
+              outline-none
+            "
+          />
 
-        <button
-          type="button"
-          aria-label="Tienda"
-          className="bottom-button bottom-shop"
-          onClick={() => setTab("shop")}
-        />
+          {/* ======================================
+              BOTÓN INVISIBLE — PREMIOS
+          ====================================== */}
 
-        <button
-          type="button"
-          aria-label="Premios"
-          className="bottom-button bottom-rewards"
-          onClick={() => setTab("rewards")}
-        />
+          <button
+            type="button"
+            aria-label="Premios"
+            onClick={() => setTab("rewards")}
+            className="
+              absolute
+              bottom-0
+              left-[20%]
+              w-[20%]
+              h-[12%]
+              bg-transparent
+              border-0
+              outline-none
+            "
+          />
 
-        <button
-          type="button"
-          aria-label="Minar"
-          className="bottom-button bottom-mine"
-          onClick={() => setTab("mine")}
-        />
+          {/* ======================================
+              BOTÓN INVISIBLE — MINAR
+          ====================================== */}
 
-        <button
-          type="button"
-          aria-label="Perfil"
-          className="bottom-button bottom-profile"
-          onClick={() => setTab("profile")}
-        />
+          <button
+            type="button"
+            aria-label="Minar"
+            onClick={() => setTab("mine")}
+            className="
+              absolute
+              bottom-0
+              left-[40%]
+              w-[20%]
+              h-[12%]
+              bg-transparent
+              border-0
+              outline-none
+            "
+          />
 
-        <button
-          type="button"
-          aria-label="Amigos"
-          className="bottom-button bottom-friends"
-          onClick={() => setTab("friends")}
-        />
+          {/* ======================================
+              BOTÓN INVISIBLE — PERFIL
+          ====================================== */}
 
+          <button
+            type="button"
+            aria-label="Perfil"
+            onClick={() => setTab("profile")}
+            className="
+              absolute
+              bottom-0
+              left-[60%]
+              w-[20%]
+              h-[12%]
+              bg-transparent
+              border-0
+              outline-none
+            "
+          />
+
+          {/* ======================================
+              BOTÓN INVISIBLE — AMIGOS
+          ====================================== */}
+
+          <button
+            type="button"
+            aria-label="Amigos"
+            onClick={() => setTab("friends")}
+            className="
+              absolute
+              bottom-0
+              left-[80%]
+              w-[20%]
+              h-[12%]
+              bg-transparent
+              border-0
+              outline-none
+            "
+          />
+
+        </div>
       </div>
-
     </main>
   );
-                  }
+            }
