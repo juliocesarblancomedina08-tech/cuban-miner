@@ -13,22 +13,8 @@ type Tab =
 export default function GamePage() {
   const [tab, setTab] = useState<Tab>("mine");
 
-  // ==========================================
-  // SALDO DEL JUGADOR
-  // ==========================================
-
   const [balance, setBalance] = useState(0);
-
-  // ==========================================
-  // MONEDAS DEL JUEGO
-  // ==========================================
-
   const [coins, setCoins] = useState(0);
-
-  // ==========================================
-  // ENERGÍA
-  // ==========================================
-
   const [energy, setEnergy] = useState(100);
 
   // ==========================================
@@ -44,7 +30,7 @@ export default function GamePage() {
   };
 
   // ==========================================
-  // ABRIR INGRESO
+  // INGRESAR
   // ==========================================
 
   const openDeposit = () => {
@@ -52,7 +38,7 @@ export default function GamePage() {
   };
 
   // ==========================================
-  // VOLVER A MINERÍA
+  // VOLVER
   // ==========================================
 
   const backToMine = () => {
@@ -68,40 +54,24 @@ export default function GamePage() {
         h-[100dvh]
         overflow-hidden
         bg-black
+        select-none
       "
-      style={{
-        touchAction: "none",
-      }}
     >
-
-      {/* ========================================
-          CONTENEDOR PRINCIPAL
-          
-          La imagen y TODOS los botones están
-          dentro del mismo espacio.
-      ======================================== */}
+      {/* ======================================
+          CONTENEDOR PANTALLA COMPLETA
+      ====================================== */}
 
       <div
         className="
-          absolute
-          inset-0
-          w-full
-          h-full
-          flex
-          items-center
-          justify-center
+          relative
+          w-screen
+          h-[100dvh]
           overflow-hidden
         "
       >
 
         {/* ======================================
-            IMAGEN DEL JUEGO
-
-            IMPORTANTE:
-            object-contain = imagen COMPLETA
-            object-cover   = imagen RECORTADA
-
-            Aquí usamos contain.
+            IMAGEN COMPLETA
         ====================================== */}
 
         <img
@@ -111,42 +81,37 @@ export default function GamePage() {
           className="
             absolute
             inset-0
+            block
             w-full
             h-full
-            object-contain
-            select-none
+            object-fill
             pointer-events-none
+            select-none
           "
-          style={{
-            objectPosition: "center center",
-          }}
         />
 
         {/* ======================================
-            SALDO DEL JUGADOR
+            SALDO
         ====================================== */}
 
         <div
           className="
             absolute
-            z-10
-            top-[6%]
+            top-[5%]
             right-[15%]
             text-white
             font-black
             text-xl
+            drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
             pointer-events-none
-            select-none
-            drop-shadow-lg
+            z-20
           "
         >
           🪙 {balance.toFixed(2)}
         </div>
 
         {/* ======================================
-            BOTÓN INVISIBLE DEL +
-
-            Esta zona abre INGRESAR.
+            BOTÓN INVISIBLE +
         ====================================== */}
 
         <button
@@ -155,40 +120,33 @@ export default function GamePage() {
           onClick={openDeposit}
           className="
             absolute
-            z-30
-            top-[5%]
-            right-[3%]
-            w-[10%]
-            h-[8%]
+            top-[4%]
+            right-[2%]
+            w-[12%]
+            h-[9%]
             bg-transparent
             border-0
-            p-0
-            m-0
-            rounded-full
+            outline-none
+            z-30
             active:scale-90
-            transition-transform
           "
-          style={{
-            touchAction: "manipulation",
-          }}
         />
 
         {/* ======================================
-            MONEDAS DEL JUEGO
+            MONEDAS
         ====================================== */}
 
         <div
           className="
             absolute
-            z-10
             top-[12%]
             left-[8%]
             text-white
             font-black
             text-lg
+            drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
             pointer-events-none
-            select-none
-            drop-shadow-lg
+            z-20
           "
         >
           💎 {coins.toLocaleString()}
@@ -201,22 +159,21 @@ export default function GamePage() {
         <div
           className="
             absolute
-            z-10
             top-[12%]
             right-[8%]
             text-white
             font-black
             text-lg
+            drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
             pointer-events-none
-            select-none
-            drop-shadow-lg
+            z-20
           "
         >
           ⚡ {energy}
         </div>
 
         {/* ======================================
-            ZONA DE MINERÍA
+            BOTÓN INVISIBLE DE MINERÍA
         ====================================== */}
 
         {tab === "mine" && (
@@ -228,21 +185,16 @@ export default function GamePage() {
               disabled={energy <= 0}
               className="
                 absolute
-                z-20
-                left-[22%]
-                top-[30%]
-                w-[56%]
-                h-[38%]
+                left-[20%]
+                top-[28%]
+                w-[60%]
+                h-[40%]
                 bg-transparent
                 border-0
-                p-0
-                m-0
+                outline-none
+                z-30
                 active:scale-95
-                transition-transform
               "
-              style={{
-                touchAction: "manipulation",
-              }}
             />
 
             {/* ==================================
@@ -252,15 +204,14 @@ export default function GamePage() {
             <div
               className="
                 absolute
-                z-10
                 left-[12%]
                 right-[12%]
                 bottom-[14%]
+                z-20
                 pointer-events-none
               "
             >
               <div className="h-2 rounded-full bg-black/60 overflow-hidden">
-
                 <div
                   className="
                     h-full
@@ -272,22 +223,21 @@ export default function GamePage() {
                     width: `${energy}%`,
                   }}
                 />
-
               </div>
             </div>
           </>
         )}
 
         {/* ======================================
-            VENTANA DE INGRESAR
+            INGRESAR
         ====================================== */}
 
         {tab === "deposit" && (
           <div
             className="
               absolute
-              z-50
               inset-0
+              z-50
               bg-black/80
               flex
               items-center
@@ -297,6 +247,7 @@ export default function GamePage() {
             <div
               className="
                 w-[86%]
+                max-w-[380px]
                 rounded-3xl
                 bg-[#17120a]
                 border
@@ -305,9 +256,7 @@ export default function GamePage() {
                 text-white
               "
             >
-
               <div className="text-center">
-
                 <div className="text-5xl mb-3">
                   🪙
                 </div>
@@ -319,15 +268,7 @@ export default function GamePage() {
                 <p className="text-sm text-white/60 mt-2">
                   Añade fondos a tu cuenta.
                 </p>
-
               </div>
-
-              {/* ==================================
-                  CANTIDADES DE PRUEBA
-
-                  Esto es solamente para probar
-                  visualmente el sistema.
-              ================================== */}
 
               <div className="grid grid-cols-2 gap-3 mt-6">
 
@@ -344,7 +285,7 @@ export default function GamePage() {
                     font-black
                   "
                 >
-                  +1
+                  +1 USDT
                 </button>
 
                 <button
@@ -360,7 +301,7 @@ export default function GamePage() {
                     font-black
                   "
                 >
-                  +5
+                  +5 USDT
                 </button>
 
                 <button
@@ -376,7 +317,7 @@ export default function GamePage() {
                     font-black
                   "
                 >
-                  +10
+                  +10 USDT
                 </button>
 
                 <button
@@ -392,14 +333,10 @@ export default function GamePage() {
                     font-black
                   "
                 >
-                  +20
+                  +20 USDT
                 </button>
 
               </div>
-
-              {/* ==================================
-                  VOLVER
-              ================================== */}
 
               <button
                 type="button"
@@ -415,7 +352,6 @@ export default function GamePage() {
               >
                 VOLVER
               </button>
-
             </div>
           </div>
         )}
@@ -428,8 +364,8 @@ export default function GamePage() {
           <div
             className="
               absolute
-              z-40
               inset-0
+              z-40
               bg-black/75
               flex
               items-center
@@ -437,7 +373,6 @@ export default function GamePage() {
             "
           >
             <div className="text-center text-white">
-
               <div className="text-6xl">
                 🛒
               </div>
@@ -465,7 +400,6 @@ export default function GamePage() {
               >
                 VOLVER
               </button>
-
             </div>
           </div>
         )}
@@ -478,8 +412,8 @@ export default function GamePage() {
           <div
             className="
               absolute
-              z-40
               inset-0
+              z-40
               bg-black/75
               flex
               items-center
@@ -487,7 +421,6 @@ export default function GamePage() {
             "
           >
             <div className="text-center text-white">
-
               <div className="text-6xl">
                 🏆
               </div>
@@ -515,7 +448,6 @@ export default function GamePage() {
               >
                 VOLVER
               </button>
-
             </div>
           </div>
         )}
@@ -528,8 +460,8 @@ export default function GamePage() {
           <div
             className="
               absolute
-              z-40
               inset-0
+              z-40
               bg-black/75
               flex
               items-center
@@ -537,7 +469,6 @@ export default function GamePage() {
             "
           >
             <div className="text-center text-white">
-
               <div className="text-6xl">
                 👤
               </div>
@@ -565,7 +496,6 @@ export default function GamePage() {
               >
                 VOLVER
               </button>
-
             </div>
           </div>
         )}
@@ -578,8 +508,8 @@ export default function GamePage() {
           <div
             className="
               absolute
-              z-40
               inset-0
+              z-40
               bg-black/75
               flex
               items-center
@@ -587,7 +517,6 @@ export default function GamePage() {
             "
           >
             <div className="text-center text-white">
-
               <div className="text-6xl">
                 👥
               </div>
@@ -615,13 +544,12 @@ export default function GamePage() {
               >
                 VOLVER
               </button>
-
             </div>
           </div>
         )}
 
         {/* ======================================
-            BOTÓN INVISIBLE — TIENDA
+            BARRA INFERIOR — TIENDA
         ====================================== */}
 
         <button
@@ -630,20 +558,19 @@ export default function GamePage() {
           onClick={() => setTab("shop")}
           className="
             absolute
-            z-30
             bottom-0
             left-0
             w-[20%]
             h-[12%]
             bg-transparent
             border-0
-            p-0
-            m-0
+            outline-none
+            z-30
           "
         />
 
         {/* ======================================
-            BOTÓN INVISIBLE — PREMIOS
+            PREMIOS
         ====================================== */}
 
         <button
@@ -652,20 +579,19 @@ export default function GamePage() {
           onClick={() => setTab("rewards")}
           className="
             absolute
-            z-30
             bottom-0
             left-[20%]
             w-[20%]
             h-[12%]
             bg-transparent
             border-0
-            p-0
-            m-0
+            outline-none
+            z-30
           "
         />
 
         {/* ======================================
-            BOTÓN INVISIBLE — MINAR
+            MINAR
         ====================================== */}
 
         <button
@@ -674,20 +600,19 @@ export default function GamePage() {
           onClick={() => setTab("mine")}
           className="
             absolute
-            z-30
             bottom-0
             left-[40%]
             w-[20%]
             h-[12%]
             bg-transparent
             border-0
-            p-0
-            m-0
+            outline-none
+            z-30
           "
         />
 
         {/* ======================================
-            BOTÓN INVISIBLE — PERFIL
+            PERFIL
         ====================================== */}
 
         <button
@@ -696,20 +621,19 @@ export default function GamePage() {
           onClick={() => setTab("profile")}
           className="
             absolute
-            z-30
             bottom-0
             left-[60%]
             w-[20%]
             h-[12%]
             bg-transparent
             border-0
-            p-0
-            m-0
+            outline-none
+            z-30
           "
         />
 
         {/* ======================================
-            BOTÓN INVISIBLE — AMIGOS
+            AMIGOS
         ====================================== */}
 
         <button
@@ -718,20 +642,18 @@ export default function GamePage() {
           onClick={() => setTab("friends")}
           className="
             absolute
-            z-30
             bottom-0
             left-[80%]
             w-[20%]
             h-[12%]
             bg-transparent
             border-0
-            p-0
-            m-0
+            outline-none
+            z-30
           "
         />
 
       </div>
-
     </main>
   );
             }
