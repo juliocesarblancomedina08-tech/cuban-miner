@@ -1,35 +1,23 @@
-"use client";
-
-import { motion } from "framer-motion";
-
 export default function MinerHero() {
   return (
-    <motion.div
-      animate={{
-        y: [-5, 5, -5]
-      }}
-      transition={{
-        duration: 2,
-        repeat: Infinity
-      }}
-      className="relative"
-    >
-      <div className="miner-shadow" />
+    <div className="miner-wrapper">
 
-      <div className="miner-body">
+      <div className="helmet" />
 
-        <motion.div
-          animate={{
-            rotate: [25, -25, 25]
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity
-          }}
-          className="miner-wave"
-        />
-
+      <div className="head">
+        <div className="eye" />
+        <div className="eye" />
       </div>
-    </motion.div>
+
+      <div className="body" />
+
+      <div className="pickaxe-arm" />
+
+      <div className="wave-arm" />
+
+      <div className="leg left" />
+      <div className="leg right" />
+
+    </div>
   );
 }
