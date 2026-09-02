@@ -51,19 +51,36 @@ export default function GamePage() {
     }, 700);
   };
 
+  /*
+   * DEPÓSITO
+   */
   const openDeposit = () => {
     setTab("deposit");
   };
 
+  /*
+   * VOLVER A LA MINA
+   */
   const backToMine = () => {
     setTab("mine");
   };
 
   return (
-    <main className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-[#090b0f] text-white select-none">
+    <main
+      className="
+        fixed
+        inset-0
+        w-screen
+        h-[100dvh]
+        overflow-hidden
+        bg-[#090b0f]
+        text-white
+        select-none
+      "
+    >
 
       {/* =====================================================
-          FONDO
+          FONDO 3D DE LA MINA
       ===================================================== */}
 
       <div className="absolute inset-0 overflow-hidden">
@@ -85,6 +102,8 @@ export default function GamePage() {
           "
         />
 
+        {/* OSCURECIMIENTO */}
+
         <div
           className="
             absolute
@@ -97,7 +116,8 @@ export default function GamePage() {
           "
         />
 
-        {/* Brillo ambiental */}
+        {/* BRILLO AMBIENTAL */}
+
         <div
           className="
             absolute
@@ -115,11 +135,13 @@ export default function GamePage() {
 
       </div>
 
+
       {/* =====================================================
           INTERFAZ
       ===================================================== */}
 
       <div className="absolute inset-0">
+
 
         {/* =================================================
             BARRA SUPERIOR
@@ -139,7 +161,11 @@ export default function GamePage() {
 
           <div className="flex items-center justify-between gap-2">
 
-            {/* MONEDAS */}
+
+            {/* =================================================
+                MINER COINS
+            ================================================= */}
+
             <div
               className="
                 flex
@@ -155,9 +181,13 @@ export default function GamePage() {
                 backdrop-blur-md
               "
             >
-              <span className="text-xl">💎</span>
+
+              <span className="text-xl">
+                💎
+              </span>
 
               <div>
+
                 <p className="text-[9px] font-bold text-white/50">
                   MINER COINS
                 </p>
@@ -165,10 +195,16 @@ export default function GamePage() {
                 <p className="text-sm font-black">
                   {coins.toLocaleString()}
                 </p>
+
               </div>
+
             </div>
 
-            {/* SALDO */}
+
+            {/* =================================================
+                BALANCE
+            ================================================= */}
+
             <button
               type="button"
               onClick={openDeposit}
@@ -188,9 +224,13 @@ export default function GamePage() {
                 transition-transform
               "
             >
-              <span className="text-xl">🪙</span>
+
+              <span className="text-xl">
+                🪙
+              </span>
 
               <div className="text-left">
+
                 <p className="text-[9px] font-bold text-yellow-300/70">
                   BALANCE
                 </p>
@@ -198,16 +238,21 @@ export default function GamePage() {
                 <p className="text-sm font-black text-yellow-300">
                   {balance.toFixed(2)}
                 </p>
+
               </div>
 
               <span className="text-lg text-yellow-300">
                 +
               </span>
+
             </button>
 
           </div>
 
-          {/* ENERGÍA */}
+
+          {/* =================================================
+              ENERGY
+          ================================================= */}
 
           <div
             className="
@@ -235,6 +280,7 @@ export default function GamePage() {
 
             </div>
 
+
             <div className="mt-1 h-2 overflow-hidden rounded-full bg-black/70">
 
               <div
@@ -259,14 +305,18 @@ export default function GamePage() {
 
         </div>
 
-        {/* =================================================
+
+        {/* =====================================================
             ZONA DE MINERÍA
-        ================================================= */}
+        ===================================================== */}
 
         {tab === "mine" && (
           <>
 
-            {/* TÍTULO */}
+
+            {/* =================================================
+                TÍTULO
+            ================================================= */}
 
             <div
               className="
@@ -310,76 +360,177 @@ export default function GamePage() {
 
             </div>
 
-            {/* ZONA INTERACTIVA */}
+
+            {/* =================================================
+                PERSONAJE 3D
+            ================================================= */}
+
+            <div
+              className="
+                absolute
+                left-1/2
+                top-[27%]
+                z-10
+                h-[48%]
+                w-[72%]
+                -translate-x-1/2
+                pointer-events-none
+              "
+            >
+
+              {/* MINERO */}
+
+              <img
+                src="/images/miner.png"
+                alt="Minero"
+                draggable={false}
+                className={`
+                  absolute
+                  bottom-0
+                  left-1/2
+                  h-full
+                  w-auto
+                  -translate-x-1/2
+                  object-contain
+                  drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]
+                  transition-all
+                  duration-200
+
+                  ${
+                    mining
+                      ? "scale-[0.96] rotate-[-2deg]"
+                      : "scale-100 animate-[minerIdle_2.5s_ease-in-out_infinite]"
+                  }
+                `}
+              />
+
+
+              {/* =================================================
+                  BRILLO DEBAJO DEL MINERO
+              ================================================= */}
+
+              <div
+                className="
+                  absolute
+                  bottom-0
+                  left-1/2
+                  h-5
+                  w-40
+                  -translate-x-1/2
+                  rounded-full
+                  bg-yellow-400/20
+                  blur-xl
+                "
+              />
+
+            </div>
+
+
+            {/* =================================================
+                START MINING
+            ================================================= */}
 
             <button
               type="button"
-              aria-label="Minar"
               onClick={mine}
-              disabled={energy <= 0}
+              disabled={energy <= 0 || mining}
               className={`
                 absolute
-                z-10
-                left-[17%]
-                top-[29%]
-                w-[66%]
-                h-[39%]
-                rounded-[35%]
-                bg-transparent
-                border-0
-                outline-none
-                cursor-pointer
-                transition-transform
-                duration-200
-                ${mining ? "scale-95" : "scale-100"}
-                ${energy <= 0 ? "cursor-default" : ""}
-              `}
-            />
+                left-1/2
+                bottom-[17%]
+                z-30
+                -translate-x-1/2
+                rounded-2xl
+                border
+                border-yellow-200/40
+                bg-gradient-to-b
+                from-yellow-300
+                via-yellow-400
+                to-yellow-600
+                px-8
+                py-4
+                text-black
+                shadow-[0_0_25px_rgba(250,204,21,0.35)]
+                transition-all
+                duration-150
 
-            {/* INDICADOR DE GOLPE */}
+                ${
+                  mining
+                    ? "scale-90 brightness-125"
+                    : "scale-100 active:scale-90"
+                }
+
+                ${
+                  energy <= 0
+                    ? "cursor-not-allowed opacity-40 grayscale"
+                    : ""
+                }
+              `}
+            >
+
+              <span className="flex items-center gap-2">
+
+                <span className="text-2xl">
+                  ⛏️
+                </span>
+
+                <span className="text-base font-black tracking-wide">
+                  {mining
+                    ? "MINING..."
+                    : "START MINING"}
+                </span>
+
+              </span>
+
+            </button>
+
+
+            {/* =================================================
+                EFECTO AL MINAR
+            ================================================= */}
 
             {mining && (
               <div
                 className="
                   absolute
-                  z-20
                   left-1/2
                   top-[47%]
+                  z-40
                   -translate-x-1/2
                   -translate-y-1/2
                   pointer-events-none
-                  animate-ping
                 "
               >
-                <div className="text-5xl">
+
+                <div className="animate-ping text-5xl">
                   ✨
                 </div>
+
+                <div
+                  className="
+                    absolute
+                    left-1/2
+                    top-1/2
+                    -translate-x-1/2
+                    -translate-y-1/2
+                    whitespace-nowrap
+                    text-2xl
+                    font-black
+                    text-yellow-300
+                    drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]
+                    animate-bounce
+                  "
+                >
+                  +1 💎
+                </div>
+
               </div>
             )}
 
-            {/* MONEDA FLOTANTE */}
 
-            {floatingCoin && (
-              <div
-                className="
-                  absolute
-                  z-30
-                  left-1/2
-                  top-[42%]
-                  -translate-x-1/2
-                  pointer-events-none
-                  animate-bounce
-                  text-xl
-                  font-black
-                  text-yellow-300
-                  drop-shadow-lg
-                "
-              >
-                +1 💎
-              </div>
-            )}
-
-            {/* INFORMACIÓN DE PRODUCCIÓN */}
+            {/* =================================================
+                INFORMACIÓN DE PRODUCCIÓN
+            ================================================= */}
 
             <div
               className="
@@ -405,6 +556,7 @@ export default function GamePage() {
 
               <p className="text-lg font-black text-yellow-300">
                 +1 MC
+
                 <span className="text-xs text-white/50">
                   {" "}
                   / golpe
@@ -416,9 +568,10 @@ export default function GamePage() {
           </>
         )}
 
-        {/* =================================================
+
+        {/* =====================================================
             DEPÓSITO
-        ================================================= */}
+        ===================================================== */}
 
         {tab === "deposit" && (
           <div
@@ -468,14 +621,20 @@ export default function GamePage() {
 
               </div>
 
+
+              {/* CANTIDADES */}
+
               <div className="mt-6 grid grid-cols-2 gap-3">
 
                 {[1, 5, 10, 20].map((amount) => (
+
                   <button
                     key={amount}
                     type="button"
                     onClick={() =>
-                      setBalance((value) => value + amount)
+                      setBalance(
+                        (value) => value + amount
+                      )
                     }
                     className="
                       rounded-2xl
@@ -492,9 +651,13 @@ export default function GamePage() {
                   >
                     +{amount}
                   </button>
+
                 ))}
 
               </div>
+
+
+              {/* VOLVER */}
 
               <button
                 type="button"
@@ -518,9 +681,10 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* =================================================
+
+        {/* =====================================================
             SHOP
-        ================================================= */}
+        ===================================================== */}
 
         {tab === "shop" && (
           <Modal
@@ -531,9 +695,10 @@ export default function GamePage() {
           />
         )}
 
-        {/* =================================================
+
+        {/* =====================================================
             REWARDS
-        ================================================= */}
+        ===================================================== */}
 
         {tab === "rewards" && (
           <Modal
@@ -544,9 +709,10 @@ export default function GamePage() {
           />
         )}
 
-        {/* =================================================
+
+        {/* =====================================================
             PROFILE
-        ================================================= */}
+        ===================================================== */}
 
         {tab === "profile" && (
           <Modal
@@ -557,9 +723,10 @@ export default function GamePage() {
           />
         )}
 
-        {/* =================================================
+
+        {/* =====================================================
             FRIENDS
-        ================================================= */}
+        ===================================================== */}
 
         {tab === "friends" && (
           <Modal
@@ -570,9 +737,10 @@ export default function GamePage() {
           />
         )}
 
-        {/* =================================================
+
+        {/* =====================================================
             BARRA INFERIOR
-        ================================================= */}
+        ===================================================== */}
 
         <nav
           className="
@@ -634,6 +802,7 @@ export default function GamePage() {
   );
 }
 
+
 /* ==========================================================
    BOTÓN DE NAVEGACIÓN
 ========================================================== */
@@ -651,6 +820,7 @@ function NavButton({
   onClick: () => void;
   main?: boolean;
 }) {
+
   return (
     <button
       type="button"
@@ -666,6 +836,7 @@ function NavButton({
         transition-all
         duration-200
         active:scale-90
+
         ${
           active
             ? "text-yellow-300"
@@ -673,6 +844,8 @@ function NavButton({
         }
       `}
     >
+
+      {/* INDICADOR */}
 
       {active && (
         <span
@@ -683,117 +856,4 @@ function NavButton({
             w-10
             rounded-full
             bg-yellow-400
-            shadow-[0_0_12px_rgba(250,204,21,0.8)]
-          "
-        />
-      )}
-
-      <span
-        className={`
-          flex
-          items-center
-          justify-center
-          rounded-2xl
-          transition-transform
-          ${
-            main
-              ? "text-3xl"
-              : "text-xl"
-          }
-          ${
-            active
-              ? "scale-110"
-              : "scale-100"
-          }
-        `}
-      >
-        {icon}
-      </span>
-
-      <span className="text-[9px] font-black uppercase">
-        {label}
-      </span>
-
-    </button>
-  );
-}
-
-/* ==========================================================
-   MODAL
-========================================================== */
-
-function Modal({
-  icon,
-  title,
-  description,
-  onClose,
-}: {
-  icon: string;
-  title: string;
-  description: string;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="
-        absolute
-        inset-0
-        z-50
-        flex
-        items-center
-        justify-center
-        bg-black/80
-        p-5
-        backdrop-blur-sm
-      "
-    >
-
-      <div
-        className="
-          w-full
-          max-w-[380px]
-          rounded-[28px]
-          border
-          border-white/10
-          bg-[#11151a]
-          p-7
-          text-center
-          shadow-2xl
-        "
-      >
-
-        <div className="text-6xl">
-          {icon}
-        </div>
-
-        <h2 className="mt-3 text-3xl font-black">
-          {title}
-        </h2>
-
-        <p className="mt-2 text-sm leading-6 text-white/50">
-          {description}
-        </p>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="
-            mt-6
-            w-full
-            rounded-2xl
-            bg-yellow-400
-            py-4
-            font-black
-            text-black
-            active:scale-95
-            transition-transform
-          "
-        >
-          VOLVER A LA MINA
-        </button>
-
-      </div>
-
-    </div>
-  );
-          }
+            shadow-[0_0_12px_rgba(250,204,2
