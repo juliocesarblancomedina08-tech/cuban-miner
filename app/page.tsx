@@ -7,36 +7,55 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Bloquear gestos de zoom
+    // =========================================
+    // BLOQUEAR ZOOM Y MOVIMIENTO
+    // =========================================
+
     const preventGesture = (event: Event) => {
       event.preventDefault();
     };
 
-    // Bloquear zoom con Ctrl + rueda
     const preventWheelZoom = (event: WheelEvent) => {
       if (event.ctrlKey) {
         event.preventDefault();
       }
     };
 
-    // Bloquear desplazamiento táctil
     const preventTouchMove = (event: TouchEvent) => {
       event.preventDefault();
     };
 
-    document.addEventListener("gesturestart", preventGesture);
-    document.addEventListener("gesturechange", preventGesture);
-    document.addEventListener("gestureend", preventGesture);
+    document.addEventListener(
+      "gesturestart",
+      preventGesture
+    );
 
-    document.addEventListener("wheel", preventWheelZoom, {
-      passive: false,
-    });
+    document.addEventListener(
+      "gesturechange",
+      preventGesture
+    );
 
-    document.addEventListener("touchmove", preventTouchMove, {
-      passive: false,
-    });
+    document.addEventListener(
+      "gestureend",
+      preventGesture
+    );
 
-    // Telegram Mini App
+    document.addEventListener(
+      "wheel",
+      preventWheelZoom,
+      { passive: false }
+    );
+
+    document.addEventListener(
+      "touchmove",
+      preventTouchMove,
+      { passive: false }
+    );
+
+    // =========================================
+    // TELEGRAM MINI APP
+    // =========================================
+
     const telegram = (
       window as typeof window & {
         Telegram?: {
@@ -54,12 +73,30 @@ export default function Home() {
     }
 
     return () => {
-      document.removeEventListener("gesturestart", preventGesture);
-      document.removeEventListener("gesturechange", preventGesture);
-      document.removeEventListener("gestureend", preventGesture);
+      document.removeEventListener(
+        "gesturestart",
+        preventGesture
+      );
 
-      document.removeEventListener("wheel", preventWheelZoom);
-      document.removeEventListener("touchmove", preventTouchMove);
+      document.removeEventListener(
+        "gesturechange",
+        preventGesture
+      );
+
+      document.removeEventListener(
+        "gestureend",
+        preventGesture
+      );
+
+      document.removeEventListener(
+        "wheel",
+        preventWheelZoom
+      );
+
+      document.removeEventListener(
+        "touchmove",
+        preventTouchMove
+      );
     };
   }, []);
 
@@ -78,14 +115,30 @@ export default function Home() {
         touchAction: "none",
       }}
     >
+
+      {/* =========================================
+          MARCO DE LA IMAGEN
+          
+          Mantiene exactamente la proporción
+          de nuestra imagen vertical.
+      ========================================= */}
+
       <div
-        className="relative w-full h-full overflow-hidden"
+        className="
+          absolute
+          top-1/2
+          left-1/2
+          -translate-x-1/2
+          -translate-y-1/2
+          h-full
+        "
         style={{
-          touchAction: "none",
+          aspectRatio: "832 / 1792",
         }}
       >
+
         {/* =========================================
-            IMAGEN COMPLETA DE INICIO
+            IMAGEN COMPLETA
         ========================================= */}
 
         <img
@@ -97,14 +150,15 @@ export default function Home() {
             inset-0
             w-full
             h-full
-            object-fill
+            object-contain
             pointer-events-none
             select-none
           "
         />
 
         {/* =========================================
-            BOTÓN INVISIBLE START MINING
+            BOTÓN INVISIBLE
+            START MINING
         ========================================= */}
 
         <button
@@ -114,22 +168,24 @@ export default function Home() {
           className="
             absolute
             z-20
-            bg-transparent
             border-0
+            bg-transparent
             outline-none
             p-0
             m-0
             cursor-pointer
           "
           style={{
-            left: "17%",
-            top: "57%",
-            width: "66%",
-            height: "18%",
+            left: "9%",
+            top: "57.5%",
+            width: "82%",
+            height: "12%",
             touchAction: "manipulation",
           }}
         />
+
       </div>
+
     </main>
   );
-        }
+}
