@@ -1,93 +1,103 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function HomePage() {
+export default function Home() {
   const router = useRouter();
+  const [started, setStarted] = useState(false);
+  const [sparkles, setSparkles] = useState<number[]>([]);
 
-  const startMining = () => {
-    router.push("/game");
+  useEffect(() => {
+    setSparkles(Array.from({ length: 18 }, (_, i) => i));
+  }, []);
+
+  const startGame = () => {
+    setStarted(true);
+
+    setTimeout(() => {
+      router.push("/game");
+    }, 450);
   };
 
   return (
-    <main
-      className="
-        fixed
-        inset-0
-        w-screen
-        h-[100dvh]
-        overflow-hidden
-        bg-black
-        flex
-        items-center
-        justify-center
-        touch-none
-        select-none
-      "
-    >
-      {/* =====================================================
-          CONTENEDOR DE LA IMAGEN
+    <main className={`welcome-screen ${started ? "welcome-exit" : ""}`}>
+      <div className="mine-background">
 
-          La imagen original es 686 x 1536.
-          Mantenemos exactamente esa proporción.
-      ===================================================== */}
+        <div className="mine-glow" />
 
-      <div
-        className="
-          relative
-          h-full
-          aspect-[686/1536]
-          max-w-full
-          overflow-hidden
-        "
-      >
+        {sparkles.map((spark) => (
+          <span
+            key={spark}
+            className="sparkle"
+            style={{
+              left: `${8 + ((spark * 17) % 84)}%`,
+              top: `${12 + ((spark * 29) % 70)}%`,
+              animationDelay: `${(spark % 6) * 0.45}s`,
+            }}
+          >
+            ✦
+          </span>
+        ))}
 
-        {/* ===================================================
-            IMAGEN DE INICIO
-        =================================================== */}
+        <div className="welcome-logo">
+          <div className="flag">🇨🇺</div>
 
-        <img
-          src="/images/start-screen.png"
-          alt="CUBAN-MINER"
-          draggable={false}
-          className="
-            absolute
-            inset-0
-            w-full
-            h-full
-            object-contain
-            select-none
-            pointer-events-none
-          "
-        />
+          <div className="logo-cuban">
+            CUBAN
+          </div>
 
-        {/* ===================================================
-            BOTÓN INVISIBLE — START MINING
+          <div className="logo-miner">
+            MINER⛏️
+          </div>
 
-            Esta zona está colocada encima del botón
-            que aparece dentro de la imagen.
-        =================================================== */}
+          <div className="tagline">
+            TU MINA, TU RECOMPENSA
+          </div>
+        </div>
+
+        <div className="miner-character">
+
+          <div className="miner-shadow" />
+
+          <div className="miner-body">
+            <div className="helmet">
+              <div className="lamp" />
+            </div>
+
+            <div className="miner-head">
+              <div className="eye eye-left" />
+              <div className="eye eye-right" />
+              <div className="smile" />
+            </div>
+
+            <div className="miner-shirt" />
+
+            <div className="miner-arm holding-arm">
+              <div className="glove" />
+            </div>
+
+            <div className="miner-arm waving-arm">
+              <div className="glove">
+                👋
+              </div>
+            </div>
+
+            <div className="pickaxe">
+              <div className="pickaxe-handle" />
+              <div className="pickaxe-head" />
+            </div>
+          </div>
+        </div>
 
         <button
-          type="button"
-          aria-label="START MINING"
-          onClick={startMining}
-          className="
-            absolute
-            left-[8%]
-            top-[89%]
-            w-[84%]
-            h-[9%]
-            bg-transparent
-            border-0
-            outline-none
-            p-0
-            m-0
-            cursor-pointer
-            touch-manipulation
-            active:scale-[0.98]
-          "
-        />
+          className="start-mining-button"
+          onClick={startGame}
+          disabled={started}
+        >
+          <span>START MINING</span>
+          <small>⛏️ COMENZAR</small>
+        </button>
 
       </div>
     </main>
