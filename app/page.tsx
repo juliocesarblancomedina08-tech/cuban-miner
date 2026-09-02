@@ -1,41 +1,132 @@
 "use client";
 
-import { useState } from "react";
-
-import MineBackground from "./components/MineBackground";
-import MinerHero from "./components/MinerHero";
-import StartButton from "./components/StartButton";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [started, setStarted] = useState(false);
+  const router = useRouter();
 
-  if (started) {
-    return (
-      <main className="gamePage">
-        GAME STARTED
-      </main>
-    );
-  }
+  const [entering, setEntering] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLoaded(true);
+    }, 180);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const startGame = () => {
+    if (entering) return;
+
+    setEntering(true);
+
+    window.setTimeout(() => {
+      router.push("/game");
+    }, 420);
+  };
 
   return (
-    <main className="homeContainer">
+    <main
+      className={`splash ${
+        loaded ? "is-loaded" : ""
+      } ${entering ? "is-entering" : ""}`}
+    >
+      {/* FONDO PRINCIPAL */}
+      <div
+        className="splash-art"
+        aria-hidden="true"
+      />
 
-      <MineBackground />
+      {/* OSCURECIMIENTO / VIÑETA */}
+      <div
+        className="splash-vignette"
+        aria-hidden="true"
+      />
 
-      <h1 className="title">
-        CUBAN MINER
-      </h1>
+      {/* PARTÍCULAS DE POLVO */}
+      <div
+        className="floating-dust"
+        aria-hidden="true"
+      >
+        {Array.from({ length: 18 }).map((_, index) => (
+          <i
+            key={index}
+            className={`dust dust-${index + 1}`}
+          />
+        ))}
+      </div>
 
-      <MinerHero />
+      {/* INTERFAZ PRINCIPAL */}
+      <section className="splash-ui">
 
-      <p className="subtitle">
-        Welcome Miner
-      </p>
+        {/* LOGO */}
+        <div className="brand-badge">
+          <span className="brand-pick">
+            ⛏
+          </span>
 
-      <StartButton
-        onClick={() => setStarted(true)}
+          <span>
+            CUBAN MINER
+          </span>
+        </div>
+
+        {/* MENSAJE DE BIENVENIDA */}
+        <div className="welcome-card">
+
+          <span className="welcome-kicker">
+            MINING ADVENTURE
+          </span>
+
+          <h1>
+            WELCOME, MINER
+          </h1>
+
+          <p>
+            Excava • Mejora • Descubre
+          </p>
+
+        </div>
+
+        {/* BOTÓN PARA ENTRAR AL JUEGO */}
+        <button
+          type="button"
+          className="start-mining"
+          onClick={startGame}
+          disabled={entering}
+          aria-label="Comenzar a minar"
+        >
+
+          <span className="button-icon">
+            ⛏
+          </span>
+
+          <span>
+            {entering
+              ? "ENTERING MINE..."
+              : "START MINING"}
+          </span>
+
+          <span className="button-arrow">
+            ›
+          </span>
+
+        </button>
+
+        {/* VERSIÓN */}
+        <div className="version-pill">
+          CUBAN MINER • v0.1
+        </div>
+
+      </section>
+
+      {/* BRILLO INFERIOR */}
+      <div
+        className="bottom-glow"
+        aria-hidden="true"
       />
 
     </main>
   );
-}
+            }
