@@ -1,366 +1,643 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap");
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+:root {
+  --gold: #f7b928;
+  --gold-light: #ffd866;
+  --orange: #e87516;
+  --dark: #080b10;
+  --panel: rgba(13, 17, 23, 0.88);
+  --text: #ffffff;
+  --muted: #b9c0c8;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html,
-body{
-  width:100%;
-  height:100%;
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--dark);
 }
 
-.welcome-screen{
-  width:100%;
-  height:100vh;
-  overflow:hidden;
-  position:relative;
+body {
+  font-family: "Nunito", sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+button {
+  font-family: inherit;
+}
+
+.splash {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background:
-  linear-gradient(
-    to bottom,
-    #2a1f0a,
-    #111111,
-    #000000
-  );
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(247, 185, 40, 0.15),
+      transparent 34%
+    ),
+    #080b10;
+  isolation: isolate;
 }
 
-.game-title{
-  color:#ffd700;
-  font-size:42px;
-  font-weight:bold;
-  margin-bottom:40px;
+/* --------------------------------
+   FONDO
+-------------------------------- */
+
+.splash-art {
+  position: absolute;
+  inset: -3%;
+  z-index: -4;
+
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.2)
+    ),
+    url("/images/cuban-miner-3d-splash.png");
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  transform: scale(1.03);
+  transition:
+    transform 9s ease-out,
+    filter 1s ease;
+}
+
+.splash.is-loaded .splash-art {
+  transform: scale(1);
+}
+
+.splash-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 25%,
+      rgba(0, 0, 0, 0.2) 55%,
+      rgba(0, 0, 0, 0.78) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.5) 0%,
+      transparent 28%,
+      transparent 68%,
+      rgba(0, 0, 0, 0.75) 100%
+    );
+}
+
+/* --------------------------------
+   INTERFAZ
+-------------------------------- */
+
+.splash-ui {
+  width: min(92vw, 560px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 30px 0;
+  text-align: center;
+
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+
+.splash.is-loaded .splash-ui {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --------------------------------
+   LOGO
+-------------------------------- */
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 22px;
+
+  border: 2px solid rgba(255, 216, 102, 0.75);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(60, 43, 18, 0.92),
+      rgba(22, 18, 12, 0.94)
+    );
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 25px rgba(247, 185, 40, 0.15);
+
+  font-family: "Baloo 2", sans-serif;
+  font-size: clamp(19px, 5vw, 28px);
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--gold-light);
+  text-shadow:
+    0 2px 0 #6b3b0c,
+    0 4px 12px rgba(0, 0, 0, 0.7);
+
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+.brand-pick {
+  font-size: 27px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+/* --------------------------------
+   MENSAJE
+-------------------------------- */
+
+.welcome-card {
+  width: 100%;
+  padding: 22px 24px 18px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 13, 18, 0.78),
+      rgba(10, 13, 18, 0.54)
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  backdrop-filter: blur(7px);
+}
+
+.welcome-kicker {
+  display: block;
+  margin-bottom: 5px;
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 3px;
+
+  color: var(--gold-light);
+}
+
+.welcome-card h1 {
+  margin: 0;
+
+  font-family: "Baloo 2", sans-serif;
+  font-size: clamp(31px, 8vw, 50px);
+  line-height: 0.95;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  color: white;
 
   text-shadow:
-  0 0 10px #ffd700,
-  0 0 20px #ffd700,
-  0 0 30px #ffd700;
+    0 3px 0 rgba(0, 0, 0, 0.65),
+    0 7px 18px rgba(0, 0, 0, 0.7);
 }
 
-.miner-container{
-  position:relative;
-  width:180px;
-  height:260px;
+.welcome-card p {
+  margin: 8px 0 0;
+
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* --------------------------------
+   BOTÓN
+-------------------------------- */
+
+.start-mining {
+  position: relative;
+
+  width: min(90vw, 390px);
+  min-height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 13px 24px;
+
+  border: 3px solid #ffd866;
+  border-radius: 21px;
+
+  cursor: pointer;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffd95d 0%,
+      #f6b522 48%,
+      #d8750d 100%
+    );
+
+  color: #301700;
+
+  font-family: "Baloo 2", sans-serif;
+  font-size: clamp(20px, 5vw, 27px);
+  font-weight: 800;
+  letter-spacing: 1px;
+
+  box-shadow:
+    0 8px 0 #884006,
+    0 13px 30px rgba(0, 0, 0, 0.55),
+    0 0 35px rgba(247, 185, 40, 0.3);
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease;
+}
+
+.start-mining::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 7px;
+  height: 13px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.25);
+
+  pointer-events: none;
+}
+
+.start-mining:hover {
+  filter: brightness(1.08);
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 11px 0 #884006,
+    0 17px 35px rgba(0, 0, 0, 0.55),
+    0 0 45px rgba(247, 185, 40, 0.42);
+}
+
+.start-mining:active {
+  transform: translateY(5px);
+
+  box-shadow:
+    0 3px 0 #884006,
+    0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+.start-mining:disabled {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.button-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+.button-arrow {
+  position: absolute;
+  right: 19px;
+
+  font-size: 34px;
+  line-height: 1;
+
+  transition: transform 0.2s ease;
+}
+
+.start-mining:hover .button-arrow {
+  transform: translateX(5px);
+}
+
+/* --------------------------------
+   VERSIÓN
+-------------------------------- */
+
+.version-pill {
+  padding: 7px 13px;
+
+  border-radius: 999px;
+
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+
+  color: rgba(255, 255, 255, 0.58);
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+
+  backdrop-filter: blur(4px);
+}
+
+/* --------------------------------
+   POLVO / PARTÍCULAS
+-------------------------------- */
+
+.floating-dust {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dust {
+  position: absolute;
+
+  width: 3px;
+  height: 3px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 220, 125, 0.75);
+
+  box-shadow:
+    0 0 7px rgba(255, 190, 55, 0.6);
 
   animation:
-  minerFloat 2s ease-in-out infinite;
+    dustMove 6s linear infinite;
 }
 
-/* casco */
-
-.helmet{
-  width:100px;
-  height:30px;
-
-  border-radius:50px 50px 0 0;
-
-  background:#ffcc00;
-
-  margin:auto;
+.dust-1 {
+  left: 8%;
+  top: 70%;
+  animation-delay: -1s;
 }
 
-/* cabeza */
-
-.head{
-  width:90px;
-  height:90px;
-
-  background:#f0b07a;
-
-  border-radius:50%;
-
-  margin:auto;
+.dust-2 {
+  left: 18%;
+  top: 40%;
+  animation-delay: -4s;
 }
 
-.eyes{
-  display:flex;
-  justify-content:space-around;
-  padding-top:30px;
+.dust-3 {
+  left: 27%;
+  top: 78%;
+  animation-delay: -2s;
 }
 
-.eyes span{
-  width:8px;
-  height:8px;
-  background:black;
-  border-radius:50%;
+.dust-4 {
+  left: 36%;
+  top: 25%;
+  animation-delay: -5s;
 }
 
-/* cuerpo */
-
-.body{
-  width:100px;
-  height:120px;
-
-  background:#2563eb;
-
-  border-radius:12px;
-
-  margin:auto;
+.dust-5 {
+  left: 45%;
+  top: 65%;
+  animation-delay: -3s;
 }
 
-/* brazo izquierdo */
-
-.left-arm{
-  position:absolute;
-
-  left:-20px;
-  top:100px;
-
-  width:70px;
-  height:10px;
-
-  background:#f0b07a;
-
-  transform:rotate(-30deg);
+.dust-6 {
+  left: 54%;
+  top: 35%;
+  animation-delay: -6s;
 }
 
-/* pico */
-
-.pickaxe{
-  position:absolute;
-
-  left:-70px;
-  top:45px;
-
-  font-size:55px;
-
-  animation:
-    pickaxeMove 1s infinite;
+.dust-7 {
+  left: 63%;
+  top: 72%;
+  animation-delay: -2.5s;
 }
 
-/* brazo saludo */
-
-.right-arm{
-  position:absolute;
-
-  right:-20px;
-  top:110px;
-
-  width:75px;
-  height:10px;
-
-  background:#f0b07a;
-
-  transform-origin:left center;
-
-  animation:
-    wave 1s infinite;
+.dust-8 {
+  left: 72%;
+  top: 46%;
+  animation-delay: -4.5s;
 }
 
-/* piernas */
-
-.left-leg{
-  position:absolute;
-
-  bottom:0;
-  left:55px;
-
-  width:10px;
-  height:70px;
-
-  background:#444;
+.dust-9 {
+  left: 81%;
+  top: 68%;
+  animation-delay: -1.5s;
 }
 
-.right-leg{
-  position:absolute;
-
-  bottom:0;
-  right:55px;
-
-  width:10px;
-  height:70px;
-
-  background:#444;
+.dust-10 {
+  left: 91%;
+  top: 31%;
+  animation-delay: -5.5s;
 }
 
-/* texto */
-
-.welcome-text{
-  color:white;
-  margin-top:30px;
-  font-size:22px;
+.dust-11 {
+  left: 13%;
+  top: 17%;
+  animation-delay: -3.5s;
 }
 
-/* boton */
-
-.start-button{
-  margin-top:30px;
-
-  background:#ffd700;
-
-  color:black;
-
-  border:none;
-
-  border-radius:15px;
-
-  padding:18px 40px;
-
-  font-size:22px;
-  font-weight:bold;
-
-  cursor:pointer;
-
-  animation:
-  pulse 2s infinite;
+.dust-12 {
+  left: 23%;
+  top: 58%;
+  animation-delay: -6.5s;
 }
 
-.start-button:hover{
-  transform:scale(1.05);
+.dust-13 {
+  left: 43%;
+  top: 16%;
+  animation-delay: -2.2s;
 }
 
-/* suelo */
-
-.mine-ground{
-  position:absolute;
-
-  bottom:0;
-
-  width:100%;
-  height:180px;
-
-  background:#1e1e1e;
-
-  border-top:6px solid #444;
+.dust-14 {
+  left: 58%;
+  top: 84%;
+  animation-delay: -4.2s;
 }
 
-/* particulas */
-
-.particle{
-  position:absolute;
-
-  width:10px;
-  height:10px;
-
-  border-radius:50%;
-
-  background:#ffd700;
+.dust-15 {
+  left: 69%;
+  top: 19%;
+  animation-delay: -1.8s;
 }
 
-.p1{
-  top:100px;
-  left:20px;
-  animation:particleFloat 3s infinite;
+.dust-16 {
+  left: 77%;
+  top: 88%;
+  animation-delay: -5.8s;
 }
 
-.p2{
-  top:160px;
-  right:40px;
-  animation:particleFloat 4s infinite;
+.dust-17 {
+  left: 87%;
+  top: 54%;
+  animation-delay: -3.8s;
 }
 
-.p3{
-  bottom:250px;
-  left:70px;
-  animation:particleFloat 2.5s infinite;
+.dust-18 {
+  left: 96%;
+  top: 77%;
+  animation-delay: -6.8s;
 }
 
-.p4{
-  bottom:300px;
-  right:80px;
-  animation:particleFloat 3.5s infinite;
+/* --------------------------------
+   BRILLO INFERIOR
+-------------------------------- */
+
+.bottom-glow {
+  position: absolute;
+  z-index: -2;
+
+  left: 50%;
+  bottom: -100px;
+
+  width: 80vw;
+  max-width: 900px;
+  height: 220px;
+
+  transform: translateX(-50%);
+
+  border-radius: 50%;
+
+  background: rgba(247, 185, 40, 0.15);
+
+  filter: blur(50px);
+
+  pointer-events: none;
 }
 
-/* pantalla del juego */
+/* --------------------------------
+   TRANSICIÓN
+-------------------------------- */
 
-.game-screen{
-  height:100vh;
-
-  display:flex;
-
-  justify-content:center;
-
-  align-items:center;
-
-  background:black;
-
-  color:white;
+.splash.is-entering .splash-ui {
+  opacity: 0;
+  transform: translateY(-15px) scale(0.97);
+  transition-duration: 0.35s;
 }
 
-/* animaciones */
+.splash.is-entering .splash-art {
+  transform: scale(1.08);
+  filter: brightness(1.15);
+}
 
-@keyframes wave{
+/* --------------------------------
+   ANIMACIONES
+-------------------------------- */
 
-  0%{
-    transform:rotate(25deg);
+@keyframes logoFloat {
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
-  50%{
-    transform:rotate(-40deg);
-  }
-
-  100%{
-    transform:rotate(25deg);
+  50% {
+    transform: translateY(-5px);
   }
 }
 
-@keyframes minerFloat{
-
-  0%{
-    transform:translateY(0);
+@keyframes dustMove {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scale(0.7);
   }
 
-  50%{
-    transform:translateY(-12px);
+  15% {
+    opacity: 1;
   }
 
-  100%{
-    transform:translateY(0);
-  }
-}
-
-@keyframes pickaxeMove{
-
-  0%{
-    transform:rotate(0deg);
+  50% {
+    transform: translate3d(18px, -40px, 0) scale(1);
   }
 
-  50%{
-    transform:rotate(15deg);
+  85% {
+    opacity: 0.7;
   }
 
-  100%{
-    transform:rotate(0deg);
+  100% {
+    opacity: 0;
+    transform: translate3d(-10px, -90px, 0) scale(0.5);
   }
 }
 
-@keyframes pulse{
+/* --------------------------------
+   MÓVIL
+-------------------------------- */
 
-  0%{
-    box-shadow:0 0 5px #ffd700;
+@media (max-width: 600px) {
+  .splash-ui {
+    width: 90vw;
+    gap: 17px;
+    padding: 22px 0;
   }
 
-  50%{
-    box-shadow:0 0 30px #ffd700;
+  .brand-badge {
+    padding: 8px 17px;
+    border-radius: 15px;
   }
 
-  100%{
-    box-shadow:0 0 5px #ffd700;
+  .welcome-card {
+    padding: 18px 17px 15px;
+    border-radius: 18px;
+  }
+
+  .start-mining {
+    width: 88vw;
+    min-height: 62px;
+    border-radius: 18px;
+  }
+}
+
+/* --------------------------------
+   PANTALLAS MUY PEQUEÑAS
+-------------------------------- */
+
+@media (max-height: 650px) {
+  .splash-ui {
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .welcome-card {
+    padding: 13px 15px;
+  }
+
+  .welcome-card p {
+    margin-top: 4px;
+  }
+
+  .start-mining {
+    min-height: 56px;
   }
 }
 
-@keyframes particleFloat{
+/* --------------------------------
+   ACCESIBILIDAD
+-------------------------------- */
 
-  0%{
-    transform:translateY(0);
-    opacity:.3;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-
-  50%{
-    transform:translateY(-30px);
-    opacity:1;
-  }
-
-  100%{
-    transform:translateY(0);
-    opacity:.3;
-  }
-}
+    }
