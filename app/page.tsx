@@ -2,72 +2,40 @@
 
 import { useState } from "react";
 
+import MineBackground from "./components/MineBackground";
+import MinerHero from "./components/MinerHero";
+import StartButton from "./components/StartButton";
+
 export default function Home() {
   const [started, setStarted] = useState(false);
 
   if (started) {
     return (
-      <main className="game-screen">
-        <h1>GAME STARTED</h1>
+      <main className="gamePage">
+        GAME STARTED
       </main>
     );
   }
 
   return (
-    <main className="welcome-screen">
+    <main className="homeContainer">
 
-      {/* partículas */}
-      <div className="particle p1"></div>
-      <div className="particle p2"></div>
-      <div className="particle p3"></div>
-      <div className="particle p4"></div>
+      <MineBackground />
 
-      {/* titulo */}
-      <h1 className="game-title">
-        ⛏️ CUBAN MINER
+      <h1 className="title">
+        CUBAN MINER
       </h1>
 
-      {/* minero */}
-      <div className="miner-container">
+      <MinerHero />
 
-        <div className="helmet"></div>
-
-        <div className="head">
-          <div className="eyes">
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-
-        <div className="body"></div>
-
-        <div className="left-arm"></div>
-
-        <div className="pickaxe">
-          ⛏
-        </div>
-
-        <div className="right-arm"></div>
-
-        <div className="left-leg"></div>
-
-        <div className="right-leg"></div>
-
-      </div>
-
-      <p className="welcome-text">
+      <p className="subtitle">
         Welcome Miner
       </p>
 
-      <button
-        className="start-button"
+      <StartButton
         onClick={() => setStarted(true)}
-      >
-        START MINING
-      </button>
+      />
 
-      {/* suelo */}
-      <div className="mine-ground"></div>
     </main>
   );
 }
