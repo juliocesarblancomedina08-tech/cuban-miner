@@ -32,15 +32,22 @@ button {
   font-family: inherit;
 }
 
+
+/* ==========================================================
+   SPLASH SCREEN
+========================================================== */
+
 .splash {
   position: relative;
   width: 100%;
   min-height: 100vh;
   min-height: 100svh;
   overflow: hidden;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   background:
     radial-gradient(
       circle at 50% 45%,
@@ -48,12 +55,14 @@ button {
       transparent 34%
     ),
     #080b10;
+
   isolation: isolate;
 }
 
-/* --------------------------------
+
+/* ==========================================================
    FONDO
--------------------------------- */
+========================================================== */
 
 .splash-art {
   position: absolute;
@@ -73,6 +82,7 @@ button {
   background-size: cover;
 
   transform: scale(1.03);
+
   transition:
     transform 9s ease-out,
     filter 1s ease;
@@ -82,10 +92,16 @@ button {
   transform: scale(1);
 }
 
+
+/* ==========================================================
+   VIÑETA
+========================================================== */
+
 .splash-vignette {
   position: absolute;
   inset: 0;
   z-index: -3;
+
   pointer-events: none;
 
   background:
@@ -104,21 +120,27 @@ button {
     );
 }
 
-/* --------------------------------
-   INTERFAZ
--------------------------------- */
+
+/* ==========================================================
+   INTERFAZ SPLASH
+========================================================== */
 
 .splash-ui {
   width: min(92vw, 560px);
+
   display: flex;
   flex-direction: column;
   align-items: center;
+
   gap: 22px;
   padding: 30px 0;
+
   text-align: center;
 
   opacity: 0;
+
   transform: translateY(22px);
+
   transition:
     opacity 0.7s ease,
     transform 0.7s ease;
@@ -129,9 +151,10 @@ button {
   transform: translateY(0);
 }
 
-/* --------------------------------
+
+/* ==========================================================
    LOGO
--------------------------------- */
+========================================================== */
 
 .brand-badge {
   display: inline-flex;
@@ -158,26 +181,36 @@ button {
   font-family: "Baloo 2", sans-serif;
   font-size: clamp(19px, 5vw, 28px);
   font-weight: 800;
+
   letter-spacing: 1.5px;
+
   color: var(--gold-light);
+
   text-shadow:
     0 2px 0 #6b3b0c,
     0 4px 12px rgba(0, 0, 0, 0.7);
 
-  animation: logoFloat 4s ease-in-out infinite;
+  animation:
+    logoFloat 4s ease-in-out infinite;
 }
 
 .brand-pick {
   font-size: 27px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+
+  filter:
+    drop-shadow(
+      0 2px 4px rgba(0, 0, 0, 0.8)
+    );
 }
 
-/* --------------------------------
+
+/* ==========================================================
    MENSAJE
--------------------------------- */
+========================================================== */
 
 .welcome-card {
   width: 100%;
+
   padding: 22px 24px 18px;
 
   border-radius: 22px;
@@ -200,10 +233,12 @@ button {
 
 .welcome-kicker {
   display: block;
+
   margin-bottom: 5px;
 
   font-size: 11px;
   font-weight: 900;
+
   letter-spacing: 3px;
 
   color: var(--gold-light);
@@ -213,8 +248,11 @@ button {
   margin: 0;
 
   font-family: "Baloo 2", sans-serif;
+
   font-size: clamp(31px, 8vw, 50px);
+
   line-height: 0.95;
+
   font-weight: 800;
 
   letter-spacing: 1px;
@@ -231,22 +269,26 @@ button {
 
   font-size: 14px;
   font-weight: 700;
+
   color: var(--muted);
 }
 
-/* --------------------------------
-   BOTÓN
--------------------------------- */
+
+/* ==========================================================
+   BOTÓN SPLASH
+========================================================== */
 
 .start-mining {
   position: relative;
 
   width: min(90vw, 390px);
+
   min-height: 68px;
 
   display: flex;
   align-items: center;
   justify-content: center;
+
   gap: 12px;
 
   padding: 13px 24px;
@@ -267,8 +309,11 @@ button {
   color: #301700;
 
   font-family: "Baloo 2", sans-serif;
+
   font-size: clamp(20px, 5vw, 27px);
+
   font-weight: 800;
+
   letter-spacing: 1px;
 
   box-shadow:
@@ -284,10 +329,13 @@ button {
 
 .start-mining::before {
   content: "";
+
   position: absolute;
+
   left: 10%;
   right: 10%;
   top: 7px;
+
   height: 13px;
 
   border-radius: 50%;
@@ -299,6 +347,7 @@ button {
 
 .start-mining:hover {
   filter: brightness(1.08);
+
   transform: translateY(-3px);
 
   box-shadow:
@@ -322,26 +371,34 @@ button {
 
 .button-icon {
   font-size: 28px;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+
+  filter:
+    drop-shadow(
+      0 2px 2px rgba(0, 0, 0, 0.35)
+    );
 }
 
 .button-arrow {
   position: absolute;
+
   right: 19px;
 
   font-size: 34px;
+
   line-height: 1;
 
-  transition: transform 0.2s ease;
+  transition:
+    transform 0.2s ease;
 }
 
 .start-mining:hover .button-arrow {
   transform: translateX(5px);
 }
 
-/* --------------------------------
+
+/* ==========================================================
    VERSIÓN
--------------------------------- */
+========================================================== */
 
 .version-pill {
   padding: 7px 13px;
@@ -349,26 +406,34 @@ button {
   border-radius: 999px;
 
   background: rgba(0, 0, 0, 0.45);
+
   border: 1px solid rgba(255, 255, 255, 0.09);
 
   color: rgba(255, 255, 255, 0.58);
 
   font-size: 10px;
+
   font-weight: 800;
+
   letter-spacing: 1.8px;
 
   backdrop-filter: blur(4px);
 }
 
-/* --------------------------------
+
+/* ==========================================================
    POLVO / PARTÍCULAS
--------------------------------- */
+========================================================== */
 
 .floating-dust {
   position: absolute;
+
   inset: 0;
+
   z-index: -1;
+
   pointer-events: none;
+
   overflow: hidden;
 }
 
@@ -497,12 +562,14 @@ button {
   animation-delay: -6.8s;
 }
 
-/* --------------------------------
+
+/* ==========================================================
    BRILLO INFERIOR
--------------------------------- */
+========================================================== */
 
 .bottom-glow {
   position: absolute;
+
   z-index: -2;
 
   left: 50%;
@@ -510,6 +577,7 @@ button {
 
   width: 80vw;
   max-width: 900px;
+
   height: 220px;
 
   transform: translateX(-50%);
@@ -523,24 +591,31 @@ button {
   pointer-events: none;
 }
 
-/* --------------------------------
+
+/* ==========================================================
    TRANSICIÓN
--------------------------------- */
+========================================================== */
 
 .splash.is-entering .splash-ui {
   opacity: 0;
-  transform: translateY(-15px) scale(0.97);
+
+  transform:
+    translateY(-15px)
+    scale(0.97);
+
   transition-duration: 0.35s;
 }
 
 .splash.is-entering .splash-art {
   transform: scale(1.08);
+
   filter: brightness(1.15);
 }
 
-/* --------------------------------
-   ANIMACIONES
--------------------------------- */
+
+/* ==========================================================
+   ANIMACIÓN DEL LOGO
+========================================================== */
 
 @keyframes logoFloat {
   0%,
@@ -553,10 +628,18 @@ button {
   }
 }
 
+
+/* ==========================================================
+   POLVO
+========================================================== */
+
 @keyframes dustMove {
   0% {
     opacity: 0;
-    transform: translate3d(0, 20px, 0) scale(0.7);
+
+    transform:
+      translate3d(0, 20px, 0)
+      scale(0.7);
   }
 
   15% {
@@ -564,7 +647,9 @@ button {
   }
 
   50% {
-    transform: translate3d(18px, -40px, 0) scale(1);
+    transform:
+      translate3d(18px, -40px, 0)
+      scale(1);
   }
 
   85% {
@@ -573,45 +658,201 @@ button {
 
   100% {
     opacity: 0;
-    transform: translate3d(-10px, -90px, 0) scale(0.5);
+
+    transform:
+      translate3d(-10px, -90px, 0)
+      scale(0.5);
   }
 }
 
-/* --------------------------------
-   MÓVIL
--------------------------------- */
+
+/* ==========================================================
+   ⭐ MINERO 3D — MOVIMIENTO IDLE
+========================================================== */
+
+/*
+   Esta animación se utiliza directamente
+   desde:
+
+   animate-[minerIdle_2.5s_ease-in-out_infinite]
+
+   del componente GamePage.
+*/
+
+@keyframes minerIdle {
+  0% {
+    transform:
+      translateX(-50%)
+      translateY(0)
+      rotate(0deg);
+  }
+
+  25% {
+    transform:
+      translateX(-50%)
+      translateY(-3px)
+      rotate(-0.5deg);
+  }
+
+  50% {
+    transform:
+      translateX(-50%)
+      translateY(-7px)
+      rotate(1deg);
+  }
+
+  75% {
+    transform:
+      translateX(-50%)
+      translateY(-3px)
+      rotate(-0.5deg);
+  }
+
+  100% {
+    transform:
+      translateX(-50%)
+      translateY(0)
+      rotate(0deg);
+  }
+}
+
+
+/* ==========================================================
+   ⛏️ MINERO — GOLPE DE MINERÍA
+========================================================== */
+
+@keyframes minerMining {
+  0% {
+    transform:
+      translateX(-50%)
+      translateY(0)
+      rotate(0deg);
+  }
+
+  25% {
+    transform:
+      translateX(-50%)
+      translateY(4px)
+      rotate(-3deg);
+  }
+
+  50% {
+    transform:
+      translateX(-50%)
+      translateY(-2px)
+      rotate(3deg);
+  }
+
+  75% {
+    transform:
+      translateX(-50%)
+      translateY(3px)
+      rotate(-2deg);
+  }
+
+  100% {
+    transform:
+      translateX(-50%)
+      translateY(0)
+      rotate(0deg);
+  }
+}
+
+
+/* ==========================================================
+   💎 EFECTO DE MONEDA
+========================================================== */
+
+@keyframes coinFloat {
+  0% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, 15px)
+      scale(0.7);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -65px)
+      scale(1.15);
+  }
+}
+
+
+/* ==========================================================
+   ✨ EFECTO DE BRILLO
+========================================================== */
+
+@keyframes miningSpark {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+
+/* ==========================================================
+   📱 MÓVIL
+========================================================== */
 
 @media (max-width: 600px) {
+
   .splash-ui {
     width: 90vw;
+
     gap: 17px;
+
     padding: 22px 0;
   }
 
   .brand-badge {
     padding: 8px 17px;
+
     border-radius: 15px;
   }
 
   .welcome-card {
     padding: 18px 17px 15px;
+
     border-radius: 18px;
   }
 
   .start-mining {
     width: 88vw;
+
     min-height: 62px;
+
     border-radius: 18px;
   }
 }
 
-/* --------------------------------
-   PANTALLAS MUY PEQUEÑAS
--------------------------------- */
+
+/* ==========================================================
+   📱 PANTALLAS MUY PEQUEÑAS
+========================================================== */
 
 @media (max-height: 650px) {
+
   .splash-ui {
     gap: 12px;
+
     padding: 12px 0;
   }
 
@@ -628,16 +869,28 @@ button {
   }
 }
 
-/* --------------------------------
-   ACCESIBILIDAD
--------------------------------- */
+
+/* ==========================================================
+   ♿ ACCESIBILIDAD
+========================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+
     animation-iteration-count: 1 !important;
+
     transition-duration: 0.01ms !important;
   }
-    }
+}
+
+Ahora el "global.css" ya contiene "@keyframes minerIdle", por lo que esta parte del "GamePage":
+
+animate-[minerIdle_2.5s_ease-in-out_infinite]
+
+sí tendrá una animación definida.
+
+Ojo: el "minerMining" también quedó preparado, pero el "GamePage" que te envié todavía usa "scale-[0.96] rotate-[-2deg]" durante el golpe. Si quieres que el minero realmente levante y baje el pico al pulsar START MINING, el siguiente cambio sería conectar "minerMining" directamente al estado "mining".
