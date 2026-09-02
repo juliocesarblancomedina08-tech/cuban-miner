@@ -44,7 +44,7 @@ export default function GamePage() {
   };
 
   // ==========================================
-  // INGRESAR
+  // ABRIR INGRESO
   // ==========================================
 
   const openDeposit = () => {
@@ -52,7 +52,7 @@ export default function GamePage() {
   };
 
   // ==========================================
-  // VOLVER
+  // VOLVER A MINERÍA
   // ==========================================
 
   const backToMine = () => {
@@ -74,35 +74,39 @@ export default function GamePage() {
       }}
     >
 
-      {/* ======================================
-          CONTENEDOR DE LA IMAGEN COMPLETA
-
-          La imagen mantiene su proporción.
-          Todas las zonas táctiles están dentro
-          de este mismo contenedor.
-      ====================================== */}
+      {/* ========================================
+          CONTENEDOR PRINCIPAL
+          
+          La imagen y TODOS los botones están
+          dentro del mismo espacio.
+      ======================================== */}
 
       <div
         className="
           absolute
-          left-1/2
-          top-1/2
-          -translate-x-1/2
-          -translate-y-1/2
+          inset-0
+          w-full
           h-full
+          flex
+          items-center
+          justify-center
+          overflow-hidden
         "
-        style={{
-          aspectRatio: "832 / 1792",
-        }}
       >
 
-        {/* ====================================
-            IMAGEN COMPLETA
-        ==================================== */}
+        {/* ======================================
+            IMAGEN DEL JUEGO
+
+            IMPORTANTE:
+            object-contain = imagen COMPLETA
+            object-cover   = imagen RECORTADA
+
+            Aquí usamos contain.
+        ====================================== */}
 
         <img
           src="/images/game-screen.png"
-          alt="🇨🇺 CUBAN-MINER"
+          alt="CUBAN-MINER"
           draggable={false}
           className="
             absolute
@@ -113,32 +117,37 @@ export default function GamePage() {
             select-none
             pointer-events-none
           "
+          style={{
+            objectPosition: "center center",
+          }}
         />
 
-        {/* ====================================
-            SALDO
-        ==================================== */}
+        {/* ======================================
+            SALDO DEL JUGADOR
+        ====================================== */}
 
         <div
           className="
             absolute
+            z-10
             top-[6%]
             right-[15%]
             text-white
             font-black
             text-xl
             pointer-events-none
+            select-none
             drop-shadow-lg
-            z-10
           "
         >
           🪙 {balance.toFixed(2)}
         </div>
 
-        {/* ====================================
-            BOTÓN +
-            INGRESAR DINERO
-        ==================================== */}
+        {/* ======================================
+            BOTÓN INVISIBLE DEL +
+
+            Esta zona abre INGRESAR.
+        ====================================== */}
 
         <button
           type="button"
@@ -151,10 +160,11 @@ export default function GamePage() {
             right-[3%]
             w-[10%]
             h-[8%]
-            rounded-full
             bg-transparent
             border-0
             p-0
+            m-0
+            rounded-full
             active:scale-90
             transition-transform
           "
@@ -163,49 +173,51 @@ export default function GamePage() {
           }}
         />
 
-        {/* ====================================
-            MONEDAS
-        ==================================== */}
+        {/* ======================================
+            MONEDAS DEL JUEGO
+        ====================================== */}
 
         <div
           className="
             absolute
+            z-10
             top-[12%]
             left-[8%]
             text-white
             font-black
             text-lg
             pointer-events-none
+            select-none
             drop-shadow-lg
-            z-10
           "
         >
           💎 {coins.toLocaleString()}
         </div>
 
-        {/* ====================================
+        {/* ======================================
             ENERGÍA
-        ==================================== */}
+        ====================================== */}
 
         <div
           className="
             absolute
+            z-10
             top-[12%]
             right-[8%]
             text-white
             font-black
             text-lg
             pointer-events-none
+            select-none
             drop-shadow-lg
-            z-10
           "
         >
           ⚡ {energy}
         </div>
 
-        {/* ====================================
-            MINERÍA
-        ==================================== */}
+        {/* ======================================
+            ZONA DE MINERÍA
+        ====================================== */}
 
         {tab === "mine" && (
           <>
@@ -224,6 +236,7 @@ export default function GamePage() {
                 bg-transparent
                 border-0
                 p-0
+                m-0
                 active:scale-95
                 transition-transform
               "
@@ -232,9 +245,9 @@ export default function GamePage() {
               }}
             />
 
-            {/* =================================
+            {/* ==================================
                 BARRA DE ENERGÍA
-            ================================= */}
+            ================================== */}
 
             <div
               className="
@@ -265,9 +278,9 @@ export default function GamePage() {
           </>
         )}
 
-        {/* ====================================
-            INGRESAR
-        ==================================== */}
+        {/* ======================================
+            VENTANA DE INGRESAR
+        ====================================== */}
 
         {tab === "deposit" && (
           <div
@@ -308,6 +321,13 @@ export default function GamePage() {
                 </p>
 
               </div>
+
+              {/* ==================================
+                  CANTIDADES DE PRUEBA
+
+                  Esto es solamente para probar
+                  visualmente el sistema.
+              ================================== */}
 
               <div className="grid grid-cols-2 gap-3 mt-6">
 
@@ -377,6 +397,10 @@ export default function GamePage() {
 
               </div>
 
+              {/* ==================================
+                  VOLVER
+              ================================== */}
+
               <button
                 type="button"
                 onClick={backToMine}
@@ -396,9 +420,9 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* ====================================
+        {/* ======================================
             TIENDA
-        ==================================== */}
+        ====================================== */}
 
         {tab === "shop" && (
           <div
@@ -426,13 +450,29 @@ export default function GamePage() {
                 Próximamente
               </p>
 
+              <button
+                type="button"
+                onClick={backToMine}
+                className="
+                  mt-6
+                  px-8
+                  py-3
+                  rounded-2xl
+                  bg-yellow-500
+                  text-black
+                  font-black
+                "
+              >
+                VOLVER
+              </button>
+
             </div>
           </div>
         )}
 
-        {/* ====================================
+        {/* ======================================
             PREMIOS
-        ==================================== */}
+        ====================================== */}
 
         {tab === "rewards" && (
           <div
@@ -460,13 +500,29 @@ export default function GamePage() {
                 Próximamente
               </p>
 
+              <button
+                type="button"
+                onClick={backToMine}
+                className="
+                  mt-6
+                  px-8
+                  py-3
+                  rounded-2xl
+                  bg-yellow-500
+                  text-black
+                  font-black
+                "
+              >
+                VOLVER
+              </button>
+
             </div>
           </div>
         )}
 
-        {/* ====================================
+        {/* ======================================
             PERFIL
-        ==================================== */}
+        ====================================== */}
 
         {tab === "profile" && (
           <div
@@ -494,13 +550,29 @@ export default function GamePage() {
                 Tu cuenta
               </p>
 
+              <button
+                type="button"
+                onClick={backToMine}
+                className="
+                  mt-6
+                  px-8
+                  py-3
+                  rounded-2xl
+                  bg-yellow-500
+                  text-black
+                  font-black
+                "
+              >
+                VOLVER
+              </button>
+
             </div>
           </div>
         )}
 
-        {/* ====================================
+        {/* ======================================
             AMIGOS
-        ==================================== */}
+        ====================================== */}
 
         {tab === "friends" && (
           <div
@@ -528,13 +600,29 @@ export default function GamePage() {
                 Invita amigos y gana recompensas.
               </p>
 
+              <button
+                type="button"
+                onClick={backToMine}
+                className="
+                  mt-6
+                  px-8
+                  py-3
+                  rounded-2xl
+                  bg-yellow-500
+                  text-black
+                  font-black
+                "
+              >
+                VOLVER
+              </button>
+
             </div>
           </div>
         )}
 
-        {/* ====================================
-            BOTÓN TIENDA
-        ==================================== */}
+        {/* ======================================
+            BOTÓN INVISIBLE — TIENDA
+        ====================================== */}
 
         <button
           type="button"
@@ -549,12 +637,14 @@ export default function GamePage() {
             h-[12%]
             bg-transparent
             border-0
+            p-0
+            m-0
           "
         />
 
-        {/* ====================================
-            BOTÓN PREMIOS
-        ==================================== */}
+        {/* ======================================
+            BOTÓN INVISIBLE — PREMIOS
+        ====================================== */}
 
         <button
           type="button"
@@ -569,12 +659,14 @@ export default function GamePage() {
             h-[12%]
             bg-transparent
             border-0
+            p-0
+            m-0
           "
         />
 
-        {/* ====================================
-            BOTÓN MINAR
-        ==================================== */}
+        {/* ======================================
+            BOTÓN INVISIBLE — MINAR
+        ====================================== */}
 
         <button
           type="button"
@@ -589,12 +681,14 @@ export default function GamePage() {
             h-[12%]
             bg-transparent
             border-0
+            p-0
+            m-0
           "
         />
 
-        {/* ====================================
-            BOTÓN PERFIL
-        ==================================== */}
+        {/* ======================================
+            BOTÓN INVISIBLE — PERFIL
+        ====================================== */}
 
         <button
           type="button"
@@ -609,12 +703,14 @@ export default function GamePage() {
             h-[12%]
             bg-transparent
             border-0
+            p-0
+            m-0
           "
         />
 
-        {/* ====================================
-            BOTÓN AMIGOS
-        ==================================== */}
+        {/* ======================================
+            BOTÓN INVISIBLE — AMIGOS
+        ====================================== */}
 
         <button
           type="button"
@@ -629,6 +725,8 @@ export default function GamePage() {
             h-[12%]
             bg-transparent
             border-0
+            p-0
+            m-0
           "
         />
 
@@ -636,4 +734,4 @@ export default function GamePage() {
 
     </main>
   );
-              }
+            }
