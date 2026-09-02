@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Tab =
   | "mine"
@@ -13,641 +13,787 @@ type Tab =
 export default function GamePage() {
   const [tab, setTab] = useState<Tab>("mine");
 
-  // ==========================================
-  // SALDO DEL JUGADOR
-  // ==========================================
-
   const [balance, setBalance] = useState(0);
-
-  // ==========================================
-  // MONEDAS DEL JUEGO
-  // ==========================================
-
   const [coins, setCoins] = useState(0);
-
-  // ==========================================
-  // ENERGÍA
-  // ==========================================
-
   const [energy, setEnergy] = useState(100);
+  const [mining, setMining] = useState(false);
+  const [floatingCoin, setFloatingCoin] = useState(false);
 
-  // ==========================================
-  // MINAR
-  // ==========================================
+  /*
+   * RECARGA AUTOMÁTICA DE ENERGÍA
+   */
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setEnergy((value) => Math.min(100, value + 1));
+    }, 3000);
 
+    return () => window.clearInterval(timer);
+  }, []);
+
+  /*
+   * MINAR
+   */
   const mine = () => {
-    if (energy <= 0) return;
+    if (energy <= 0 || mining) return;
+
+    setMining(true);
+    setFloatingCoin(true);
 
     setCoins((value) => value + 1);
-
     setEnergy((value) => Math.max(0, value - 1));
-  };
 
-  // ==========================================
-  // ABRIR INGRESO
-  // ==========================================
+    window.setTimeout(() => {
+      setMining(false);
+    }, 350);
+
+    window.setTimeout(() => {
+      setFloatingCoin(false);
+    }, 700);
+  };
 
   const openDeposit = () => {
     setTab("deposit");
   };
-
-  // ==========================================
-  // VOLVER A MINERÍA
-  // ==========================================
 
   const backToMine = () => {
     setTab("mine");
   };
 
   return (
-    <main
-      className="
-        fixed
-        inset-0
-        w-screen
-        h-[100dvh]
-        overflow-hidden
-        bg-black
-        select-none
-        touch-none
-      "
-    >
-      {/* ========================================
-          CONTENEDOR PRINCIPAL
-      ======================================== */}
+    <main className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-[#090b0f] text-white select-none">
 
-      <div
-        className="
-          relative
-          w-full
-          h-full
-          overflow-hidden
-          bg-black
-          flex
-          items-center
-          justify-center
-        "
-      >
+      {/* =====================================================
+          FONDO
+      ===================================================== */}
 
-        {/* ========================================
-            IMAGEN COMPLETA DEL JUEGO
-
-            object-contain evita que se recorte.
-            La imagen siempre se mantiene completa.
-        ======================================== */}
+      <div className="absolute inset-0 overflow-hidden">
 
         <img
           src="/images/game-screen.png"
-          alt="CUBAN-MINER"
+          alt="CUBAN MINER"
           draggable={false}
           className="
             absolute
             inset-0
             w-full
             h-full
-            object-contain
+            object-cover
             object-center
-            select-none
             pointer-events-none
+            select-none
+            scale-[1.02]
           "
         />
-
-        {/* ========================================
-            CAPA DE CONTROLES
-        ======================================== */}
 
         <div
           className="
             absolute
             inset-0
-            w-full
-            h-full
+            bg-gradient-to-b
+            from-black/40
+            via-transparent
+            to-black/70
+            pointer-events-none
+          "
+        />
+
+        {/* Brillo ambiental */}
+        <div
+          className="
+            absolute
+            left-1/2
+            top-[48%]
+            -translate-x-1/2
+            w-[70vw]
+            h-[35vw]
+            rounded-full
+            bg-yellow-500/10
+            blur-[70px]
+            pointer-events-none
+          "
+        />
+
+      </div>
+
+      {/* =====================================================
+          INTERFAZ
+      ===================================================== */}
+
+      <div className="absolute inset-0">
+
+        {/* =================================================
+            BARRA SUPERIOR
+        ================================================= */}
+
+        <div
+          className="
+            absolute
+            top-0
+            left-0
+            right-0
+            z-20
+            px-3
+            pt-3
           "
         >
 
-          {/* ======================================
-              SALDO DINÁMICO
-          ====================================== */}
+          <div className="flex items-center justify-between gap-2">
+
+            {/* MONEDAS */}
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+                rounded-2xl
+                border
+                border-white/10
+                bg-black/65
+                px-3
+                py-2
+                shadow-lg
+                backdrop-blur-md
+              "
+            >
+              <span className="text-xl">💎</span>
+
+              <div>
+                <p className="text-[9px] font-bold text-white/50">
+                  MINER COINS
+                </p>
+
+                <p className="text-sm font-black">
+                  {coins.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            {/* SALDO */}
+            <button
+              type="button"
+              onClick={openDeposit}
+              className="
+                flex
+                items-center
+                gap-2
+                rounded-2xl
+                border
+                border-yellow-400/30
+                bg-black/65
+                px-3
+                py-2
+                shadow-lg
+                backdrop-blur-md
+                active:scale-95
+                transition-transform
+              "
+            >
+              <span className="text-xl">🪙</span>
+
+              <div className="text-left">
+                <p className="text-[9px] font-bold text-yellow-300/70">
+                  BALANCE
+                </p>
+
+                <p className="text-sm font-black text-yellow-300">
+                  {balance.toFixed(2)}
+                </p>
+              </div>
+
+              <span className="text-lg text-yellow-300">
+                +
+              </span>
+            </button>
+
+          </div>
+
+          {/* ENERGÍA */}
 
           <div
             className="
-              absolute
-              top-[6%]
-              right-[15%]
-              text-white
-              font-black
-              text-xl
-              pointer-events-none
-              drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
-              whitespace-nowrap
+              mt-2
+              ml-auto
+              w-[145px]
+              rounded-xl
+              border
+              border-white/10
+              bg-black/55
+              p-2
+              backdrop-blur-md
             "
           >
-            🪙 {balance.toFixed(2)}
-          </div>
 
-          {/* ======================================
-              BOTÓN INVISIBLE DEL +
-              ====================================== */}
+            <div className="flex items-center justify-between">
 
-          <button
-            type="button"
-            aria-label="Ingresar dinero"
-            onClick={openDeposit}
-            className="
-              absolute
-              top-[4%]
-              right-[2%]
-              w-[12%]
-              h-[9%]
-              bg-transparent
-              border-0
-              outline-none
-              cursor-pointer
-              active:scale-90
-              transition-transform
-            "
-          />
+              <span className="text-[10px] font-black">
+                ⚡ ENERGY
+              </span>
 
-          {/* ======================================
-              MONEDAS DEL JUEGO
-          ====================================== */}
+              <span className="text-[10px] font-black text-yellow-300">
+                {energy}/100
+              </span>
 
-          <div
-            className="
-              absolute
-              top-[12%]
-              left-[8%]
-              text-white
-              font-black
-              text-lg
-              pointer-events-none
-              drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
-              whitespace-nowrap
-            "
-          >
-            💎 {coins.toLocaleString()}
-          </div>
+            </div>
 
-          {/* ======================================
-              ENERGÍA
-          ====================================== */}
+            <div className="mt-1 h-2 overflow-hidden rounded-full bg-black/70">
 
-          <div
-            className="
-              absolute
-              top-[12%]
-              right-[8%]
-              text-white
-              font-black
-              text-lg
-              pointer-events-none
-              drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]
-              whitespace-nowrap
-            "
-          >
-            ⚡ {energy}
-          </div>
-
-          {/* ======================================
-              ZONA PRINCIPAL PARA MINAR
-          ====================================== */}
-
-          {tab === "mine" && (
-            <>
-              <button
-                type="button"
-                aria-label="Minar"
-                onClick={mine}
-                disabled={energy <= 0}
+              <div
                 className="
-                  absolute
-                  left-[22%]
-                  top-[30%]
-                  w-[56%]
-                  h-[38%]
-                  bg-transparent
-                  border-0
-                  outline-none
-                  cursor-pointer
-                  active:scale-95
-                  transition-transform
-                  disabled:cursor-default
+                  h-full
+                  rounded-full
+                  bg-gradient-to-r
+                  from-yellow-600
+                  via-yellow-400
+                  to-yellow-200
+                  transition-all
+                  duration-300
                 "
+                style={{
+                  width: `${energy}%`,
+                }}
               />
 
-              {/* ==================================
-                  BARRA DE ENERGÍA
-              ================================== */}
+            </div>
 
+          </div>
+
+        </div>
+
+        {/* =================================================
+            ZONA DE MINERÍA
+        ================================================= */}
+
+        {tab === "mine" && (
+          <>
+
+            {/* TÍTULO */}
+
+            <div
+              className="
+                absolute
+                top-[20%]
+                left-1/2
+                -translate-x-1/2
+                z-10
+                text-center
+                pointer-events-none
+              "
+            >
+
+              <p
+                className="
+                  text-[10px]
+                  font-black
+                  tracking-[4px]
+                  text-yellow-300
+                  drop-shadow-lg
+                "
+              >
+                CUBAN MINER
+              </p>
+
+              <h1
+                className="
+                  mt-1
+                  font-black
+                  text-2xl
+                  tracking-wide
+                  drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]
+                "
+              >
+                MINA NIVEL 1
+              </h1>
+
+              <p className="mt-1 text-xs font-bold text-white/65">
+                Mina de piedra
+              </p>
+
+            </div>
+
+            {/* ZONA INTERACTIVA */}
+
+            <button
+              type="button"
+              aria-label="Minar"
+              onClick={mine}
+              disabled={energy <= 0}
+              className={`
+                absolute
+                z-10
+                left-[17%]
+                top-[29%]
+                w-[66%]
+                h-[39%]
+                rounded-[35%]
+                bg-transparent
+                border-0
+                outline-none
+                cursor-pointer
+                transition-transform
+                duration-200
+                ${mining ? "scale-95" : "scale-100"}
+                ${energy <= 0 ? "cursor-default" : ""}
+              `}
+            />
+
+            {/* INDICADOR DE GOLPE */}
+
+            {mining && (
               <div
                 className="
                   absolute
-                  left-[12%]
-                  right-[12%]
-                  bottom-[14%]
+                  z-20
+                  left-1/2
+                  top-[47%]
+                  -translate-x-1/2
+                  -translate-y-1/2
                   pointer-events-none
+                  animate-ping
                 "
               >
-                <div
-                  className="
-                    h-2
-                    rounded-full
-                    bg-black/60
-                    overflow-hidden
-                  "
-                >
-                  <div
-                    className="
-                      h-full
-                      bg-yellow-400
-                      transition-all
-                      duration-200
-                    "
-                    style={{
-                      width: `${energy}%`,
-                    }}
-                  />
+                <div className="text-5xl">
+                  ✨
                 </div>
               </div>
-            </>
-          )}
+            )}
 
-          {/* ======================================
-              INGRESAR DINERO
-          ====================================== */}
+            {/* MONEDA FLOTANTE */}
 
-          {tab === "deposit" && (
-            <div
-              className="
-                absolute
-                inset-0
-                bg-black/80
-                flex
-                items-center
-                justify-center
-                p-4
-              "
-            >
+            {floatingCoin && (
               <div
                 className="
-                  w-[86%]
-                  max-w-[380px]
-                  rounded-3xl
-                  bg-[#17120a]
-                  border
-                  border-yellow-500/40
-                  p-6
-                  text-white
-                  shadow-2xl
+                  absolute
+                  z-30
+                  left-1/2
+                  top-[42%]
+                  -translate-x-1/2
+                  pointer-events-none
+                  animate-bounce
+                  text-xl
+                  font-black
+                  text-yellow-300
+                  drop-shadow-lg
                 "
               >
-
-                <div className="text-center">
-
-                  <div className="text-5xl mb-3">
-                    🪙
-                  </div>
-
-                  <h2 className="text-2xl font-black">
-                    INGRESAR
-                  </h2>
-
-                  <p className="text-sm text-white/60 mt-2">
-                    Añade fondos a tu cuenta.
-                  </p>
-
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mt-6">
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setBalance((value) => value + 1)
-                    }
-                    className="
-                      rounded-2xl
-                      bg-yellow-500
-                      text-black
-                      py-4
-                      font-black
-                      active:scale-95
-                    "
-                  >
-                    +1
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setBalance((value) => value + 5)
-                    }
-                    className="
-                      rounded-2xl
-                      bg-yellow-500
-                      text-black
-                      py-4
-                      font-black
-                      active:scale-95
-                    "
-                  >
-                    +5
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setBalance((value) => value + 10)
-                    }
-                    className="
-                      rounded-2xl
-                      bg-yellow-500
-                      text-black
-                      py-4
-                      font-black
-                      active:scale-95
-                    "
-                  >
-                    +10
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setBalance((value) => value + 20)
-                    }
-                    className="
-                      rounded-2xl
-                      bg-yellow-500
-                      text-black
-                      py-4
-                      font-black
-                      active:scale-95
-                    "
-                  >
-                    +20
-                  </button>
-
-                </div>
-
-                <button
-                  type="button"
-                  onClick={backToMine}
-                  className="
-                    w-full
-                    mt-4
-                    rounded-2xl
-                    bg-white/10
-                    py-4
-                    font-bold
-                    active:scale-95
-                  "
-                >
-                  VOLVER
-                </button>
-
+                +1 💎
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ======================================
-              TIENDA
-          ====================================== */}
+            {/* INFORMACIÓN DE PRODUCCIÓN */}
 
-          {tab === "shop" && (
             <div
               className="
                 absolute
-                inset-0
-                bg-black/75
-                flex
-                items-center
-                justify-center
-                pointer-events-none
+                left-1/2
+                bottom-[17%]
+                -translate-x-1/2
+                z-20
+                rounded-2xl
+                border
+                border-white/10
+                bg-black/60
+                px-5
+                py-3
+                text-center
+                backdrop-blur-md
               "
             >
-              <div className="text-center text-white">
 
-                <div className="text-6xl">
-                  🛒
-                </div>
+              <p className="text-[9px] font-bold text-white/50">
+                PRODUCCIÓN
+              </p>
 
-                <h2 className="text-3xl font-black mt-3">
-                  TIENDA
-                </h2>
+              <p className="text-lg font-black text-yellow-300">
+                +1 MC
+                <span className="text-xs text-white/50">
+                  {" "}
+                  / golpe
+                </span>
+              </p>
 
-                <p className="text-white/60 mt-2">
-                  Próximamente
-                </p>
-
-              </div>
             </div>
-          )}
 
-          {/* ======================================
-              PREMIOS
-          ====================================== */}
+          </>
+        )}
 
-          {tab === "rewards" && (
+        {/* =================================================
+            DEPÓSITO
+        ================================================= */}
+
+        {tab === "deposit" && (
+          <div
+            className="
+              absolute
+              inset-0
+              z-50
+              flex
+              items-center
+              justify-center
+              bg-black/80
+              p-4
+              backdrop-blur-sm
+            "
+          >
+
             <div
               className="
-                absolute
-                inset-0
-                bg-black/75
-                flex
-                items-center
-                justify-center
-                pointer-events-none
+                w-full
+                max-w-[390px]
+                rounded-[28px]
+                border
+                border-yellow-400/30
+                bg-[#15120c]
+                p-6
+                shadow-2xl
               "
             >
-              <div className="text-center text-white">
 
-                <div className="text-6xl">
-                  🏆
+              <div className="text-center">
+
+                <div className="text-5xl">
+                  🪙
                 </div>
 
-                <h2 className="text-3xl font-black mt-3">
-                  PREMIOS
+                <h2 className="mt-2 text-2xl font-black">
+                  BALANCE
                 </h2>
 
-                <p className="text-white/60 mt-2">
-                  Próximamente
+                <p className="mt-1 text-sm text-white/50">
+                  Saldo actual
+                </p>
+
+                <p className="mt-3 text-3xl font-black text-yellow-300">
+                  {balance.toFixed(2)}
                 </p>
 
               </div>
-            </div>
-          )}
 
-          {/* ======================================
-              PERFIL
-          ====================================== */}
+              <div className="mt-6 grid grid-cols-2 gap-3">
 
-          {tab === "profile" && (
-            <div
-              className="
-                absolute
-                inset-0
-                bg-black/75
-                flex
-                items-center
-                justify-center
-                pointer-events-none
-              "
-            >
-              <div className="text-center text-white">
-
-                <div className="text-6xl">
-                  👤
-                </div>
-
-                <h2 className="text-3xl font-black mt-3">
-                  PERFIL
-                </h2>
-
-                <p className="text-white/60 mt-2">
-                  Tu cuenta
-                </p>
+                {[1, 5, 10, 20].map((amount) => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() =>
+                      setBalance((value) => value + amount)
+                    }
+                    className="
+                      rounded-2xl
+                      border
+                      border-yellow-300/30
+                      bg-yellow-400
+                      py-4
+                      font-black
+                      text-black
+                      shadow-lg
+                      active:scale-95
+                      transition-transform
+                    "
+                  >
+                    +{amount}
+                  </button>
+                ))}
 
               </div>
+
+              <button
+                type="button"
+                onClick={backToMine}
+                className="
+                  mt-4
+                  w-full
+                  rounded-2xl
+                  bg-white/10
+                  py-4
+                  font-black
+                  text-white
+                  active:scale-95
+                "
+              >
+                VOLVER A LA MINA
+              </button>
+
             </div>
-          )}
 
-          {/* ======================================
-              AMIGOS
-          ====================================== */}
+          </div>
+        )}
 
-          {tab === "friends" && (
-            <div
-              className="
-                absolute
-                inset-0
-                bg-black/75
-                flex
-                items-center
-                justify-center
-                pointer-events-none
-              "
-            >
-              <div className="text-center text-white">
+        {/* =================================================
+            SHOP
+        ================================================= */}
 
-                <div className="text-6xl">
-                  👥
-                </div>
+        {tab === "shop" && (
+          <Modal
+            icon="🛒"
+            title="TIENDA"
+            description="Compra picos, mejoras y objetos para tu mina."
+            onClose={backToMine}
+          />
+        )}
 
-                <h2 className="text-3xl font-black mt-3">
-                  AMIGOS
-                </h2>
+        {/* =================================================
+            REWARDS
+        ================================================= */}
 
-                <p className="text-white/60 mt-2">
-                  Invita amigos y gana recompensas.
-                </p>
+        {tab === "rewards" && (
+          <Modal
+            icon="🏆"
+            title="PREMIOS"
+            description="Completa misiones y consigue recompensas."
+            onClose={backToMine}
+          />
+        )}
 
-              </div>
-            </div>
-          )}
+        {/* =================================================
+            PROFILE
+        ================================================= */}
 
-          {/* ======================================
-              BOTÓN INVISIBLE — TIENDA
-          ====================================== */}
+        {tab === "profile" && (
+          <Modal
+            icon="👤"
+            title="PERFIL"
+            description="Aquí aparecerán tus estadísticas."
+            onClose={backToMine}
+          />
+        )}
 
-          <button
-            type="button"
-            aria-label="Tienda"
+        {/* =================================================
+            FRIENDS
+        ================================================= */}
+
+        {tab === "friends" && (
+          <Modal
+            icon="👥"
+            title="AMIGOS"
+            description="Invita amigos y consigue recompensas."
+            onClose={backToMine}
+          />
+        )}
+
+        {/* =================================================
+            BARRA INFERIOR
+        ================================================= */}
+
+        <nav
+          className="
+            absolute
+            bottom-0
+            left-0
+            right-0
+            z-40
+            flex
+            h-[78px]
+            border-t
+            border-white/10
+            bg-black/80
+            backdrop-blur-xl
+          "
+        >
+
+          <NavButton
+            icon="🛒"
+            label="Tienda"
+            active={tab === "shop"}
             onClick={() => setTab("shop")}
-            className="
-              absolute
-              bottom-0
-              left-0
-              w-[20%]
-              h-[12%]
-              bg-transparent
-              border-0
-              outline-none
-            "
           />
 
-          {/* ======================================
-              BOTÓN INVISIBLE — PREMIOS
-          ====================================== */}
-
-          <button
-            type="button"
-            aria-label="Premios"
+          <NavButton
+            icon="🏆"
+            label="Premios"
+            active={tab === "rewards"}
             onClick={() => setTab("rewards")}
-            className="
-              absolute
-              bottom-0
-              left-[20%]
-              w-[20%]
-              h-[12%]
-              bg-transparent
-              border-0
-              outline-none
-            "
           />
 
-          {/* ======================================
-              BOTÓN INVISIBLE — MINAR
-          ====================================== */}
-
-          <button
-            type="button"
-            aria-label="Minar"
+          <NavButton
+            icon="⛏️"
+            label="Mina"
+            active={tab === "mine"}
             onClick={() => setTab("mine")}
-            className="
-              absolute
-              bottom-0
-              left-[40%]
-              w-[20%]
-              h-[12%]
-              bg-transparent
-              border-0
-              outline-none
-            "
+            main
           />
 
-          {/* ======================================
-              BOTÓN INVISIBLE — PERFIL
-          ====================================== */}
-
-          <button
-            type="button"
-            aria-label="Perfil"
+          <NavButton
+            icon="👤"
+            label="Perfil"
+            active={tab === "profile"}
             onClick={() => setTab("profile")}
-            className="
-              absolute
-              bottom-0
-              left-[60%]
-              w-[20%]
-              h-[12%]
-              bg-transparent
-              border-0
-              outline-none
-            "
           />
 
-          {/* ======================================
-              BOTÓN INVISIBLE — AMIGOS
-          ====================================== */}
-
-          <button
-            type="button"
-            aria-label="Amigos"
+          <NavButton
+            icon="👥"
+            label="Amigos"
+            active={tab === "friends"}
             onClick={() => setTab("friends")}
-            className="
-              absolute
-              bottom-0
-              left-[80%]
-              w-[20%]
-              h-[12%]
-              bg-transparent
-              border-0
-              outline-none
-            "
           />
 
-        </div>
+        </nav>
+
       </div>
+
     </main>
   );
-            }
+}
+
+/* ==========================================================
+   BOTÓN DE NAVEGACIÓN
+========================================================== */
+
+function NavButton({
+  icon,
+  label,
+  active,
+  onClick,
+  main = false,
+}: {
+  icon: string;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  main?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        relative
+        flex
+        flex-1
+        flex-col
+        items-center
+        justify-center
+        gap-1
+        transition-all
+        duration-200
+        active:scale-90
+        ${
+          active
+            ? "text-yellow-300"
+            : "text-white/45"
+        }
+      `}
+    >
+
+      {active && (
+        <span
+          className="
+            absolute
+            top-0
+            h-1
+            w-10
+            rounded-full
+            bg-yellow-400
+            shadow-[0_0_12px_rgba(250,204,21,0.8)]
+          "
+        />
+      )}
+
+      <span
+        className={`
+          flex
+          items-center
+          justify-center
+          rounded-2xl
+          transition-transform
+          ${
+            main
+              ? "text-3xl"
+              : "text-xl"
+          }
+          ${
+            active
+              ? "scale-110"
+              : "scale-100"
+          }
+        `}
+      >
+        {icon}
+      </span>
+
+      <span className="text-[9px] font-black uppercase">
+        {label}
+      </span>
+
+    </button>
+  );
+}
+
+/* ==========================================================
+   MODAL
+========================================================== */
+
+function Modal({
+  icon,
+  title,
+  description,
+  onClose,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="
+        absolute
+        inset-0
+        z-50
+        flex
+        items-center
+        justify-center
+        bg-black/80
+        p-5
+        backdrop-blur-sm
+      "
+    >
+
+      <div
+        className="
+          w-full
+          max-w-[380px]
+          rounded-[28px]
+          border
+          border-white/10
+          bg-[#11151a]
+          p-7
+          text-center
+          shadow-2xl
+        "
+      >
+
+        <div className="text-6xl">
+          {icon}
+        </div>
+
+        <h2 className="mt-3 text-3xl font-black">
+          {title}
+        </h2>
+
+        <p className="mt-2 text-sm leading-6 text-white/50">
+          {description}
+        </p>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="
+            mt-6
+            w-full
+            rounded-2xl
+            bg-yellow-400
+            py-4
+            font-black
+            text-black
+            active:scale-95
+            transition-transform
+          "
+        >
+          VOLVER A LA MINA
+        </button>
+
+      </div>
+
+    </div>
+  );
+          }
