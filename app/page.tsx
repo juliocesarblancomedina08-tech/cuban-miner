@@ -6,17 +6,22 @@ import { useRouter } from "next/navigation";
 export default function HomePage() {
   const router = useRouter();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow =
+        "";
     };
   }, []);
 
   function startMining() {
+    if (loading) return;
+
     setLoading(true);
 
     const registered =
@@ -41,7 +46,7 @@ export default function HomePage() {
       }
 
       router.push("/game");
-    }, 200);
+    }, 150);
   }
 
   return (
@@ -59,8 +64,8 @@ export default function HomePage() {
         <button
           type="button"
           aria-label="START MINING"
-          disabled={loading}
           onClick={startMining}
+          disabled={loading}
           className="
             absolute
             left-[18%]
@@ -68,7 +73,9 @@ export default function HomePage() {
             h-[13%]
             w-[64%]
             rounded-full
+            border-0
             bg-transparent
+            outline-none
             active:scale-95
           "
         >
