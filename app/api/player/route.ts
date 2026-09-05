@@ -1,61 +1,37 @@
 import { NextResponse } from "next/server";
 
-import {
-  createPlayer,
-} from "../../../lib/game";
-
 export async function GET() {
   return NextResponse.json({
-    ok: true,
-    message:
-      "Player API funcionando",
+    success: true,
+    player: {
+      id: "DEMO-000001",
+      username: "Jugador",
+      level: 1,
+      minerCoins: 0,
+      minerals: 0,
+      energy: 100,
+      pickaxe: null,
+      mineLevel: 1,
+    },
   });
 }
 
-export async function POST(
-  request: Request
-) {
+export async function POST(request: Request) {
   try {
-    const body =
-      await request.json();
-
-    const username =
-      String(
-        body.username ?? ""
-      )
-        .trim()
-        .replace(/^@/, "");
-
-    if (!username) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Nombre obligatorio.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const player =
-      createPlayer(username);
+    const body = await request.json();
 
     return NextResponse.json({
-      ok: true,
-      player,
+      success: true,
+      message: "Jugador actualizado",
+      player: body,
     });
   } catch {
     return NextResponse.json(
       {
-        ok: false,
-        error:
-          "Error creando jugador.",
+        success: false,
+        message: "Datos inválidos",
       },
-      {
-        status: 500,
-      }
+      { status: 400 }
     );
   }
 }
