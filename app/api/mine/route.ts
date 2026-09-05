@@ -1,57 +1,35 @@
 import { NextResponse } from "next/server";
 
-import {
-  calculateMiningReward,
-  type PickaxeId,
-} from "../../../lib/game";
-
-export async function POST(
-  request: Request
-) {
+export async function POST(request: Request) {
   try {
-    const body =
-      await request.json();
+    const body = await request.json();
 
-    const energy =
-      Number(body.energy ?? 0);
-
-    const pickaxe =
-      (body.pickaxe ??
-        null) as PickaxeId | null;
+    const energy = Number(body.energy ?? 0);
+    const coins = Number(body.minerCoins ?? 0);
 
     if (energy <= 0) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Sin energía.",
-        },
-        {
-          status: 400,
-        }
-      );
+      return NextResponse.json({
+        success: false,
+        message: "No tienes energía.",
+        minerCoins: coins,
+        energy: 0,
+      });
     }
 
-    const reward =
-      calculateMiningReward(
-        pickaxe
-      );
-
     return NextResponse.json({
-      ok: true,
-      reward,
-      energy: energy - 1,
+      success: true,
+      message: "Mineral extraído.",
+      minerCoins: coins + 1,
+      energy: Math.max(0, energy - 1),
+      minerals: Number(body.minerals ?? 0) + 1,
     });
   } catch {
     return NextResponse.json(
       {
-        ok: false,
-        error:
-          "Error de minería.",
+        success: false,
+        message: "No se pudo realizar la minería.",
       },
-      {
-        status: 500,
-      }
+      { status: 400 }
     );
   }
 }
