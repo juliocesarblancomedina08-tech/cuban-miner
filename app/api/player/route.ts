@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server";
 
-import {
-  createPlayer,
-} from "../../../../lib/game";
+import { createPlayer } from "../../../lib/game";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const telegramId = String(body.telegramId || "");
-    const username = String(body.username || "");
+    const telegramId = String(body.telegramId || "").trim();
+    const username = String(body.username || "").trim();
 
     if (!telegramId) {
       return NextResponse.json(
         {
+          success: false,
           error: "telegramId requerido",
         },
         {
@@ -25,6 +24,7 @@ export async function POST(request: Request) {
     if (!username) {
       return NextResponse.json(
         {
+          success: false,
           error: "username requerido",
         },
         {
@@ -32,16 +32,6 @@ export async function POST(request: Request) {
         }
       );
     }
-
-    /*
-     * DEMO
-     *
-     * Todavía no guardamos jugadores
-     * en una base de datos.
-     *
-     * Eso lo conectaremos posteriormente
-     * con PostgreSQL.
-     */
 
     const player = createPlayer(
       telegramId,
@@ -55,6 +45,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json(
       {
+        success: false,
         error: "Solicitud inválida",
       },
       {
