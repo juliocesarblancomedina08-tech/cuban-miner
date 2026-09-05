@@ -6,23 +6,35 @@ import { useRouter } from "next/navigation";
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] =
+    useState("");
+
+  const [error, setError] =
+    useState("");
 
   function register() {
-    const clean = username.trim().replace(/^@/, "");
+    const clean =
+      username
+        .trim()
+        .replace(/^@/, "");
 
     if (clean.length < 3) {
-      setError("El nombre debe tener al menos 3 caracteres.");
+      setError(
+        "El nombre debe tener al menos 3 caracteres."
+      );
       return;
     }
 
     if (clean.length > 20) {
-      setError("El nombre no puede superar 20 caracteres.");
+      setError(
+        "El nombre no puede superar 20 caracteres."
+      );
       return;
     }
 
-    if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+    if (
+      !/^[a-zA-Z0-9_]+$/.test(clean)
+    ) {
       setError(
         "Solo puedes utilizar letras, números y _."
       );
@@ -44,6 +56,21 @@ export default function RegisterPage() {
       "false"
     );
 
+    localStorage.setItem(
+      "cuban_miner_coins",
+      "0"
+    );
+
+    localStorage.setItem(
+      "cuban_miner_minerals",
+      "0"
+    );
+
+    localStorage.setItem(
+      "cuban_miner_energy",
+      "100"
+    );
+
     router.push("/tutorial");
   }
 
@@ -59,7 +86,7 @@ export default function RegisterPage() {
           </div>
 
           <h1 className="mt-5 text-3xl font-black">
-            CUBAN-MINER
+            🇨🇺 CUBAN-MINER ⛏️
           </h1>
 
           <p className="mt-2 text-white/50">
@@ -83,7 +110,10 @@ export default function RegisterPage() {
             <input
               value={username}
               onChange={(event) => {
-                setUsername(event.target.value);
+                setUsername(
+                  event.target.value
+                );
+
                 setError("");
               }}
               onKeyDown={(event) => {
@@ -93,6 +123,7 @@ export default function RegisterPage() {
               }}
               placeholder="tu_nombre"
               maxLength={20}
+              autoComplete="off"
               className="w-full bg-transparent px-2 py-4 outline-none"
             />
 
@@ -114,12 +145,8 @@ export default function RegisterPage() {
 
         </div>
 
-        <div className="mt-6 text-center text-xs text-white/30">
-          Tu nombre será tu identidad dentro del juego.
-        </div>
-
       </div>
 
     </main>
   );
-}
+      }
