@@ -7,44 +7,49 @@ const STEPS = [
   {
     miner: "👷",
     title: "¡BIENVENIDO, MINERO!",
-    text: "Yo seré tu guía. Vamos a aprender rápidamente cómo funciona CUBAN-MINER.",
+    text: "Yo seré tu guía. Vamos a aprender cómo funciona CUBAN-MINER.",
   },
   {
     miner: "👷⛏️",
-    title: "EMPIEZA A MINAR",
-    text: "Toca la zona de minería para que tu minero empiece a extraer minerales.",
+    title: "COMIENZA A MINAR",
+    text: "Toca MINAR para que tu minero extraiga minerales.",
   },
   {
     miner: "👷⚡",
-    title: "CUIDA LA ENERGÍA",
-    text: "Cada acción consume energía. Más adelante podrás utilizar diferentes sistemas para aumentar tu producción.",
+    title: "CUIDA TU ENERGÍA",
+    text: "Cada acción de minería consume energía. Más adelante podrás conseguir nuevas formas de aumentar tu producción.",
   },
   {
     miner: "👷🪙",
     title: "CONSIGUE MINER COINS",
-    text: "Los minerales y las recompensas del juego te permitirán conseguir Miner Coins.",
+    text: "Las Miner Coins serán la moneda principal de tu progreso dentro del juego.",
   },
   {
-    miner: "👷⛏️",
+    miner: "👷🛒",
     title: "MEJORA TU PICO",
-    text: "En la tienda encontrarás diferentes picos. Los mejores permiten una producción mayor.",
+    text: "Visita la tienda para conseguir mejores picos y aumentar tu producción.",
   },
   {
     miner: "👷🏆",
-    title: "¡TODO LISTO!",
-    text: "Ahora ya conoces lo básico. Entra a la mina y comienza tu aventura.",
+    title: "¡ESTÁS LISTO!",
+    text: "Ya conoces lo básico. Entra a la mina y comienza tu aventura.",
   },
 ];
 
 export default function TutorialPage() {
   const router = useRouter();
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] =
+    useState(0);
 
-  const current = STEPS[step];
+  const current =
+    STEPS[step];
 
   function next() {
-    if (step >= STEPS.length - 1) {
+    if (
+      step >=
+      STEPS.length - 1
+    ) {
       localStorage.setItem(
         "cuban_miner_tutorial",
         "true"
@@ -55,7 +60,9 @@ export default function TutorialPage() {
       return;
     }
 
-    setStep((value) => value + 1);
+    setStep(
+      (value) => value + 1
+    );
   }
 
   return (
@@ -63,43 +70,41 @@ export default function TutorialPage() {
 
       <div className="mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col">
 
-        <div className="flex items-center justify-center px-5 pt-8">
+        <div className="flex justify-center gap-2 px-5 pt-8">
 
-          <div className="flex gap-2">
-
-            {STEPS.map((_, index) => (
+          {STEPS.map(
+            (_, index) => (
               <div
                 key={index}
-                className={`h-2 w-8 rounded-full ${
+                className={`h-2 w-8 rounded-full transition-all ${
                   index <= step
                     ? "bg-yellow-500"
                     : "bg-white/10"
                 }`}
               />
-            ))}
-
-          </div>
+            )
+          )}
 
         </div>
 
-        <div className="flex flex-1 flex-col items-center justify-center px-6">
+        <div className="flex flex-1 items-center justify-center px-5">
 
           <div
             key={step}
-            className="text-center animate-[fadeIn_.35s_ease-out]"
+            className="w-full text-center"
           >
 
             <div className="text-8xl">
               {current.miner}
             </div>
 
-            <div className="mx-auto mt-8 max-w-[390px] rounded-3xl border border-yellow-500/20 bg-[#17120a] p-6 text-left shadow-2xl">
+            <div className="mt-8 rounded-3xl border border-yellow-500/20 bg-[#17120a] p-6 text-left shadow-2xl">
 
-              <div className="mb-3 text-xs font-black tracking-widest text-yellow-400">
-                MINERO
+              <div className="text-xs font-black tracking-widest text-yellow-400">
+                CUBAN-MINER
               </div>
 
-              <h1 className="text-2xl font-black">
+              <h1 className="mt-3 text-2xl font-black">
                 {current.title}
               </h1>
 
@@ -113,14 +118,15 @@ export default function TutorialPage() {
 
         </div>
 
-        <div className="px-6 pb-8">
+        <div className="px-5 pb-8">
 
           <button
             type="button"
             onClick={next}
             className="w-full rounded-2xl bg-yellow-500 py-5 text-lg font-black text-black active:scale-95"
           >
-            {step === STEPS.length - 1
+            {step ===
+            STEPS.length - 1
               ? "ENTRAR A LA MINA ⛏️"
               : "SIGUIENTE →"}
           </button>
@@ -131,4 +137,4 @@ export default function TutorialPage() {
 
     </main>
   );
-                }
+}
