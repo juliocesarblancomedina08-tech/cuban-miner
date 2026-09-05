@@ -16,16 +16,37 @@ export default function HomePage() {
     };
   }, []);
 
-  const startMining = () => {
+  function startMining() {
     setLoading(true);
 
+    const registered =
+      localStorage.getItem(
+        "cuban_miner_registered"
+      );
+
+    const tutorial =
+      localStorage.getItem(
+        "cuban_miner_tutorial"
+      );
+
     setTimeout(() => {
+      if (registered !== "true") {
+        router.push("/register");
+        return;
+      }
+
+      if (tutorial !== "true") {
+        router.push("/tutorial");
+        return;
+      }
+
       router.push("/game");
-    }, 250);
-  };
+    }, 200);
+  }
 
   return (
     <main className="fixed inset-0 overflow-hidden bg-black">
+
       <div className="relative mx-auto h-[100dvh] w-full max-w-[480px] overflow-hidden">
 
         <img
@@ -37,9 +58,9 @@ export default function HomePage() {
 
         <button
           type="button"
-          onClick={startMining}
+          aria-label="START MINING"
           disabled={loading}
-          aria-label="Start Mining"
+          onClick={startMining}
           className="
             absolute
             left-[18%]
@@ -48,10 +69,7 @@ export default function HomePage() {
             w-[64%]
             rounded-full
             bg-transparent
-            border-0
-            outline-none
             active:scale-95
-            transition-transform
           "
         >
           <span className="sr-only">
@@ -60,6 +78,7 @@ export default function HomePage() {
         </button>
 
       </div>
+
     </main>
   );
 }
