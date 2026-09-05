@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
-type Menu =
+type Tab =
   | "mine"
   | "shop"
   | "friends"
@@ -15,7 +16,7 @@ type Pickaxe = {
   name: string;
   icon: string;
   price: number;
-  durability: number;
+  days: number;
   production: number;
 };
 
@@ -25,7 +26,7 @@ const PICKAXES: Pickaxe[] = [
     name: "Pico de madera",
     icon: "🪵",
     price: 0,
-    durability: 21,
+    days: 21,
     production: 350,
   },
   {
@@ -33,7 +34,7 @@ const PICKAXES: Pickaxe[] = [
     name: "Pico de piedra",
     icon: "🪨",
     price: 500,
-    durability: 17,
+    days: 17,
     production: 600,
   },
   {
@@ -41,7 +42,7 @@ const PICKAXES: Pickaxe[] = [
     name: "Pico de hierro",
     icon: "⚙️",
     price: 1500,
-    durability: 15,
+    days: 15,
     production: 1770,
   },
   {
@@ -49,7 +50,7 @@ const PICKAXES: Pickaxe[] = [
     name: "Pico de oro",
     icon: "🥇",
     price: 3500,
-    durability: 13,
+    days: 13,
     production: 4025,
   },
   {
@@ -57,7 +58,7 @@ const PICKAXES: Pickaxe[] = [
     name: "Pico de esmeralda",
     icon: "💚",
     price: 7500,
-    durability: 10,
+    days: 10,
     production: 8400,
   },
   {
@@ -65,180 +66,539 @@ const PICKAXES: Pickaxe[] = [
     name: "Pico de diamante",
     icon: "💎",
     price: 15000,
-    durability: 7,
+    days: 7,
     production: 16500,
   },
 ];
 
 export default function GamePage() {
-  const [menu, setMenu] = useState<Menu>("mine");
-  const [minerCoins, setMinerCoins] = useState(0);
-  const [minerals, setMinerals] = useState(0);
-  const [energy, setEnergy] = useState(100);
-  const [level, setLevel] = useState(1);
-  const [pickaxe, setPickaxe] = useState<Pickaxe | null>(null);
+  const [tab, setTab] = useState<Tab>("mine");
 
-  function mine() {
+  const [coins, setCoins] = useState(0);
+  const [minerals, setMinerals] = useState(0);
+
+  const [energy, setEnergy] = useState(100);
+  const [maxEnergy] = useState(100);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const [selectedPickaxe, setSelectedPickaxe] =
+    useState<string | null>(null);
+
+  const [playerName] = useState("Nuevo Minero");
+
+  const mine = () => {
     if (energy <= 0) return;
 
+    setCoins((value) => value + 1);
+
     setMinerals((value) => value + 1);
-    setMinerCoins((value) => value + 1);
-    setEnergy((value) => Math.max(0, value - 1));
 
-    if ((minerals + 1) % 100 === 0) {
-      setLevel((value) => value + 1);
-    }
-  }
+    setEnergy((value) =>
+      Math.max(0, value - 1)
+    );
+  };
 
-  function buyPickaxe(item: Pickaxe) {
-    if (item.price > minerCoins) {
-      alert("No tienes suficientes Miner Coins.");
-      return;
-    }
+  const rechargeDemo = () => {
+    setEnergy(maxEnergy);
+  };
 
-    setMinerCoins((value) => value - item.price);
-    setPickaxe(item);
-  }
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   return (
-    <main className="fixed inset-0 bg-black text-white">
-      <div className="mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col overflow-hidden">
+    <main className="fixed inset-0 overflow-hidden bg-black text-white">
 
-        <header className="flex items-center justify-between border-b border-white/10 bg-[#0b0b0b] px-4 py-3">
+      <div className="relative mx-auto h-[100dvh] w-full max-w-[480px] overflow-hidden">
 
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500 text-xl">
-              👤
-            </div>
+        {/* FONDO */}
 
-            <div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#181008] via-[#090909] to-black" />
+
+        {/* CABECERA */}
+
+        <div className="absolute left-3 right-3 top-3 z-20 flex items-center justify-between">
+
+          <button
+            type="button"
+            onClick={() => setTab("profile")}
+            className="flex items-center gap-2 rounded-2xl bg-black/60 px-3 py-2 backdrop-blur"
+          >
+            <span className="text-2xl">
+              👷
+            </span>
+
+            <div className="text-left">
+
               <div className="text-xs text-white/50">
-                NIVEL
+                NIVEL 1
               </div>
 
-              <div className="font-black">
-                {level}
+              <div className="text-sm font-black">
+                {playerName}
               </div>
+
             </div>
+          </button>
+
+          <div className="flex gap-2">
+
+            <div className="rounded-2xl bg-black/70 px-3 py-2 text-sm font-black">
+              🪙 {coins.toLocaleString()}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setTab("bank")}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500 text-xl font-black text-black"
+            >
+              +
+            </button>
+
           </div>
 
-          <div className="text-right">
-            <div className="text-xs text-white/50">
-              MINER COINS
+        </div>
+
+        {/* MINA */}
+
+        {tab === "mine" && (
+          <section className="absolute inset-0">
+
+            <div className="absolute left-[8%] right-[8%] top-[17%] rounded-3xl border border-yellow-500/10 bg-[#120e09] p-4">
+
+              <div className="flex justify-between text-xs">
+
+                <span className="text-white/50">
+                  MINERALES
+                </span>
+
+                <span className="font-black">
+                  ⛏️ {minerals}
+                </span>
+
+              </div>
+
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-black">
+
+                <div
+                  className="h-full bg-yellow-500 transition-all"
+                  style={{
+                    width: `${energy}%`,
+                  }}
+                />
+
+              </div>
+
+              <div className="mt-1 text-right text-[10px] text-white/40">
+                Energía {energy}/{maxEnergy}
+              </div>
+
             </div>
 
-            <div className="font-black text-yellow-400">
-              🪙 {minerCoins.toLocaleString()}
+            {/* ELEVADOR */}
+
+            <div className="absolute left-[7%] top-[32%] text-7xl">
+              🛗
             </div>
-          </div>
 
-        </header>
+            {/* MINERO */}
 
-        <section className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="absolute left-1/2 top-[40%] -translate-x-1/2 text-center">
 
-          {menu === "mine" && (
-            <MineScreen
-              minerCoins={minerCoins}
-              minerals={minerals}
-              energy={energy}
-              pickaxe={pickaxe}
-              mine={mine}
-              setEnergy={setEnergy}
-            />
+              <div className="text-8xl">
+                👷
+              </div>
+
+              <div className="mt-2 text-xs font-black text-yellow-400">
+                MINERO NIVEL 1
+              </div>
+
+              <button
+                type="button"
+                onClick={mine}
+                disabled={energy <= 0}
+                className="
+                  mt-5
+                  rounded-2xl
+                  bg-yellow-500
+                  px-10
+                  py-4
+                  font-black
+                  text-black
+                  shadow-lg
+                  active:scale-95
+                "
+              >
+                ⛏️ MINAR
+              </button>
+
+            </div>
+
+            {/* ALMACÉN */}
+
+            <div className="absolute bottom-[18%] right-[7%] text-center">
+
+              <div className="text-7xl">
+                🏭
+              </div>
+
+              <div className="text-xs font-black">
+                ALMACÉN
+              </div>
+
+              <div className="text-xs text-yellow-400">
+                {minerals} mineral
+              </div>
+
+            </div>
+
+            <button
+              type="button"
+              onClick={rechargeDemo}
+              className="absolute bottom-[17%] left-[7%] rounded-2xl bg-white/10 px-4 py-3 text-xs font-black"
+            >
+              ⚡ ENERGÍA
+            </button>
+
+          </section>
+        )}
+
+        {/* CONTENIDO DE TIENDA */}
+
+        {tab === "shop" && (
+          <section className="absolute inset-0 overflow-y-auto px-4 pb-32 pt-24">
+
+            <h1 className="text-3xl font-black">
+              🛒 TIENDA
+            </h1>
+
+            <p className="mt-1 text-sm text-white/50">
+              Picos de minería
+            </p>
+
+            <div className="mt-5 space-y-3">
+
+              {PICKAXES.map((pickaxe) => (
+
+                <button
+                  key={pickaxe.id}
+                  type="button"
+                  onClick={() =>
+                    setSelectedPickaxe(pickaxe.id)
+                  }
+                  className={`w-full rounded-3xl border p-4 text-left ${
+                    selectedPickaxe === pickaxe.id
+                      ? "border-yellow-500 bg-yellow-500/10"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
+
+                  <div className="flex items-center gap-4">
+
+                    <div className="text-5xl">
+                      {pickaxe.icon}
+                    </div>
+
+                    <div className="flex-1">
+
+                      <div className="font-black">
+                        {pickaxe.name}
+                      </div>
+
+                      <div className="mt-1 text-xs text-white/50">
+                        Duración: {pickaxe.days} días
+                      </div>
+
+                      <div className="text-xs text-white/50">
+                        Producción: {pickaxe.production} MC
+                      </div>
+
+                    </div>
+
+                    <div className="text-right">
+
+                      <div className="font-black text-yellow-400">
+                        {pickaxe.price === 0
+                          ? "GRATIS"
+                          : `${pickaxe.price} MC`}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </button>
+
+              ))}
+
+            </div>
+
+          </section>
+        )}
+
+        {/* REFERIDOS */}
+
+        {tab === "friends" && (
+          <section className="absolute inset-0 px-5 pt-24">
+
+            <h1 className="text-3xl font-black">
+              👥 REFERIDOS
+            </h1>
+
+            <div className="mt-6 rounded-3xl bg-white/5 p-6 text-center">
+
+              <div className="text-7xl">
+                👥
+              </div>
+
+              <h2 className="mt-4 text-xl font-black">
+                INVITA AMIGOS
+              </h2>
+
+              <p className="mt-2 text-sm text-white/50">
+                Invita jugadores para conseguir recompensas.
+              </p>
+
+              <div className="mt-5 rounded-2xl bg-black p-4 text-xs text-white/50">
+                https://t.me/CUBAN_MINER_BOT?start=ref_CM000001
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigator.clipboard?.writeText(
+                    "https://t.me/CUBAN_MINER_BOT?start=ref_CM000001"
+                  )
+                }
+                className="mt-4 w-full rounded-2xl bg-yellow-500 py-4 font-black text-black"
+              >
+                📋 COPIAR ENLACE
+              </button>
+
+            </div>
+
+          </section>
+        )}
+
+        {/* BANCO */}
+
+        {tab === "bank" && (
+          <section className="absolute inset-0 px-5 pt-24">
+
+            <h1 className="text-3xl font-black">
+              🏦 BANCO
+            </h1>
+
+            <div className="mt-6 rounded-3xl bg-white/5 p-6">
+
+              <div className="text-sm text-white/50">
+                Saldo disponible
+              </div>
+
+              <div className="mt-2 text-4xl font-black text-yellow-400">
+                0.00 USDT
+              </div>
+
+              <div className="mt-6 rounded-2xl bg-black p-4">
+
+                <div className="text-xs text-white/50">
+                  SISTEMA DEMO
+                </div>
+
+                <div className="mt-2 font-black">
+                  1 USDT = 500 Miner Coins
+                </div>
+
+              </div>
+
+              <button
+                type="button"
+                className="mt-5 w-full rounded-2xl bg-yellow-500 py-4 font-black text-black"
+              >
+                💰 DEPOSITAR
+              </button>
+
+              <button
+                type="button"
+                className="mt-3 w-full rounded-2xl bg-white/10 py-4 font-black"
+              >
+                💸 RETIRAR
+              </button>
+
+            </div>
+
+          </section>
+        )}
+
+        {/* MISIONES */}
+
+        {tab === "missions" && (
+          <section className="absolute inset-0 px-5 pt-24">
+
+            <h1 className="text-3xl font-black">
+              🎯 MISIONES
+            </h1>
+
+            <div className="mt-5 space-y-3">
+
+              <Mission
+                title="⛏️ Primer minero"
+                description="Realiza tu primera acción."
+                reward="+10 MC"
+              />
+
+              <Mission
+                title="⛏️ Minero activo"
+                description="Mina 100 veces."
+                reward="+50 MC"
+              />
+
+              <Mission
+                title="👥 Reclutador"
+                description="Invita un jugador."
+                reward="+100 MC"
+              />
+
+              <Mission
+                title="📺 Publicidad"
+                description="Mira un anuncio."
+                reward="+25 MC"
+              />
+
+            </div>
+
+          </section>
+        )}
+
+        {/* PERFIL */}
+
+        {tab === "profile" && (
+          <section className="absolute inset-0 px-5 pt-24">
+
+            <div className="text-center">
+
+              <div className="text-7xl">
+                👷
+              </div>
+
+              <h1 className="mt-3 text-3xl font-black">
+                PERFIL
+              </h1>
+
+            </div>
+
+            <div className="mt-6 space-y-3">
+
+              <Info label="ID de jugador" value="CM-000001" />
+              <Info label="Usuario" value="@minero" />
+              <Info label="Nivel" value="1" />
+              <Info label="Miner Coins" value={coins.toString()} />
+              <Info label="Minerales" value={minerals.toString()} />
+              <Info label="Ingresos" value="0.00 USDT" />
+              <Info label="Retiros" value="0.00 USDT" />
+
+            </div>
+
+          </section>
+        )}
+
+        {/* MENÚ INFERIOR */}
+
+        <div className="absolute bottom-3 left-3 right-3 z-30">
+
+          {menuOpen && (
+            <div className="mb-3 grid grid-cols-3 gap-2 rounded-3xl border border-white/10 bg-black/95 p-3 shadow-2xl">
+
+              <MenuButton
+                icon="⛏️"
+                text="Minas"
+                onClick={() => {
+                  setTab("mine");
+                  setMenuOpen(false);
+                }}
+              />
+
+              <MenuButton
+                icon="🛒"
+                text="Tienda"
+                onClick={() => {
+                  setTab("shop");
+                  setMenuOpen(false);
+                }}
+              />
+
+              <MenuButton
+                icon="👥"
+                text="Referidos"
+                onClick={() => {
+                  setTab("friends");
+                  setMenuOpen(false);
+                }}
+              />
+
+              <MenuButton
+                icon="🏦"
+                text="Banco"
+                onClick={() => {
+                  setTab("bank");
+                  setMenuOpen(false);
+                }}
+              />
+
+              <MenuButton
+                icon="🎯"
+                text="Misiones"
+                onClick={() => {
+                  setTab("missions");
+                  setMenuOpen(false);
+                }}
+              />
+
+              <MenuButton
+                icon="👤"
+                text="Perfil"
+                onClick={() => {
+                  setTab("profile");
+                  setMenuOpen(false);
+                }}
+              />
+
+            </div>
           )}
 
-          {menu === "shop" && (
-            <ShopScreen
-              minerCoins={minerCoins}
-              buyPickaxe={buyPickaxe}
-            />
-          )}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((value) => !value)}
+            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-black/90 py-4 font-black backdrop-blur"
+          >
+            <span className="text-2xl">
+              ☰
+            </span>
 
-          {menu === "friends" && <FriendsScreen />}
+            <span>
+              MENÚ
+            </span>
 
-          {menu === "bank" && (
-            <BankScreen
-              minerCoins={minerCoins}
-              setMinerCoins={setMinerCoins}
-            />
-          )}
+          </button>
 
-          {menu === "missions" && (
-            <MissionsScreen
-              setMinerCoins={setMinerCoins}
-            />
-          )}
-
-          {menu === "profile" && (
-            <ProfileScreen
-              minerCoins={minerCoins}
-              minerals={minerals}
-              level={level}
-            />
-          )}
-
-        </section>
-
-        <nav className="border-t border-white/10 bg-[#0b0b0b] px-2 py-2">
-          <div className="grid grid-cols-6 gap-1">
-
-            <NavButton
-              active={menu === "mine"}
-              icon="⛏️"
-              text="Minas"
-              onClick={() => setMenu("mine")}
-            />
-
-            <NavButton
-              active={menu === "shop"}
-              icon="🛒"
-              text="Tienda"
-              onClick={() => setMenu("shop")}
-            />
-
-            <NavButton
-              active={menu === "friends"}
-              icon="👥"
-              text="Referidos"
-              onClick={() => setMenu("friends")}
-            />
-
-            <NavButton
-              active={menu === "bank"}
-              icon="🏦"
-              text="Banco"
-              onClick={() => setMenu("bank")}
-            />
-
-            <NavButton
-              active={menu === "missions"}
-              icon="🎯"
-              text="Misiones"
-              onClick={() => setMenu("missions")}
-            />
-
-            <NavButton
-              active={menu === "profile"}
-              icon="👤"
-              text="Perfil"
-              onClick={() => setMenu("profile")}
-            />
-
-          </div>
-        </nav>
+        </div>
 
       </div>
+
     </main>
   );
 }
 
-function NavButton({
-  active,
+function MenuButton({
   icon,
   text,
   onClick,
 }: {
-  active: boolean;
   icon: string;
   text: string;
   onClick: () => void;
@@ -247,480 +607,47 @@ function NavButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl px-1 py-2 text-center transition ${
-        active
-          ? "bg-yellow-500 text-black"
-          : "bg-white/5 text-white/60"
-      }`}
+      className="rounded-2xl bg-white/5 p-4 text-center active:scale-95"
     >
-      <div className="text-lg">{icon}</div>
+      <div className="text-2xl">
+        {icon}
+      </div>
 
-      <div className="mt-1 text-[9px] font-bold">
+      <div className="mt-1 text-xs font-black">
         {text}
       </div>
     </button>
   );
 }
 
-function MineScreen({
-  minerCoins,
-  minerals,
-  energy,
-  pickaxe,
-  mine,
-  setEnergy,
+function Mission({
+  title,
+  description,
+  reward,
 }: {
-  minerCoins: number;
-  minerals: number;
-  energy: number;
-  pickaxe: Pickaxe | null;
-  mine: () => void;
-  setEnergy: React.Dispatch<React.SetStateAction<number>>;
+  title: string;
+  description: string;
+  reward: string;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="flex items-center justify-between gap-3">
 
-        <Stat
-          icon="🪙"
-          label="Coins"
-          value={minerCoins}
-        />
+        <div>
 
-        <Stat
-          icon="⛏️"
-          label="Mineral"
-          value={minerals}
-        />
-
-        <Stat
-          icon="⚡"
-          label="Energía"
-          value={energy}
-        />
-
-      </div>
-
-      <div className="relative min-h-[430px] overflow-hidden rounded-3xl border border-yellow-500/20 bg-gradient-to-b from-[#3b260b] via-[#171008] to-[#080604]">
-
-        <div className="absolute left-0 right-0 top-5 text-center">
-          <div className="text-xs font-black tracking-[0.3em] text-yellow-400">
-            MINA 1
+          <div className="font-black">
+            {title}
           </div>
 
-          <div className="mt-1 text-[10px] text-white/40">
-            MINA INICIAL
-          </div>
-        </div>
-
-        <div className="absolute left-0 right-0 top-[30%] text-center">
-
-          <div className="text-8xl">
-            👷
-          </div>
-
-          <div className="mt-2 text-4xl">
-            {pickaxe ? pickaxe.icon : "❌"}
-          </div>
-
-          <div className="mt-3 text-sm font-bold text-white/60">
-            {pickaxe
-              ? pickaxe.name
-              : "Necesitas comprar un pico"}
+          <div className="mt-1 text-xs text-white/50">
+            {description}
           </div>
 
         </div>
 
-        <div className="absolute bottom-20 left-0 right-0 text-center text-5xl">
-          🪨 🪨 🪨
-        </div>
-
-        <button
-          type="button"
-          onClick={mine}
-          disabled={energy <= 0}
-          className="absolute bottom-4 left-1/2 w-[80%] -translate-x-1/2 rounded-2xl bg-yellow-500 py-4 font-black text-black shadow-lg active:scale-95 disabled:opacity-40"
-        >
-          ⛏️ TOCAR PARA MINAR
-        </button>
-
-      </div>
-
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-
-        <div className="mb-2 flex justify-between">
-
-          <span className="text-sm font-bold">
-            ⚡ Energía
-          </span>
-
-          <span className="text-sm font-bold text-yellow-400">
-            {energy}/100
-          </span>
-
-        </div>
-
-        <div className="h-3 overflow-hidden rounded-full bg-black">
-
-          <div
-            className="h-full bg-yellow-500 transition-all"
-            style={{ width: `${energy}%` }}
-          />
-
-        </div>
-
-        <button
-          type="button"
-          onClick={() =>
-            setEnergy((value) =>
-              Math.min(100, value + 25)
-            )
-          }
-          className="mt-3 w-full rounded-xl bg-white/10 py-3 text-sm font-bold"
-        >
-          ⚡ RECARGAR ENERGÍA — DEMO
-        </button>
-
-      </div>
-
-    </div>
-  );
-}
-
-function Stat({
-  icon,
-  label,
-  value,
-}: {
-  icon: string;
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
-
-      <div className="text-xl">
-        {icon}
-      </div>
-
-      <div className="mt-1 text-[10px] text-white/40">
-        {label}
-      </div>
-
-      <div className="font-black">
-        {value.toLocaleString()}
-      </div>
-
-    </div>
-  );
-}
-
-function ShopScreen({
-  minerCoins,
-  buyPickaxe,
-}: {
-  minerCoins: number;
-  buyPickaxe: (item: Pickaxe) => void;
-}) {
-  return (
-    <div className="space-y-4">
-
-      <div>
-        <h2 className="text-2xl font-black">
-          🛒 TIENDA
-        </h2>
-
-        <p className="text-sm text-white/50">
-          Picos y herramientas
-        </p>
-      </div>
-
-      {PICKAXES.map((item) => (
-        <div
-          key={item.id}
-          className="rounded-3xl border border-white/10 bg-[#17120a] p-5"
-        >
-
-          <div className="flex items-center gap-4">
-
-            <div className="text-5xl">
-              {item.icon}
-            </div>
-
-            <div className="flex-1">
-
-              <h3 className="font-black">
-                {item.name}
-              </h3>
-
-              <p className="mt-1 text-xs text-white/50">
-                Durabilidad: {item.durability} días
-              </p>
-
-              <p className="text-xs text-white/50">
-                Producción: {item.production} MC
-              </p>
-
-            </div>
-
-          </div>
-
-          <div className="mt-4 flex items-center justify-between">
-
-            <div className="font-black text-yellow-400">
-              {item.price === 0
-                ? "GRATIS"
-                : `${item.price.toLocaleString()} MC`}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => buyPickaxe(item)}
-              className="rounded-xl bg-yellow-500 px-4 py-3 text-sm font-black text-black"
-            >
-              {item.price === 0
-                ? "EQUIPAR"
-                : "COMPRAR"}
-            </button>
-
-          </div>
-
-        </div>
-      ))}
-
-      <div className="rounded-2xl bg-white/5 p-4 text-center text-xs text-white/40">
-        Saldo: 🪙 {minerCoins.toLocaleString()} MC
-      </div>
-
-    </div>
-  );
-}
-
-function FriendsScreen() {
-  return (
-    <div className="space-y-4">
-
-      <h2 className="text-2xl font-black">
-        👥 REFERIDOS
-      </h2>
-
-      <div className="rounded-3xl border border-white/10 bg-[#17120a] p-6 text-center">
-
-        <div className="text-6xl">
-          👥
-        </div>
-
-        <h3 className="mt-4 text-xl font-black">
-          INVITA AMIGOS
-        </h3>
-
-        <p className="mt-2 text-sm text-white/50">
-          Comparte tu enlace y consigue recompensas.
-        </p>
-
-        <div className="mt-5 rounded-xl bg-black p-3 text-xs text-white/60">
-          t.me/CUBAN_MINER_BOT?start=ref_CM000001
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            navigator.clipboard?.writeText(
-              "https://t.me/CUBAN_MINER_BOT?start=ref_CM000001"
-            );
-          }}
-          className="mt-3 w-full rounded-xl bg-yellow-500 py-3 font-black text-black"
-        >
-          📋 COPIAR ENLACE
-        </button>
-
-      </div>
-
-    </div>
-  );
-}
-
-function BankScreen({
-  minerCoins,
-  setMinerCoins,
-}: {
-  minerCoins: number;
-  setMinerCoins: React.Dispatch<React.SetStateAction<number>>;
-}) {
-  return (
-    <div className="space-y-4">
-
-      <h2 className="text-2xl font-black">
-        🏦 BANCO
-      </h2>
-
-      <div className="rounded-3xl border border-yellow-500/20 bg-[#17120a] p-6">
-
-        <div className="text-sm text-white/50">
-          Miner Coins
-        </div>
-
-        <div className="mt-1 text-4xl font-black text-yellow-400">
-          🪙 {minerCoins.toLocaleString()}
-        </div>
-
-        <div className="mt-6 rounded-2xl bg-black/50 p-4 text-sm">
-
-          <div className="text-white/50">
-            Conversión de prueba
-          </div>
-
-          <div className="mt-1 font-black">
-            1 USDT = 500 Miner Coins
-          </div>
-
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            setMinerCoins((value) => value + 500);
-            alert("DEMO: se añadieron 500 Miner Coins.");
-          }}
-          className="mt-4 w-full rounded-xl bg-yellow-500 py-4 font-black text-black"
-        >
-          +1 USDT — DEMO
-        </button>
-
-        <button
-          type="button"
-          className="mt-3 w-full rounded-xl bg-white/10 py-4 font-bold"
-        >
-          RETIRAR — PRÓXIMAMENTE
-        </button>
-
-      </div>
-
-      <p className="text-center text-xs text-white/30">
-        Esta versión no procesa dinero real.
-      </p>
-
-    </div>
-  );
-}
-
-function MissionsScreen({
-  setMinerCoins,
-}: {
-  setMinerCoins: React.Dispatch<React.SetStateAction<number>>;
-}) {
-  const missions = [
-    "📺 Ver anuncio",
-    "⛏️ Minar 100 veces",
-    "👥 Invitar un jugador",
-    "🎁 Recompensa diaria",
-  ];
-
-  return (
-    <div className="space-y-4">
-
-      <h2 className="text-2xl font-black">
-        🎯 MISIONES
-      </h2>
-
-      {missions.map((mission) => (
-        <div
-          key={mission}
-          className="rounded-2xl border border-white/10 bg-white/5 p-4"
-        >
-
-          <div className="flex items-center justify-between">
-
-            <span className="font-bold">
-              {mission}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => {
-                setMinerCoins((value) => value + 25);
-              }}
-              className="rounded-xl bg-yellow-500 px-4 py-2 text-xs font-black text-black"
-            >
-              +25 MC
-            </button>
-
-          </div>
-
-        </div>
-      ))}
-
-      <p className="text-center text-xs text-white/30">
-        La publicidad real se conectará posteriormente.
-      </p>
-
-    </div>
-  );
-}
-
-function ProfileScreen({
-  minerCoins,
-  minerals,
-  level,
-}: {
-  minerCoins: number;
-  minerals: number;
-  level: number;
-}) {
-  return (
-    <div className="space-y-4">
-
-      <h2 className="text-2xl font-black">
-        👤 MI PERFIL
-      </h2>
-
-      <div className="rounded-3xl border border-white/10 bg-[#17120a] p-6">
-
-        <div className="text-center">
-
-          <div className="text-7xl">
-            👷
-          </div>
-
-          <h3 className="mt-3 text-2xl font-black">
-            Minero
-          </h3>
-
-        </div>
-
-        <div className="mt-6 space-y-3">
-
-          <Info
-            label="ID de jugador"
-            value="CM-000001"
-          />
-
-          <Info
-            label="Nivel"
-            value={level.toString()}
-          />
-
-          <Info
-            label="Miner Coins"
-            value={minerCoins.toLocaleString()}
-          />
-
-          <Info
-            label="Minerales"
-            value={minerals.toLocaleString()}
-          />
-
-          <Info
-            label="Ingresos"
-            value="0.00 USDT"
-          />
-
-          <Info
-            label="Retiros"
-            value="0.00 USDT"
-          />
-
+        <div className="text-sm font-black text-yellow-400">
+          {reward}
         </div>
 
       </div>
@@ -737,16 +664,16 @@ function Info({
   value: string;
 }) {
   return (
-    <div className="flex justify-between rounded-xl bg-black/40 p-3">
+    <div className="flex justify-between rounded-2xl bg-white/5 p-4">
 
-      <span className="text-sm text-white/50">
+      <span className="text-white/50">
         {label}
       </span>
 
-      <span className="font-bold">
+      <span className="font-black">
         {value}
       </span>
 
     </div>
   );
-          }
+                      }
