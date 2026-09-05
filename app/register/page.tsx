@@ -20,23 +20,25 @@ export default function RegisterPage() {
 
     if (clean.length < 3) {
       setError(
-        "El nombre debe tener al menos 3 caracteres."
+        "Usa al menos 3 caracteres."
       );
       return;
     }
 
     if (clean.length > 20) {
       setError(
-        "El nombre no puede superar 20 caracteres."
+        "Máximo 20 caracteres."
       );
       return;
     }
 
     if (
-      !/^[a-zA-Z0-9_]+$/.test(clean)
+      !/^[a-zA-Z0-9_]+$/.test(
+        clean
+      )
     ) {
       setError(
-        "Solo puedes utilizar letras, números y _."
+        "Solo letras, números y _."
       );
       return;
     }
@@ -71,11 +73,20 @@ export default function RegisterPage() {
       "100"
     );
 
+    localStorage.setItem(
+      "cuban_miner_player_id",
+      "CM-" +
+        Math.random()
+          .toString(36)
+          .substring(2, 8)
+          .toUpperCase()
+    );
+
     router.push("/tutorial");
   }
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-black text-white">
+    <main className="fixed inset-0 bg-black text-white">
 
       <div className="mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col justify-center px-6">
 
@@ -90,20 +101,20 @@ export default function RegisterPage() {
           </h1>
 
           <p className="mt-2 text-white/50">
-            Crea tu identidad de minero
+            Crea tu nombre de minero
           </p>
 
         </div>
 
         <div className="mt-8">
 
-          <label className="text-sm font-bold text-white/60">
+          <label className="text-xs font-black text-white/50">
             NOMBRE DE USUARIO
           </label>
 
-          <div className="mt-2 flex items-center rounded-2xl border border-white/10 bg-white/5 px-4">
+          <div className="mt-2 flex rounded-2xl border border-white/10 bg-white/5 px-4">
 
-            <span className="text-white/40">
+            <span className="flex items-center text-white/40">
               @
             </span>
 
@@ -117,22 +128,25 @@ export default function RegisterPage() {
                 setError("");
               }}
               onKeyDown={(event) => {
-                if (event.key === "Enter") {
+                if (
+                  event.key ===
+                  "Enter"
+                ) {
                   register();
                 }
               }}
               placeholder="tu_nombre"
               maxLength={20}
               autoComplete="off"
-              className="w-full bg-transparent px-2 py-4 outline-none"
+              className="w-full bg-transparent px-3 py-4 outline-none"
             />
 
           </div>
 
           {error && (
-            <p className="mt-2 text-sm text-red-400">
+            <div className="mt-2 text-sm text-red-400">
               {error}
-            </p>
+            </div>
           )}
 
           <button
@@ -149,4 +163,4 @@ export default function RegisterPage() {
 
     </main>
   );
-      }
+}
