@@ -72,55 +72,41 @@ const PICKAXES: Pickaxe[] = [
 
 export default function GamePage() {
   const [menu, setMenu] = useState<Menu>("mine");
-
   const [minerCoins, setMinerCoins] = useState(0);
-
   const [minerals, setMinerals] = useState(0);
-
   const [energy, setEnergy] = useState(100);
-
   const [level, setLevel] = useState(1);
-
   const [pickaxe, setPickaxe] = useState<Pickaxe | null>(null);
 
-  const mine = () => {
+  function mine() {
     if (energy <= 0) return;
 
     setMinerals((value) => value + 1);
-
     setMinerCoins((value) => value + 1);
-
     setEnergy((value) => Math.max(0, value - 1));
 
-    if (minerals > 0 && minerals % 100 === 0) {
+    if ((minerals + 1) % 100 === 0) {
       setLevel((value) => value + 1);
     }
-  };
+  }
 
-  const buyPickaxe = (item: Pickaxe) => {
+  function buyPickaxe(item: Pickaxe) {
     if (item.price > minerCoins) {
       alert("No tienes suficientes Miner Coins.");
       return;
     }
 
     setMinerCoins((value) => value - item.price);
-
     setPickaxe(item);
-  };
+  }
 
   return (
     <main className="fixed inset-0 bg-black text-white">
-
       <div className="mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col overflow-hidden">
-
-        {/* ================================
-            CABECERA
-        ================================= */}
 
         <header className="flex items-center justify-between border-b border-white/10 bg-[#0b0b0b] px-4 py-3">
 
           <div className="flex items-center gap-3">
-
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500 text-xl">
               👤
             </div>
@@ -134,26 +120,19 @@ export default function GamePage() {
                 {level}
               </div>
             </div>
-
           </div>
 
           <div className="text-right">
-
             <div className="text-xs text-white/50">
               MINER COINS
             </div>
 
             <div className="font-black text-yellow-400">
-              🪙 {minerCoins}
+              🪙 {minerCoins.toLocaleString()}
             </div>
-
           </div>
 
         </header>
-
-        {/* ================================
-            CONTENIDO
-        ================================= */}
 
         <section className="flex-1 overflow-y-auto px-4 py-4">
 
@@ -200,12 +179,7 @@ export default function GamePage() {
 
         </section>
 
-        {/* ================================
-            MENÚ
-        ================================= */}
-
         <nav className="border-t border-white/10 bg-[#0b0b0b] px-2 py-2">
-
           <div className="grid grid-cols-6 gap-1">
 
             <NavButton
@@ -251,18 +225,12 @@ export default function GamePage() {
             />
 
           </div>
-
         </nav>
 
       </div>
-
     </main>
   );
 }
-
-/* ==========================================
-   BOTÓN MENÚ
-========================================== */
 
 function NavButton({
   active,
@@ -285,9 +253,7 @@ function NavButton({
           : "bg-white/5 text-white/60"
       }`}
     >
-      <div className="text-lg">
-        {icon}
-      </div>
+      <div className="text-lg">{icon}</div>
 
       <div className="mt-1 text-[9px] font-bold">
         {text}
@@ -295,10 +261,6 @@ function NavButton({
     </button>
   );
 }
-
-/* ==========================================
-   MINA
-========================================== */
 
 function MineScreen({
   minerCoins,
@@ -343,7 +305,6 @@ function MineScreen({
       <div className="relative min-h-[430px] overflow-hidden rounded-3xl border border-yellow-500/20 bg-gradient-to-b from-[#3b260b] via-[#171008] to-[#080604]">
 
         <div className="absolute left-0 right-0 top-5 text-center">
-
           <div className="text-xs font-black tracking-[0.3em] text-yellow-400">
             MINA 1
           </div>
@@ -351,7 +312,6 @@ function MineScreen({
           <div className="mt-1 text-[10px] text-white/40">
             MINA INICIAL
           </div>
-
         </div>
 
         <div className="absolute left-0 right-0 top-[30%] text-center">
@@ -379,7 +339,8 @@ function MineScreen({
         <button
           type="button"
           onClick={mine}
-          className="absolute bottom-4 left-1/2 w-[80%] -translate-x-1/2 rounded-2xl bg-yellow-500 py-4 font-black text-black shadow-lg active:scale-95"
+          disabled={energy <= 0}
+          className="absolute bottom-4 left-1/2 w-[80%] -translate-x-1/2 rounded-2xl bg-yellow-500 py-4 font-black text-black shadow-lg active:scale-95 disabled:opacity-40"
         >
           ⛏️ TOCAR PARA MINAR
         </button>
@@ -404,9 +365,7 @@ function MineScreen({
 
           <div
             className="h-full bg-yellow-500 transition-all"
-            style={{
-              width: `${energy}%`,
-            }}
+            style={{ width: `${energy}%` }}
           />
 
         </div>
@@ -414,7 +373,9 @@ function MineScreen({
         <button
           type="button"
           onClick={() =>
-            setEnergy((value) => Math.min(100, value + 25))
+            setEnergy((value) =>
+              Math.min(100, value + 25)
+            )
           }
           className="mt-3 w-full rounded-xl bg-white/10 py-3 text-sm font-bold"
         >
@@ -426,10 +387,6 @@ function MineScreen({
     </div>
   );
 }
-
-/* ==========================================
-   ESTADÍSTICA
-========================================== */
 
 function Stat({
   icon,
@@ -459,10 +416,6 @@ function Stat({
   );
 }
 
-/* ==========================================
-   TIENDA
-========================================== */
-
 function ShopScreen({
   minerCoins,
   buyPickaxe,
@@ -479,12 +432,11 @@ function ShopScreen({
         </h2>
 
         <p className="text-sm text-white/50">
-          Herramientas y mejoras
+          Picos y herramientas
         </p>
       </div>
 
       {PICKAXES.map((item) => (
-
         <div
           key={item.id}
           className="rounded-3xl border border-white/10 bg-[#17120a] p-5"
@@ -535,20 +487,15 @@ function ShopScreen({
           </div>
 
         </div>
-
       ))}
 
       <div className="rounded-2xl bg-white/5 p-4 text-center text-xs text-white/40">
-        Saldo disponible: 🪙 {minerCoins.toLocaleString()} MC
+        Saldo: 🪙 {minerCoins.toLocaleString()} MC
       </div>
 
     </div>
   );
 }
-
-/* ==========================================
-   REFERIDOS
-========================================== */
 
 function FriendsScreen() {
   return (
@@ -578,6 +525,11 @@ function FriendsScreen() {
 
         <button
           type="button"
+          onClick={() => {
+            navigator.clipboard?.writeText(
+              "https://t.me/CUBAN_MINER_BOT?start=ref_CM000001"
+            );
+          }}
           className="mt-3 w-full rounded-xl bg-yellow-500 py-3 font-black text-black"
         >
           📋 COPIAR ENLACE
@@ -588,10 +540,6 @@ function FriendsScreen() {
     </div>
   );
 }
-
-/* ==========================================
-   BANCO
-========================================== */
 
 function BankScreen({
   minerCoins,
@@ -618,20 +566,22 @@ function BankScreen({
         </div>
 
         <div className="mt-6 rounded-2xl bg-black/50 p-4 text-sm">
+
           <div className="text-white/50">
-            1 USDT
+            Conversión de prueba
           </div>
 
           <div className="mt-1 font-black">
-            = 500 Miner Coins
+            1 USDT = 500 Miner Coins
           </div>
+
         </div>
 
         <button
           type="button"
           onClick={() => {
             setMinerCoins((value) => value + 500);
-            alert("Demo: +500 Miner Coins");
+            alert("DEMO: se añadieron 500 Miner Coins.");
           }}
           className="mt-4 w-full rounded-xl bg-yellow-500 py-4 font-black text-black"
         >
@@ -648,16 +598,12 @@ function BankScreen({
       </div>
 
       <p className="text-center text-xs text-white/30">
-        Esta versión es una demostración. No procesa USDT reales.
+        Esta versión no procesa dinero real.
       </p>
 
     </div>
   );
 }
-
-/* ==========================================
-   MISIONES
-========================================== */
 
 function MissionsScreen({
   setMinerCoins,
@@ -679,7 +625,6 @@ function MissionsScreen({
       </h2>
 
       {missions.map((mission) => (
-
         <div
           key={mission}
           className="rounded-2xl border border-white/10 bg-white/5 p-4"
@@ -704,21 +649,15 @@ function MissionsScreen({
           </div>
 
         </div>
-
       ))}
 
-      <p className="text-xs text-center text-white/30">
-        Las recompensas de publicidad serán conectadas
-        cuando integremos el proveedor de anuncios.
+      <p className="text-center text-xs text-white/30">
+        La publicidad real se conectará posteriormente.
       </p>
 
     </div>
   );
 }
-
-/* ==========================================
-   PERFIL
-========================================== */
 
 function ProfileScreen({
   minerCoins,
@@ -790,10 +729,6 @@ function ProfileScreen({
   );
 }
 
-/* ==========================================
-   INFO
-========================================== */
-
 function Info({
   label,
   value,
@@ -814,4 +749,4 @@ function Info({
 
     </div>
   );
-        }
+          }
