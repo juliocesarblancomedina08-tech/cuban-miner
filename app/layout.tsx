@@ -1,24 +1,15 @@
-import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "🇨🇺 CUBAN-MINER ⛏️",
-  description: "🇨🇺 CUBAN-MINER ⛏️ - Mini App de Telegram",
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
+  description: "CUBAN-MINER — Mine, build and grow.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="es">
       <body>{children}</body>
