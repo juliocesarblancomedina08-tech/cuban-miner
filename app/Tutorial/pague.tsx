@@ -5,34 +5,34 @@ import { useRouter } from "next/navigation";
 
 const STEPS = [
   {
-    miner: "👷",
-    title: "¡BIENVENIDO, MINERO!",
-    text: "Yo seré tu guía. Vamos a aprender cómo funciona CUBAN-MINER.",
+    icon: "👷",
+    title: "¡BIENVENIDO!",
+    text: "Soy tu guía. Te enseñaré cómo convertirte en un gran minero.",
   },
   {
-    miner: "👷⛏️",
-    title: "COMIENZA A MINAR",
-    text: "Toca MINAR para que tu minero extraiga minerales.",
+    icon: "👷⛏️",
+    title: "MINA",
+    text: "Toca el área de minería para que tu trabajador comience a extraer minerales.",
   },
   {
-    miner: "👷⚡",
-    title: "CUIDA TU ENERGÍA",
-    text: "Cada acción de minería consume energía. Más adelante podrás conseguir nuevas formas de aumentar tu producción.",
+    icon: "⚡",
+    title: "ENERGÍA",
+    text: "Cada acción consume energía. Tendrás que administrarla correctamente.",
   },
   {
-    miner: "👷🪙",
-    title: "CONSIGUE MINER COINS",
-    text: "Las Miner Coins serán la moneda principal de tu progreso dentro del juego.",
+    icon: "🪙",
+    title: "MINER COINS",
+    text: "Las Miner Coins serán la moneda utilizada para progresar dentro del juego.",
   },
   {
-    miner: "👷🛒",
-    title: "MEJORA TU PICO",
-    text: "Visita la tienda para conseguir mejores picos y aumentar tu producción.",
+    icon: "🛒",
+    title: "TIENDA",
+    text: "En la tienda podrás conseguir nuevos picos y herramientas.",
   },
   {
-    miner: "👷🏆",
-    title: "¡ESTÁS LISTO!",
-    text: "Ya conoces lo básico. Entra a la mina y comienza tu aventura.",
+    icon: "🚀",
+    title: "¡LISTO!",
+    text: "Ya conoces lo básico. Ahora entra en la mina y comienza.",
   },
 ];
 
@@ -47,7 +47,7 @@ export default function TutorialPage() {
 
   function next() {
     if (
-      step >=
+      step ===
       STEPS.length - 1
     ) {
       localStorage.setItem(
@@ -66,17 +66,17 @@ export default function TutorialPage() {
   }
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-black text-white">
+    <main className="fixed inset-0 bg-black text-white">
 
       <div className="mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col">
 
-        <div className="flex justify-center gap-2 px-5 pt-8">
+        <div className="flex justify-center gap-2 px-5 pt-7">
 
           {STEPS.map(
             (_, index) => (
               <div
                 key={index}
-                className={`h-2 w-8 rounded-full transition-all ${
+                className={`h-1.5 flex-1 rounded-full ${
                   index <= step
                     ? "bg-yellow-500"
                     : "bg-white/10"
@@ -87,20 +87,20 @@ export default function TutorialPage() {
 
         </div>
 
-        <div className="flex flex-1 items-center justify-center px-5">
+        <div className="flex flex-1 items-center px-5">
 
           <div
             key={step}
             className="w-full text-center"
           >
 
-            <div className="text-8xl">
-              {current.miner}
+            <div className="miner-talk text-8xl">
+              {current.icon}
             </div>
 
-            <div className="mt-8 rounded-3xl border border-yellow-500/20 bg-[#17120a] p-6 text-left shadow-2xl">
+            <div className="mt-10 rounded-[28px] border border-yellow-500/20 bg-[#17120a] p-6 text-left">
 
-              <div className="text-xs font-black tracking-widest text-yellow-400">
+              <div className="text-xs font-black text-yellow-400">
                 CUBAN-MINER
               </div>
 
@@ -118,12 +118,12 @@ export default function TutorialPage() {
 
         </div>
 
-        <div className="px-5 pb-8">
+        <div className="px-5 pb-7">
 
           <button
             type="button"
             onClick={next}
-            className="w-full rounded-2xl bg-yellow-500 py-5 text-lg font-black text-black active:scale-95"
+            className="w-full rounded-2xl bg-yellow-500 py-5 font-black text-black active:scale-95"
           >
             {step ===
             STEPS.length - 1
