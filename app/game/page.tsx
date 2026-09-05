@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 type Tab =
   | "mine"
@@ -16,8 +15,9 @@ type Pickaxe = {
   name: string;
   icon: string;
   price: number;
-  days: number;
+  durability: number;
   production: number;
+  description: string;
 };
 
 const PICKAXES: Pickaxe[] = [
@@ -26,90 +26,242 @@ const PICKAXES: Pickaxe[] = [
     name: "Pico de madera",
     icon: "🪵",
     price: 0,
-    days: 21,
+    durability: 21,
     production: 350,
+    description: "Pico inicial para comenzar a minar.",
   },
   {
     id: "stone",
     name: "Pico de piedra",
     icon: "🪨",
     price: 500,
-    days: 17,
+    durability: 17,
     production: 600,
+    description: "Una mejora económica para nuevos mineros.",
   },
   {
     id: "iron",
     name: "Pico de hierro",
     icon: "⚙️",
     price: 1500,
-    days: 15,
+    durability: 15,
     production: 1770,
+    description: "Mayor producción y mejor rendimiento.",
   },
   {
     id: "gold",
     name: "Pico de oro",
     icon: "🥇",
     price: 3500,
-    days: 13,
+    durability: 13,
     production: 4025,
+    description: "Un pico avanzado para mineros activos.",
   },
   {
     id: "emerald",
     name: "Pico de esmeralda",
     icon: "💚",
     price: 7500,
-    days: 10,
+    durability: 10,
     production: 8400,
+    description: "Gran velocidad y producción.",
   },
   {
     id: "diamond",
     name: "Pico de diamante",
     icon: "💎",
     price: 15000,
-    days: 7,
+    durability: 7,
     production: 16500,
+    description: "El pico más poderoso de la mina.",
   },
 ];
 
 export default function GamePage() {
   const [tab, setTab] = useState<Tab>("mine");
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const [username, setUsername] =
+    useState("Nuevo Minero");
+
   const [coins, setCoins] = useState(0);
+
   const [minerals, setMinerals] = useState(0);
 
   const [energy, setEnergy] = useState(100);
-  const [maxEnergy] = useState(100);
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [maxEnergy] = useState(100);
 
   const [selectedPickaxe, setSelectedPickaxe] =
     useState<string | null>(null);
 
-  const [playerName] = useState("Nuevo Minero");
+  const [ownedPickaxe, setOwnedPickaxe] =
+    useState<string | null>(null);
 
-  const mine = () => {
-    if (energy <= 0) return;
+  const [miningCount, setMiningCount] =
+    useState(0);
 
-    setCoins((value) => value + 1);
+  const [missionReward, setMissionReward] =
+    useState(false);
 
-    setMinerals((value) => value + 1);
-
-    setEnergy((value) =>
-      Math.max(0, value - 1)
-    );
-  };
-
-  const rechargeDemo = () => {
-    setEnergy(maxEnergy);
-  };
+  const currentPickaxe = useMemo(
+    () =>
+      PICKAXES.find(
+        (pickaxe) => pickaxe.id === ownedPickaxe
+      ) ?? null,
+    [ownedPickaxe]
+  );
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
+
+    const savedUsername =
+      localStorage.getItem(
+        "cuban_miner_username"
+      );
+
+    if (savedUsername) {
+      setUsername(`@${savedUsername}`);
+    }
+
+    const savedCoins =
+      localStorage.getItem(
+        "cuban_miner_coins"
+      );
+
+    const savedMinerals =
+      localStorage.getItem(
+        "cuban_miner_minerals"
+      );
+
+    const savedEnergy =
+      localStorage.getItem(
+        "cuban_miner_energy"
+      );
+
+    const savedPickaxe =
+      localStorage.getItem(
+        "cuban_miner_pickaxe"
+      );
+
+    if (savedCoins) {
+      setCoins(Number(savedCoins));
+    }
+
+    if (savedMinerals) {
+      setMinerals(Number(savedMinerals));
+    }
+
+    if (savedEnergy) {
+      setEnergy(Number(savedEnergy));
+    }
+
+    if (savedPickaxe) {
+      setOwnedPickaxe(savedPickaxe);
+    }
 
     return () => {
       document.body.style.overflow = "";
     };
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "cuban_miner_coins",
+      String(coins)
+    );
+
+    localStorage.setItem(
+      "cuban_miner_minerals",
+      String(minerals)
+    );
+
+    localStorage.setItem(
+      "cuban_miner_energy",
+      String(energy)
+    );
+
+    if (ownedPickaxe) {
+      localStorage.setItem(
+        "cuban_miner_pickaxe",
+        ownedPickaxe
+      );
+    }
+  }, [
+    coins,
+    minerals,
+    energy,
+    ownedPickaxe,
+  ]);
+
+  function mine() {
+    if (energy <= 0) {
+      return;
+    }
+
+    setMinerals(
+      (value) => value + 1
+    );
+
+    setCoins(
+      (value) => value + 1
+    );
+
+    setEnergy(
+      (value) =>
+        Math.max(0, value - 1)
+    );
+
+    setMiningCount(
+      (value) => value + 1
+    );
+  }
+
+  function rechargeEnergy() {
+    setEnergy(maxEnergy);
+  }
+
+  function selectPickaxe(
+    pickaxe: Pickaxe
+  ) {
+    if (pickaxe.price === 0) {
+      setOwnedPickaxe(pickaxe.id);
+      setSelectedPickaxe(pickaxe.id);
+      return;
+    }
+
+    if (coins < pickaxe.price) {
+      setSelectedPickaxe(pickaxe.id);
+      return;
+    }
+
+    setCoins(
+      (value) =>
+        value - pickaxe.price
+    );
+
+    setOwnedPickaxe(pickaxe.id);
+    setSelectedPickaxe(pickaxe.id);
+  }
+
+  function openTab(nextTab: Tab) {
+    setTab(nextTab);
+    setMenuOpen(false);
+  }
+
+  function claimMission() {
+    if (
+      miningCount >= 10 &&
+      !missionReward
+    ) {
+      setCoins(
+        (value) => value + 10
+      );
+
+      setMissionReward(true);
+    }
+  }
 
   return (
     <main className="fixed inset-0 overflow-hidden bg-black text-white">
@@ -118,75 +270,98 @@ export default function GamePage() {
 
         {/* FONDO */}
 
-        <div className="absolute inset-0 bg-gradient-to-b from-[#181008] via-[#090909] to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#241508] via-[#0c0a07] to-black" />
 
         {/* CABECERA */}
 
-        <div className="absolute left-3 right-3 top-3 z-20 flex items-center justify-between">
+        <header className="absolute left-3 right-3 top-3 z-30 flex items-center justify-between">
 
           <button
             type="button"
-            onClick={() => setTab("profile")}
-            className="flex items-center gap-2 rounded-2xl bg-black/60 px-3 py-2 backdrop-blur"
+            onClick={() =>
+              openTab("profile")
+            }
+            className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/75 px-3 py-2 backdrop-blur"
           >
-            <span className="text-2xl">
+
+            <div className="text-2xl">
               👷
-            </span>
+            </div>
 
             <div className="text-left">
 
-              <div className="text-xs text-white/50">
+              <div className="text-[10px] font-bold text-yellow-400">
                 NIVEL 1
               </div>
 
-              <div className="text-sm font-black">
-                {playerName}
+              <div className="max-w-[120px] truncate text-sm font-black">
+                {username}
               </div>
 
             </div>
+
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
 
-            <div className="rounded-2xl bg-black/70 px-3 py-2 text-sm font-black">
+            <div className="rounded-2xl border border-yellow-500/20 bg-black/80 px-3 py-2 font-black">
               🪙 {coins.toLocaleString()}
             </div>
 
             <button
               type="button"
-              onClick={() => setTab("bank")}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500 text-xl font-black text-black"
+              onClick={() =>
+                openTab("bank")
+              }
+              aria-label="Banco"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500 text-2xl font-black text-black shadow-lg active:scale-90"
             >
               +
             </button>
 
           </div>
 
-        </div>
+        </header>
 
-        {/* MINA */}
+        {/* MINAS */}
 
         {tab === "mine" && (
           <section className="absolute inset-0">
 
-            <div className="absolute left-[8%] right-[8%] top-[17%] rounded-3xl border border-yellow-500/10 bg-[#120e09] p-4">
+            {/* ESTADÍSTICAS */}
 
-              <div className="flex justify-between text-xs">
+            <div className="absolute left-4 right-4 top-[15%] rounded-3xl border border-yellow-500/10 bg-black/60 p-4 backdrop-blur">
 
-                <span className="text-white/50">
-                  MINERALES
-                </span>
+              <div className="flex justify-between">
 
-                <span className="font-black">
-                  ⛏️ {minerals}
-                </span>
+                <div>
+                  <div className="text-[10px] text-white/40">
+                    MINERALES RECIBIDOS
+                  </div>
+
+                  <div className="mt-1 text-xl font-black">
+                    ⛏️ {minerals}
+                  </div>
+                </div>
+
+                <div className="text-right">
+
+                  <div className="text-[10px] text-white/40">
+                    ENERGÍA
+                  </div>
+
+                  <div className="mt-1 text-xl font-black">
+                    ⚡ {energy}
+                  </div>
+
+                </div>
 
               </div>
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-black">
 
                 <div
-                  className="h-full bg-yellow-500 transition-all"
+                  className="h-full bg-yellow-500 transition-all duration-300"
                   style={{
                     width: `${energy}%`,
                   }}
@@ -194,45 +369,41 @@ export default function GamePage() {
 
               </div>
 
-              <div className="mt-1 text-right text-[10px] text-white/40">
-                Energía {energy}/{maxEnergy}
-              </div>
-
             </div>
 
             {/* ELEVADOR */}
 
-            <div className="absolute left-[7%] top-[32%] text-7xl">
-              🛗
+            <div className="absolute left-[5%] top-[35%] text-center">
+
+              <div className="text-7xl">
+                🛗
+              </div>
+
+              <div className="mt-1 text-[10px] font-black text-white/50">
+                ELEVADOR
+              </div>
+
             </div>
 
             {/* MINERO */}
 
-            <div className="absolute left-1/2 top-[40%] -translate-x-1/2 text-center">
+            <div className="absolute left-1/2 top-[37%] -translate-x-1/2 text-center">
 
-              <div className="text-8xl">
+              <div className="text-8xl transition-transform duration-150 active:scale-90">
                 👷
               </div>
 
               <div className="mt-2 text-xs font-black text-yellow-400">
-                MINERO NIVEL 1
+                {currentPickaxe
+                  ? currentPickaxe.name
+                  : "SIN PICO"}
               </div>
 
               <button
                 type="button"
                 onClick={mine}
                 disabled={energy <= 0}
-                className="
-                  mt-5
-                  rounded-2xl
-                  bg-yellow-500
-                  px-10
-                  py-4
-                  font-black
-                  text-black
-                  shadow-lg
-                  active:scale-95
-                "
+                className="mt-5 rounded-2xl bg-yellow-500 px-10 py-4 font-black text-black shadow-xl active:scale-95 disabled:opacity-40"
               >
                 ⛏️ MINAR
               </button>
@@ -241,7 +412,7 @@ export default function GamePage() {
 
             {/* ALMACÉN */}
 
-            <div className="absolute bottom-[18%] right-[7%] text-center">
+            <div className="absolute bottom-[20%] right-[6%] text-center">
 
               <div className="text-7xl">
                 🏭
@@ -252,89 +423,119 @@ export default function GamePage() {
               </div>
 
               <div className="text-xs text-yellow-400">
-                {minerals} mineral
+                {minerals} minerales
               </div>
 
             </div>
 
+            {/* ENERGÍA */}
+
             <button
               type="button"
-              onClick={rechargeDemo}
-              className="absolute bottom-[17%] left-[7%] rounded-2xl bg-white/10 px-4 py-3 text-xs font-black"
+              onClick={rechargeEnergy}
+              className="absolute bottom-[20%] left-[6%] rounded-2xl border border-yellow-500/20 bg-black/70 px-4 py-3 text-xs font-black"
             >
               ⚡ ENERGÍA
             </button>
 
+            {/* PICO ACTUAL */}
+
+            {currentPickaxe && (
+              <div className="absolute bottom-[31%] left-1/2 -translate-x-1/2 rounded-2xl bg-black/70 px-4 py-2 text-center text-xs">
+
+                <div className="text-white/50">
+                  PICO ACTUAL
+                </div>
+
+                <div className="font-black text-yellow-400">
+                  {currentPickaxe.icon}{" "}
+                  {currentPickaxe.name}
+                </div>
+
+                <div className="text-white/40">
+                  {currentPickaxe.durability} días
+                </div>
+
+              </div>
+            )}
+
           </section>
         )}
 
-        {/* CONTENIDO DE TIENDA */}
+        {/* TIENDA */}
 
         {tab === "shop" && (
-          <section className="absolute inset-0 overflow-y-auto px-4 pb-32 pt-24">
+          <section className="absolute inset-0 overflow-y-auto px-4 pb-28 pt-24">
 
             <h1 className="text-3xl font-black">
               🛒 TIENDA
             </h1>
 
             <p className="mt-1 text-sm text-white/50">
-              Picos de minería
+              Compra herramientas para mejorar tu mina.
             </p>
 
             <div className="mt-5 space-y-3">
 
-              {PICKAXES.map((pickaxe) => (
+              {PICKAXES.map(
+                (pickaxe) => (
+                  <div
+                    key={pickaxe.id}
+                    className={`rounded-3xl border p-4 ${
+                      ownedPickaxe ===
+                      pickaxe.id
+                        ? "border-yellow-500 bg-yellow-500/10"
+                        : "border-white/10 bg-white/5"
+                    }`}
+                  >
 
-                <button
-                  key={pickaxe.id}
-                  type="button"
-                  onClick={() =>
-                    setSelectedPickaxe(pickaxe.id)
-                  }
-                  className={`w-full rounded-3xl border p-4 text-left ${
-                    selectedPickaxe === pickaxe.id
-                      ? "border-yellow-500 bg-yellow-500/10"
-                      : "border-white/10 bg-white/5"
-                  }`}
-                >
+                    <div className="flex items-center gap-3">
 
-                  <div className="flex items-center gap-4">
-
-                    <div className="text-5xl">
-                      {pickaxe.icon}
-                    </div>
-
-                    <div className="flex-1">
-
-                      <div className="font-black">
-                        {pickaxe.name}
+                      <div className="text-5xl">
+                        {pickaxe.icon}
                       </div>
 
-                      <div className="mt-1 text-xs text-white/50">
-                        Duración: {pickaxe.days} días
-                      </div>
+                      <div className="flex-1">
 
-                      <div className="text-xs text-white/50">
-                        Producción: {pickaxe.production} MC
-                      </div>
+                        <div className="font-black">
+                          {pickaxe.name}
+                        </div>
 
-                    </div>
+                        <div className="mt-1 text-xs text-white/50">
+                          {pickaxe.description}
+                        </div>
 
-                    <div className="text-right">
+                        <div className="mt-2 flex gap-3 text-[11px] text-white/50">
+                          <span>
+                            ⏳ {pickaxe.durability} días
+                          </span>
 
-                      <div className="font-black text-yellow-400">
-                        {pickaxe.price === 0
-                          ? "GRATIS"
-                          : `${pickaxe.price} MC`}
+                          <span>
+                            🪙 {pickaxe.production} MC
+                          </span>
+                        </div>
+
                       </div>
 
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        selectPickaxe(
+                          pickaxe
+                        )
+                      }
+                      className="mt-4 w-full rounded-2xl bg-yellow-500 py-3 font-black text-black active:scale-95"
+                    >
+                      {pickaxe.price === 0
+                        ? "EQUIPAR GRATIS"
+                        : `COMPRAR · ${pickaxe.price.toLocaleString()} MC`}
+                    </button>
 
                   </div>
-
-                </button>
-
-              ))}
+                )
+              )}
 
             </div>
 
@@ -344,41 +545,59 @@ export default function GamePage() {
         {/* REFERIDOS */}
 
         {tab === "friends" && (
-          <section className="absolute inset-0 px-5 pt-24">
+          <section className="absolute inset-0 overflow-y-auto px-5 pb-28 pt-24">
 
             <h1 className="text-3xl font-black">
               👥 REFERIDOS
             </h1>
 
-            <div className="mt-6 rounded-3xl bg-white/5 p-6 text-center">
+            <p className="mt-2 text-sm text-white/50">
+              Invita jugadores y consigue recompensas.
+            </p>
 
-              <div className="text-7xl">
+            <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-5">
+
+              <div className="text-center text-7xl">
                 👥
               </div>
 
-              <h2 className="mt-4 text-xl font-black">
-                INVITA AMIGOS
-              </h2>
+              <div className="mt-4 text-center">
 
-              <p className="mt-2 text-sm text-white/50">
-                Invita jugadores para conseguir recompensas.
-              </p>
+                <div className="text-xl font-black">
+                  TU ENLACE
+                </div>
 
-              <div className="mt-5 rounded-2xl bg-black p-4 text-xs text-white/50">
-                https://t.me/CUBAN_MINER_BOT?start=ref_CM000001
+                <div className="mt-4 break-all rounded-2xl bg-black p-4 text-xs text-white/50">
+                  https://t.me/CUBAN_MINER_BOT?start=ref_CM000001
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(
+                      "https://t.me/CUBAN_MINER_BOT?start=ref_CM000001"
+                    );
+                  }}
+                  className="mt-4 w-full rounded-2xl bg-yellow-500 py-4 font-black text-black"
+                >
+                  📋 COPIAR ENLACE
+                </button>
+
               </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigator.clipboard?.writeText(
-                    "https://t.me/CUBAN_MINER_BOT?start=ref_CM000001"
-                  )
-                }
-                className="mt-4 w-full rounded-2xl bg-yellow-500 py-4 font-black text-black"
-              >
-                📋 COPIAR ENLACE
-              </button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+
+              <Stat
+                title="INVITADOS"
+                value="0"
+              />
+
+              <Stat
+                title="RECOMPENSAS"
+                value="0 MC"
+              />
 
             </div>
 
@@ -388,49 +607,45 @@ export default function GamePage() {
         {/* BANCO */}
 
         {tab === "bank" && (
-          <section className="absolute inset-0 px-5 pt-24">
+          <section className="absolute inset-0 overflow-y-auto px-5 pb-28 pt-24">
 
             <h1 className="text-3xl font-black">
               🏦 BANCO
             </h1>
 
-            <div className="mt-6 rounded-3xl bg-white/5 p-6">
+            <p className="mt-2 text-sm text-white/50">
+              Sistema financiero de CUBAN-MINER.
+            </p>
 
-              <div className="text-sm text-white/50">
-                Saldo disponible
+            <div className="mt-6 rounded-3xl border border-yellow-500/20 bg-yellow-500/5 p-6">
+
+              <div className="text-xs text-white/40">
+                SALDO
               </div>
 
               <div className="mt-2 text-4xl font-black text-yellow-400">
                 0.00 USDT
               </div>
 
-              <div className="mt-6 rounded-2xl bg-black p-4">
-
-                <div className="text-xs text-white/50">
-                  SISTEMA DEMO
-                </div>
-
-                <div className="mt-2 font-black">
-                  1 USDT = 500 Miner Coins
-                </div>
-
+              <div className="mt-4 text-xs text-white/40">
+                Esta sección todavía funciona en modo demostración.
               </div>
 
-              <button
-                type="button"
-                className="mt-5 w-full rounded-2xl bg-yellow-500 py-4 font-black text-black"
-              >
-                💰 DEPOSITAR
-              </button>
-
-              <button
-                type="button"
-                className="mt-3 w-full rounded-2xl bg-white/10 py-4 font-black"
-              >
-                💸 RETIRAR
-              </button>
-
             </div>
+
+            <button
+              type="button"
+              className="mt-4 w-full rounded-2xl bg-yellow-500 py-4 font-black text-black"
+            >
+              💰 DEPOSITAR
+            </button>
+
+            <button
+              type="button"
+              className="mt-3 w-full rounded-2xl bg-white/10 py-4 font-black"
+            >
+              💸 RETIRAR
+            </button>
 
           </section>
         )}
@@ -438,39 +653,62 @@ export default function GamePage() {
         {/* MISIONES */}
 
         {tab === "missions" && (
-          <section className="absolute inset-0 px-5 pt-24">
+          <section className="absolute inset-0 overflow-y-auto px-5 pb-28 pt-24">
 
             <h1 className="text-3xl font-black">
               🎯 MISIONES
             </h1>
 
-            <div className="mt-5 space-y-3">
+            <p className="mt-2 text-sm text-white/50">
+              Completa actividades para conseguir recompensas.
+            </p>
+
+            <div className="mt-6 space-y-3">
 
               <Mission
                 title="⛏️ Primer minero"
-                description="Realiza tu primera acción."
+                description="Realiza tu primera acción de minería."
                 reward="+10 MC"
+                completed={
+                  miningCount >= 1
+                }
               />
 
               <Mission
                 title="⛏️ Minero activo"
-                description="Mina 100 veces."
-                reward="+50 MC"
-              />
-
-              <Mission
-                title="👥 Reclutador"
-                description="Invita un jugador."
-                reward="+100 MC"
+                description="Realiza 10 acciones de minería."
+                reward="+10 MC"
+                completed={
+                  miningCount >= 10
+                }
               />
 
               <Mission
                 title="📺 Publicidad"
-                description="Mira un anuncio."
+                description="Mira un anuncio cuando el sistema esté conectado."
                 reward="+25 MC"
+                completed={false}
+              />
+
+              <Mission
+                title="👥 Reclutador"
+                description="Invita a tu primer jugador."
+                reward="+100 MC"
+                completed={false}
               />
 
             </div>
+
+            {miningCount >= 10 &&
+              !missionReward && (
+                <button
+                  type="button"
+                  onClick={claimMission}
+                  className="mt-5 w-full rounded-2xl bg-yellow-500 py-4 font-black text-black"
+                >
+                  🏆 COBRAR RECOMPENSA
+                </button>
+              )}
 
           </section>
         )}
@@ -478,202 +716,115 @@ export default function GamePage() {
         {/* PERFIL */}
 
         {tab === "profile" && (
-          <section className="absolute inset-0 px-5 pt-24">
+          <section className="absolute inset-0 overflow-y-auto px-5 pb-28 pt-24">
 
             <div className="text-center">
 
-              <div className="text-7xl">
+              <div className="text-8xl">
                 👷
               </div>
 
               <h1 className="mt-3 text-3xl font-black">
-                PERFIL
+                {username}
               </h1>
+
+              <div className="mt-1 text-sm text-yellow-400">
+                NIVEL 1
+              </div>
 
             </div>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-7 space-y-3">
 
-              <Info label="ID de jugador" value="CM-000001" />
-              <Info label="Usuario" value="@minero" />
-              <Info label="Nivel" value="1" />
-              <Info label="Miner Coins" value={coins.toString()} />
-              <Info label="Minerales" value={minerals.toString()} />
-              <Info label="Ingresos" value="0.00 USDT" />
-              <Info label="Retiros" value="0.00 USDT" />
+              <Info
+                label="ID DE JUGADOR"
+                value="CM-000001"
+              />
+
+              <Info
+                label="NOMBRE DE USUARIO"
+                value={username}
+              />
+
+              <Info
+                label="MINER COINS"
+                value={coins.toLocaleString()}
+              />
+
+              <Info
+                label="MINERALES"
+                value={minerals.toLocaleString()}
+              />
+
+              <Info
+                label="NIVEL"
+                value="1"
+              />
+
+              <Info
+                label="INGRESOS"
+                value="0.00 USDT"
+              />
+
+              <Info
+                label="RETIROS"
+                value="0.00 USDT"
+              />
 
             </div>
 
           </section>
         )}
 
-        {/* MENÚ INFERIOR */}
+        {/* MENÚ */}
 
-        <div className="absolute bottom-3 left-3 right-3 z-30">
+        <div className="absolute bottom-3 left-3 right-3 z-40">
 
           {menuOpen && (
             <div className="mb-3 grid grid-cols-3 gap-2 rounded-3xl border border-white/10 bg-black/95 p-3 shadow-2xl">
 
               <MenuButton
                 icon="⛏️"
-                text="Minas"
-                onClick={() => {
-                  setTab("mine");
-                  setMenuOpen(false);
-                }}
+                text="MINAS"
+                onClick={() =>
+                  openTab("mine")
+                }
               />
 
               <MenuButton
                 icon="🛒"
-                text="Tienda"
-                onClick={() => {
-                  setTab("shop");
-                  setMenuOpen(false);
-                }}
+                text="TIENDA"
+                onClick={() =>
+                  openTab("shop")
+                }
               />
 
               <MenuButton
                 icon="👥"
-                text="Referidos"
-                onClick={() => {
-                  setTab("friends");
-                  setMenuOpen(false);
-                }}
+                text="REFERIDOS"
+                onClick={() =>
+                  openTab("friends")
+                }
               />
 
               <MenuButton
                 icon="🏦"
-                text="Banco"
-                onClick={() => {
-                  setTab("bank");
-                  setMenuOpen(false);
-                }}
+                text="BANCO"
+                onClick={() =>
+                  openTab("bank")
+                }
               />
 
               <MenuButton
                 icon="🎯"
-                text="Misiones"
-                onClick={() => {
-                  setTab("missions");
-                  setMenuOpen(false);
-                }}
+                text="MISIONES"
+                onClick={() =>
+                  openTab("missions")
+                }
               />
 
               <MenuButton
                 icon="👤"
-                text="Perfil"
-                onClick={() => {
-                  setTab("profile");
-                  setMenuOpen(false);
-                }}
-              />
-
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setMenuOpen((value) => !value)}
-            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-black/90 py-4 font-black backdrop-blur"
-          >
-            <span className="text-2xl">
-              ☰
-            </span>
-
-            <span>
-              MENÚ
-            </span>
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </main>
-  );
-}
-
-function MenuButton({
-  icon,
-  text,
-  onClick,
-}: {
-  icon: string;
-  text: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-2xl bg-white/5 p-4 text-center active:scale-95"
-    >
-      <div className="text-2xl">
-        {icon}
-      </div>
-
-      <div className="mt-1 text-xs font-black">
-        {text}
-      </div>
-    </button>
-  );
-}
-
-function Mission({
-  title,
-  description,
-  reward,
-}: {
-  title: string;
-  description: string;
-  reward: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-
-      <div className="flex items-center justify-between gap-3">
-
-        <div>
-
-          <div className="font-black">
-            {title}
-          </div>
-
-          <div className="mt-1 text-xs text-white/50">
-            {description}
-          </div>
-
-        </div>
-
-        <div className="text-sm font-black text-yellow-400">
-          {reward}
-        </div>
-
-      </div>
-
-    </div>
-  );
-}
-
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex justify-between rounded-2xl bg-white/5 p-4">
-
-      <span className="text-white/50">
-        {label}
-      </span>
-
-      <span className="font-black">
-        {value}
-      </span>
-
-    </div>
-  );
-                      }
+                text="PERFIL"
+                onClick={() =>
+                  openTab("profile"
