@@ -1,31 +1,37 @@
 import { NextResponse } from "next/server";
 
-import { createPlayer } from "../../../lib/game";
+import {
+  createPlayer,
+} from "../../../lib/game";
 
-export async function POST(request: Request) {
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    message:
+      "Player API funcionando",
+  });
+}
+
+export async function POST(
+  request: Request
+) {
   try {
-    const body = await request.json();
+    const body =
+      await request.json();
 
-    const telegramId = String(body.telegramId || "").trim();
-    const username = String(body.username || "").trim();
-
-    if (!telegramId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "telegramId requerido",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
+    const username =
+      String(
+        body.username ?? ""
+      )
+        .trim()
+        .replace(/^@/, "");
 
     if (!username) {
       return NextResponse.json(
         {
-          success: false,
-          error: "username requerido",
+          ok: false,
+          error:
+            "Nombre obligatorio.",
         },
         {
           status: 400,
@@ -33,23 +39,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const player = createPlayer(
-      telegramId,
-      username
-    );
+    const player =
+      createPlayer(username);
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       player,
     });
   } catch {
     return NextResponse.json(
       {
-        success: false,
-        error: "Solicitud inválida",
+        ok: false,
+        error:
+          "Error creando jugador.",
       },
       {
-        status: 400,
+        status: 500,
       }
     );
   }
