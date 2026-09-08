@@ -138,6 +138,7 @@ export default function ShopPage() {
           <h1>🛒 TIENDA</h1>
 
           <div className="header-space" />
+
         </div>
 
         {/* =========================
@@ -220,13 +221,9 @@ export default function ShopPage() {
 
                   <div className="pickaxe-top">
 
-                    {/* ICONO */}
-
                     <div className="pickaxe-display">
                       <PickaxeIcon type={pickaxe.id} />
                     </div>
-
-                    {/* INFORMACIÓN */}
 
                     <div className="pickaxe-info">
 
@@ -254,8 +251,6 @@ export default function ShopPage() {
 
                   </div>
 
-                  {/* PROPIEDADES */}
-
                   <div className="stat-bars">
 
                     <div className="stat-row">
@@ -265,6 +260,7 @@ export default function ShopPage() {
                       </div>
 
                       <div className="bar">
+
                         <span
                           style={{
                             width: `${Math.min(
@@ -273,6 +269,7 @@ export default function ShopPage() {
                             )}%`,
                           }}
                         />
+
                       </div>
 
                     </div>
@@ -284,6 +281,7 @@ export default function ShopPage() {
                       </div>
 
                       <div className="bar">
+
                         <span
                           style={{
                             width: `${Math.min(
@@ -292,13 +290,12 @@ export default function ShopPage() {
                             )}%`,
                           }}
                         />
+
                       </div>
 
                     </div>
 
                   </div>
-
-                  {/* COMPRA */}
 
                   <div className="pickaxe-bottom">
 
@@ -338,7 +335,7 @@ export default function ShopPage() {
           </section>
         )}
 
-        {/* =========================
+                {/* =========================
             JEFES MINEROS
         ========================= */}
 
@@ -512,7 +509,7 @@ export default function ShopPage() {
 
       </div>
 
-      {/* =========================
+            {/* =========================
           ESTILOS
       ========================= */}
 
@@ -523,8 +520,11 @@ export default function ShopPage() {
         }
 
         .shop-page {
-          min-height: 100dvh;
           width: 100%;
+          height: 100dvh;
+          overflow-y: auto;
+          overflow-x: hidden;
+
           background:
             radial-gradient(
               circle at 50% -10%,
@@ -532,15 +532,23 @@ export default function ShopPage() {
               #090909 38%,
               #000000 100%
             );
+
           color: white;
+
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: contain;
         }
 
         .shop-container {
           width: 100%;
           max-width: 480px;
-          min-height: 100dvh;
+          min-height: 100%;
           margin: 0 auto;
-          padding: 20px 16px 35px;
+
+          padding:
+            20px
+            16px
+            50px;
         }
 
         /* =========================
@@ -555,21 +563,34 @@ export default function ShopPage() {
 
         .shop-header h1 {
           margin: 0;
+
           font-size: 25px;
           font-weight: 1000;
+
           letter-spacing: -0.5px;
+
           color: #ffd21f;
+
           text-shadow:
-            0 0 12px rgba(255, 210, 31, 0.25);
+            0 0 12px
+            rgba(255, 210, 31, 0.25);
         }
 
         .back-button {
           width: 44px;
           height: 40px;
+
           border-radius: 13px;
-          border: 1px solid rgba(255, 210, 31, 0.25);
-          background: rgba(255, 210, 31, 0.08);
+
+          border:
+            1px solid
+            rgba(255, 210, 31, 0.25);
+
+          background:
+            rgba(255, 210, 31, 0.08);
+
           color: #ffd21f;
+
           font-size: 25px;
           font-weight: 900;
         }
@@ -579,37 +600,54 @@ export default function ShopPage() {
         }
 
         /* =========================
-           COINS
+           SALDO
         ========================= */
 
         .coin-card {
           margin-top: 18px;
+
           padding: 15px;
+
           border-radius: 20px;
-          border: 1px solid rgba(255, 210, 31, 0.25);
+
+          border:
+            1px solid
+            rgba(255, 210, 31, 0.25);
+
           background:
             linear-gradient(
               135deg,
               rgba(255, 200, 0, 0.13),
               rgba(255, 200, 0, 0.03)
             );
+
           text-align: center;
+
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.05),
-            0 10px 35px rgba(0,0,0,0.35);
+            inset
+            0 1px 0
+            rgba(255,255,255,0.05),
+
+            0 10px 35px
+            rgba(0,0,0,0.35);
         }
 
         .coin-label {
           font-size: 10px;
           font-weight: 900;
+
           letter-spacing: 3px;
-          color: rgba(255,255,255,0.42);
+
+          color:
+            rgba(255,255,255,0.42);
         }
 
         .coin-value {
           margin-top: 3px;
+
           font-size: 30px;
           font-weight: 1000;
+
           color: #ffd21f;
         }
 
@@ -619,43 +657,69 @@ export default function ShopPage() {
 
         .shop-tabs {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+
+          grid-template-columns:
+            1fr 1fr;
+
           gap: 8px;
+
           margin-top: 22px;
+
           padding: 5px;
+
           border-radius: 17px;
-          background: rgba(255,255,255,0.045);
-          border: 1px solid rgba(255,255,255,0.08);
+
+          background:
+            rgba(255,255,255,0.045);
+
+          border:
+            1px solid
+            rgba(255,255,255,0.08);
         }
 
         .shop-tab {
           min-height: 54px;
+
           border: 0;
+
           border-radius: 13px;
+
           background: transparent;
-          color: rgba(255,255,255,0.45);
+
+          color:
+            rgba(255,255,255,0.45);
+
           font-size: 12px;
           font-weight: 1000;
+
           letter-spacing: 0.3px;
         }
 
         .shop-tab span {
           display: block;
+
           margin-bottom: 2px;
+
           font-size: 20px;
         }
 
         .shop-tab.active {
           color: #ffd21f;
+
           background:
             linear-gradient(
               180deg,
               rgba(255,210,31,0.18),
               rgba(255,210,31,0.06)
             );
+
           box-shadow:
-            inset 0 0 0 1px rgba(255,210,31,0.22),
-            0 5px 18px rgba(255,190,0,0.08);
+            inset
+            0 0 0 1px
+            rgba(255,210,31,0.22),
+
+            0 5px 18px
+            rgba(255,190,0,0.08);
         }
 
         /* =========================
@@ -669,52 +733,76 @@ export default function ShopPage() {
 
         .section-title h2 {
           margin: 0;
+
           font-size: 20px;
           font-weight: 1000;
         }
 
         .section-title p {
           margin: 5px 0 0;
+
           font-size: 12px;
+
           line-height: 1.5;
-          color: rgba(255,255,255,0.38);
+
+          color:
+            rgba(255,255,255,0.38);
         }
 
         /* =========================
-           PICKAXES
+           LISTA DE PICOS
         ========================= */
 
         .pickaxe-list {
           display: flex;
+
           flex-direction: column;
+
           gap: 13px;
+
+          padding-bottom: 10px;
         }
 
         .pickaxe-card {
           position: relative;
+
           overflow: hidden;
+
           padding: 15px;
+
           border-radius: 21px;
-          border: 1px solid rgba(255,255,255,0.08);
+
+          border:
+            1px solid
+            rgba(255,255,255,0.08);
+
           background:
             linear-gradient(
               145deg,
               rgba(255,255,255,0.07),
               rgba(255,255,255,0.025)
             );
+
           box-shadow:
-            0 10px 30px rgba(0,0,0,0.28);
+            0 10px 30px
+            rgba(0,0,0,0.28);
         }
 
         .pickaxe-card::after {
           content: "";
+
           position: absolute;
+
           width: 100px;
           height: 100px;
+
           right: -45px;
           top: -45px;
+
           border-radius: 50%;
+
           opacity: 0.08;
+
           filter: blur(15px);
         }
 
@@ -744,48 +832,70 @@ export default function ShopPage() {
 
         .pickaxe-top {
           display: flex;
+
           align-items: center;
+
           gap: 14px;
         }
 
         /* =========================
-           ICONO PICO
+           ICONO DEL PICO
         ========================= */
 
         .pickaxe-display {
           position: relative;
+
           display: flex;
+
           align-items: center;
           justify-content: center;
+
           width: 78px;
           height: 78px;
+
           flex-shrink: 0;
+
           border-radius: 20px;
+
           background:
             radial-gradient(
               circle,
               rgba(255,255,255,0.08),
               rgba(255,255,255,0.015)
             );
-          border: 1px solid rgba(255,255,255,0.07);
+
+          border:
+            1px solid
+            rgba(255,255,255,0.07);
         }
 
         .pickaxe-icon {
           position: relative;
+
           width: 62px;
           height: 62px;
-          transform: rotate(-32deg);
+
+          transform:
+            rotate(-32deg);
+
           filter:
-            drop-shadow(0 5px 5px rgba(0,0,0,0.7));
+            drop-shadow(
+              0 5px 5px
+              rgba(0,0,0,0.7)
+            );
         }
 
         .pickaxe-head {
           position: absolute;
+
           top: 8px;
           left: 4px;
+
           width: 54px;
           height: 16px;
+
           display: flex;
+
           align-items: center;
           justify-content: center;
         }
@@ -793,27 +903,36 @@ export default function ShopPage() {
         .pickaxe-center {
           width: 28px;
           height: 12px;
+
           border-radius: 5px;
+
           position: relative;
+
           z-index: 2;
         }
 
         .pickaxe-point {
           position: absolute;
+
           top: 2px;
+
           width: 22px;
           height: 12px;
-          clip-path: polygon(
-            0 50%,
-            100% 0,
-            75% 50%,
-            100% 100%
-          );
+
+          clip-path:
+            polygon(
+              0 50%,
+              100% 0,
+              75% 50%,
+              100% 100%
+            );
         }
 
         .pickaxe-point.left {
           left: 0;
-          transform: scaleX(-1);
+
+          transform:
+            scaleX(-1);
         }
 
         .pickaxe-point.right {
@@ -822,28 +941,43 @@ export default function ShopPage() {
 
         .pickaxe-handle {
           position: absolute;
+
           width: 10px;
           height: 49px;
+
           left: 27px;
           top: 13px;
+
           border-radius: 6px;
-          transform: rotate(2deg);
+
+          transform:
+            rotate(2deg);
+
           z-index: 1;
         }
 
         .pickaxe-shine {
           position: absolute;
+
           width: 5px;
           height: 26px;
+
           left: 31px;
           top: 16px;
+
           border-radius: 10px;
-          background: rgba(255,255,255,0.35);
+
+          background:
+            rgba(255,255,255,0.35);
+
           opacity: 0.45;
+
           z-index: 4;
         }
 
-        /* MADERA */
+        /* =========================
+           MADERA
+        ========================= */
 
         .pickaxe-wood .pickaxe-center,
         .pickaxe-wood .pickaxe-point {
@@ -865,7 +999,9 @@ export default function ShopPage() {
             );
         }
 
-        /* PIEDRA */
+        /* =========================
+           PIEDRA
+        ========================= */
 
         .pickaxe-stone .pickaxe-center,
         .pickaxe-stone .pickaxe-point {
@@ -887,7 +1023,9 @@ export default function ShopPage() {
             );
         }
 
-        /* HIERRO */
+                /* =========================
+           HIERRO
+        ========================= */
 
         .pickaxe-iron .pickaxe-center,
         .pickaxe-iron .pickaxe-point {
@@ -909,7 +1047,9 @@ export default function ShopPage() {
             );
         }
 
-        /* ORO */
+        /* =========================
+           ORO
+        ========================= */
 
         .pickaxe-gold .pickaxe-center,
         .pickaxe-gold .pickaxe-point {
@@ -920,8 +1060,10 @@ export default function ShopPage() {
               #ffc400,
               #b86b00
             );
+
           box-shadow:
-            0 0 8px rgba(255, 196, 0, 0.35);
+            0 0 8px
+            rgba(255,196,0,0.35);
         }
 
         .pickaxe-gold .pickaxe-handle {
@@ -934,7 +1076,9 @@ export default function ShopPage() {
             );
         }
 
-        /* ESMERALDA */
+        /* =========================
+           ESMERALDA
+        ========================= */
 
         .pickaxe-emerald .pickaxe-center,
         .pickaxe-emerald .pickaxe-point {
@@ -945,8 +1089,10 @@ export default function ShopPage() {
               #00e88b,
               #007b4d
             );
+
           box-shadow:
-            0 0 12px rgba(0, 255, 160, 0.55);
+            0 0 12px
+            rgba(0,255,160,0.55);
         }
 
         .pickaxe-emerald .pickaxe-handle {
@@ -959,7 +1105,9 @@ export default function ShopPage() {
             );
         }
 
-        /* DIAMANTE */
+        /* =========================
+           DIAMANTE
+        ========================= */
 
         .pickaxe-diamond .pickaxe-center,
         .pickaxe-diamond .pickaxe-point {
@@ -970,8 +1118,10 @@ export default function ShopPage() {
               #63eaff,
               #008fc4
             );
+
           box-shadow:
-            0 0 15px rgba(0, 220, 255, 0.75);
+            0 0 15px
+            rgba(0,220,255,0.75);
         }
 
         .pickaxe-diamond .pickaxe-handle {
@@ -984,27 +1134,27 @@ export default function ShopPage() {
             );
         }
 
-        /* BRILLO DEL DIAMANTE */
-
         .pickaxe-diamond .pickaxe-shine {
           background: #ffffff;
+
           opacity: 0.8;
+
           box-shadow:
             0 0 8px #ffffff,
             0 0 14px #63eaff;
         }
 
-        /* BRILLO DE ESMERALDA */
-
         .pickaxe-emerald .pickaxe-shine {
           background: #d9fff0;
+
           opacity: 0.75;
+
           box-shadow:
             0 0 8px #00ff9c;
         }
 
         /* =========================
-           INFORMACIÓN DEL PICO
+           INFORMACIÓN
         ========================= */
 
         .pickaxe-info {
@@ -1014,23 +1164,34 @@ export default function ShopPage() {
 
         .pickaxe-material {
           font-size: 9px;
+
           font-weight: 1000;
+
           letter-spacing: 2px;
-          color: rgba(255,255,255,0.35);
+
+          color:
+            rgba(255,255,255,0.35);
         }
 
         .pickaxe-info h3 {
           margin: 2px 0 5px;
+
           font-size: 16px;
+
           font-weight: 1000;
         }
 
         .pickaxe-stats {
           display: flex;
+
           flex-wrap: wrap;
+
           gap: 8px;
+
           font-size: 10px;
-          color: rgba(255,255,255,0.48);
+
+          color:
+            rgba(255,255,255,0.48);
         }
 
         /* =========================
@@ -1039,32 +1200,50 @@ export default function ShopPage() {
 
         .stat-bars {
           margin-top: 14px;
+
           display: grid;
+
           gap: 7px;
         }
 
         .stat-row {
           display: grid;
-          grid-template-columns: 88px 1fr;
+
+          grid-template-columns:
+            88px 1fr;
+
           align-items: center;
+
           gap: 8px;
+
           font-size: 8px;
+
           font-weight: 1000;
+
           letter-spacing: 0.7px;
-          color: rgba(255,255,255,0.35);
+
+          color:
+            rgba(255,255,255,0.35);
         }
 
         .bar {
           height: 5px;
+
           overflow: hidden;
+
           border-radius: 10px;
-          background: rgba(255,255,255,0.08);
+
+          background:
+            rgba(255,255,255,0.08);
         }
 
         .bar span {
           display: block;
+
           height: 100%;
+
           border-radius: inherit;
+
           background: #ffd21f;
         }
 
@@ -1111,8 +1290,10 @@ export default function ShopPage() {
               #007b4d,
               #00ff9c
             );
+
           box-shadow:
-            0 0 8px rgba(0,255,150,0.4);
+            0 0 8px
+            rgba(0,255,150,0.4);
         }
 
         .card-diamond .bar span {
@@ -1123,8 +1304,10 @@ export default function ShopPage() {
               #63eaff,
               #ffffff
             );
+
           box-shadow:
-            0 0 8px rgba(0,220,255,0.5);
+            0 0 8px
+            rgba(0,220,255,0.5);
         }
 
         /* =========================
@@ -1133,17 +1316,27 @@ export default function ShopPage() {
 
         .pickaxe-bottom {
           display: flex;
+
           align-items: center;
+
           justify-content: space-between;
+
           gap: 10px;
+
           margin-top: 15px;
+
           padding-top: 13px;
-          border-top: 1px solid rgba(255,255,255,0.06);
+
+          border-top:
+            1px solid
+            rgba(255,255,255,0.06);
         }
 
         .price {
           font-size: 15px;
+
           font-weight: 1000;
+
           color: #ffd21f;
         }
 
@@ -1153,20 +1346,29 @@ export default function ShopPage() {
 
         .buy-button {
           min-width: 105px;
+
           padding: 10px 15px;
+
           border: 0;
+
           border-radius: 12px;
+
           background:
             linear-gradient(
               180deg,
               #ffe45c,
               #ffc400
             );
+
           color: #151000;
+
           font-size: 11px;
+
           font-weight: 1000;
+
           box-shadow:
-            0 5px 15px rgba(255,190,0,0.15);
+            0 5px 15px
+            rgba(255,190,0,0.15);
         }
 
         .buy-button:active {
@@ -1179,42 +1381,66 @@ export default function ShopPage() {
 
         .boss-list {
           display: flex;
+
           flex-direction: column;
+
           gap: 13px;
+
+          padding-bottom: 10px;
         }
 
         .boss-card {
           display: grid;
-          grid-template-columns: 65px 1fr;
+
+          grid-template-columns:
+            65px 1fr;
+
           position: relative;
+
           padding: 15px;
+
           padding-bottom: 63px;
+
           border-radius: 20px;
-          border: 1px solid rgba(255,255,255,0.08);
+
+          border:
+            1px solid
+            rgba(255,255,255,0.08);
+
           background:
             linear-gradient(
               145deg,
               rgba(255,255,255,0.065),
               rgba(255,255,255,0.02)
             );
+
           box-shadow:
-            0 10px 30px rgba(0,0,0,0.28);
+            0 10px 30px
+            rgba(0,0,0,0.28);
         }
 
         .boss-icon {
           display: flex;
+
           align-items: center;
           justify-content: center;
+
           width: 55px;
           height: 55px;
+
           border-radius: 17px;
+
           background:
             linear-gradient(
               145deg,
               rgba(255,210,31,0.2),
               rgba(255,210,31,0.04)
             );
-          border: 1px solid rgba(255,210,31,0.2);
+
+          border:
+            1px solid
+            rgba(255,210,31,0.2);
+
           font-size: 30px;
         }
 
@@ -1225,7 +1451,9 @@ export default function ShopPage() {
               rgba(100,170,255,0.2),
               rgba(100,170,255,0.04)
             );
-          border-color: rgba(100,170,255,0.25);
+
+          border-color:
+            rgba(100,170,255,0.25);
         }
 
         .boss-3 {
@@ -1235,7 +1463,9 @@ export default function ShopPage() {
               rgba(170,100,255,0.2),
               rgba(170,100,255,0.04)
             );
-          border-color: rgba(170,100,255,0.25);
+
+          border-color:
+            rgba(170,100,255,0.25);
         }
 
         .boss-info {
@@ -1244,47 +1474,70 @@ export default function ShopPage() {
 
         .boss-rank {
           font-size: 8px;
+
           font-weight: 1000;
+
           letter-spacing: 2px;
-          color: rgba(255,255,255,0.35);
+
+          color:
+            rgba(255,255,255,0.35);
         }
 
         .boss-info h3 {
           margin: 3px 0;
+
           font-size: 16px;
+
           font-weight: 1000;
         }
 
         .boss-info p {
           margin: 0;
+
           font-size: 10px;
+
           line-height: 1.45;
-          color: rgba(255,255,255,0.42);
+
+          color:
+            rgba(255,255,255,0.42);
         }
 
         .boss-production {
           margin-top: 6px;
+
           font-size: 10px;
+
           font-weight: 900;
+
           color: #ffd21f;
         }
 
-                .boss-buy {
+        .boss-buy {
           position: absolute;
+
           left: 15px;
           right: 15px;
           bottom: 13px;
+
           height: 37px;
-          border: 1px solid rgba(255,210,31,0.2);
+
+          border:
+            1px solid
+            rgba(255,210,31,0.2);
+
           border-radius: 11px;
+
           background:
             linear-gradient(
               180deg,
               rgba(255,210,31,0.18),
               rgba(255,210,31,0.08)
             );
+
           color: #ffd21f;
+
           font-size: 11px;
+
           font-weight: 1000;
         }
 
@@ -1298,34 +1551,56 @@ export default function ShopPage() {
 
         .shop-message {
           margin-top: 17px;
+
           padding: 12px;
+
           border-radius: 13px;
-          border: 1px solid rgba(255,210,31,0.2);
-          background: rgba(255,210,31,0.08);
+
+          border:
+            1px solid
+            rgba(255,210,31,0.2);
+
+          background:
+            rgba(255,210,31,0.08);
+
           text-align: center;
+
           font-size: 11px;
+
           font-weight: 900;
+
           color: #ffe477;
         }
 
         /* =========================
-           VOLVER A LA MINA
+           VOLVER
         ========================= */
 
         .return-button {
           width: 100%;
+
           margin-top: 20px;
+
           padding: 15px;
+
           border-radius: 16px;
-          border: 1px solid rgba(255,255,255,0.08);
+
+          border:
+            1px solid
+            rgba(255,255,255,0.08);
+
           background:
             linear-gradient(
               180deg,
               rgba(255,255,255,0.06),
               rgba(255,255,255,0.025)
             );
-          color: rgba(255,255,255,0.55);
+
+          color:
+            rgba(255,255,255,0.55);
+
           font-size: 12px;
+
           font-weight: 1000;
         }
 
@@ -1334,40 +1609,67 @@ export default function ShopPage() {
         }
 
         /* =========================
-           ANIMACIÓN PICO
+           ANIMACIÓN DE PICOS
         ========================= */
 
         .pickaxe-icon {
-          animation: pickaxeFloat 2.8s ease-in-out infinite;
+          animation:
+            pickaxeFloat
+            2.8s
+            ease-in-out
+            infinite;
         }
 
         @keyframes pickaxeFloat {
+
           0%,
           100% {
-            transform: rotate(-32deg) translateY(0);
+            transform:
+              rotate(-32deg)
+              translateY(0);
           }
 
           50% {
-            transform: rotate(-28deg) translateY(-3px);
+            transform:
+              rotate(-28deg)
+              translateY(-3px);
           }
         }
 
         .card-gold .pickaxe-icon {
           filter:
-            drop-shadow(0 5px 5px rgba(0,0,0,0.7))
-            drop-shadow(0 0 7px rgba(255,196,0,0.35));
+            drop-shadow(
+              0 5px 5px
+              rgba(0,0,0,0.7)
+            )
+            drop-shadow(
+              0 0 7px
+              rgba(255,196,0,0.35)
+            );
         }
 
         .card-emerald .pickaxe-icon {
           filter:
-            drop-shadow(0 5px 5px rgba(0,0,0,0.7))
-            drop-shadow(0 0 9px rgba(0,255,160,0.35));
+            drop-shadow(
+              0 5px 5px
+              rgba(0,0,0,0.7)
+            )
+            drop-shadow(
+              0 0 9px
+              rgba(0,255,160,0.35)
+            );
         }
 
         .card-diamond .pickaxe-icon {
           filter:
-            drop-shadow(0 5px 5px rgba(0,0,0,0.7))
-            drop-shadow(0 0 11px rgba(0,220,255,0.45));
+            drop-shadow(
+              0 5px 5px
+              rgba(0,0,0,0.7)
+            )
+            drop-shadow(
+              0 0 11px
+              rgba(0,220,255,0.45)
+            );
         }
 
         /* =========================
@@ -1420,6 +1722,7 @@ export default function ShopPage() {
           .pickaxe-card {
             padding: 18px;
           }
+
         }
 
       `}</style>
