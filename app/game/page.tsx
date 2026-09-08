@@ -15,28 +15,30 @@ export default function GamePage() {
   const [unlockedMines, setUnlockedMines] = useState(1);
   const [elevatorFloor, setElevatorFloor] = useState(0);
   const [elevatorWorking, setElevatorWorking] = useState(false);
+
   const [surfaceMinerals, setSurfaceMinerals] = useState(0);
   const [storedMinerals, setStoredMinerals] = useState(0);
   const [wagonMoving, setWagonMoving] = useState(false);
 
+  const [message, setMessage] = useState("");
+
+  const minePrices = [0, 250, 750, 2000];
   const maxHits = 10;
+
   const progress = Math.min((hits / maxHits) * 100, 100);
 
-  /*
-   * PRECIOS PARA DESBLOQUEAR LAS MINAS
-   */
-  const minePrices = [0, 250, 750, 2000];
+  function showMessage(text: string) {
+    setMessage(text);
 
-  /*
-   * MINERÍA MANUAL
-   */
+    setTimeout(() => {
+      setMessage("");
+    }, 1200);
+  }
+
   function mine() {
-    if (energy <= 0 || hitting) {
-      return;
-    }
+    if (energy <= 0 || hitting) return;
 
     setHitting(true);
-
     setEnergy((value) => Math.max(value - 2, 0));
 
     setTimeout(() => {
@@ -48,6 +50,8 @@ export default function GamePage() {
           setMinerals((value) => value + 1);
           setSurfaceMinerals((value) => value + 1);
 
+          showMessage("+25 🪙  +1 🪨");
+
           return 0;
         }
 
@@ -58,34 +62,30 @@ export default function GamePage() {
     }, 350);
   }
 
-  /*
-   * DESBLOQUEAR MINA
-   */
-  function unlockMine(index) {
+  function unlockMine(index: number) {
     const price = minePrices[index];
 
-    if (unlockedMines >= index + 1) {
-      return;
-    }
+    if (unlockedMines >= index + 1) return;
 
     if (coins < price) {
+      showMessage("❌ Monedas insuficientes");
       return;
     }
 
     setCoins((value) => value - price);
     setUnlockedMines(index + 1);
+
+    showMessage(`⛏️ MINA ${index + 1} DESBLOQUEADA`);
   }
 
   /*
-   * SISTEMA DEL ELEVADOR
+   * ASCENSOR
    *
-   * El elevador recorre automáticamente
-   * las minas que estén desbloqueadas.
+   * El ascensor baja por las minas desbloqueadas
+   * y después vuelve a la superficie.
    */
   useEffect(() => {
-    if (unlockedMines <= 0) {
-      return;
-    }
+    if (unlockedMines <= 0) return;
 
     const elevatorInterval = setInterval(() => {
       setElevatorWorking(true);
@@ -103,14 +103,8 @@ export default function GamePage() {
       setTimeout(() => {
         setElevatorWorking(false);
 
-        /*
-         * Si hay minerales en la mina,
-         * el elevador los lleva arriba.
-         */
         setSurfaceMinerals((value) => {
-          if (value <= 0) {
-            return value;
-          }
+          if (value <= 0) return value;
 
           setStoredMinerals((stored) => stored + 1);
 
@@ -119,52 +113,53 @@ export default function GamePage() {
       }, 900);
     }, 3500);
 
-    return () => clearInterval(elevatorInterval);
+    return () => {
+      clearInterval(elevatorInterval);
+    };
   }, [unlockedMines]);
 
   /*
-   * MINEROS AUTOMÁTICOS
+   * PRODUCCIÓN AUTOMÁTICA
    *
-   * Cada mina desbloqueada produce minerales.
+   * Por ahora las minas desbloqueadas producen
+   * automáticamente para poder probar el sistema.
    */
   useEffect(() => {
-    if (unlockedMines <= 1) {
-      return;
-    }
+    if (unlockedMines <= 1) return;
 
     const autoMineInterval = setInterval(() => {
-      setSurfaceMinerals((value) => value + (unlockedMines - 1));
+      const amount = unlockedMines - 1;
 
-      setMinerals((value) => value + (unlockedMines - 1));
-
-      setCoins((value) => value + (unlockedMines - 1) * 2);
+      setSurfaceMinerals((value) => value + amount);
+      setMinerals((value) => value + amount);
+      setCoins((value) => value + amount * 2);
     }, 5000);
 
-    return () => clearInterval(autoMineInterval);
+    return () => {
+      clearInterval(autoMineInterval);
+    };
   }, [unlockedMines]);
 
   /*
-   * VAGONES
+   * CARRO / VAGONETA
    *
-   * Cuando llegan minerales a la superficie,
-   * los vagones los llevan al almacén.
+   * Cuando hay mineral almacenado,
+   * el carrito lo lleva al almacén.
    */
   useEffect(() => {
-    if (storedMinerals <= 0 || wagonMoving) {
-      return;
-    }
+    if (storedMinerals <= 0 || wagonMoving) return;
 
     setWagonMoving(true);
 
     const timer = setTimeout(() => {
       setStoredMinerals((value) => Math.max(value - 1, 0));
-
       setCoins((value) => value + 5);
-
       setWagonMoving(false);
     }, 1800);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [storedMinerals, wagonMoving]);
 
   /*
@@ -175,1256 +170,540 @@ export default function GamePage() {
       setEnergy((value) => Math.min(value + 1, 100));
     }, 3000);
 
-    return () => clearInterval(energyTimer);
+    return () => {
+      clearInterval(energyTimer);
+    };
   }, []);
+
+  /*
+   * POSICIÓN VISUAL DEL ASCENSOR
+   */
+  const elevatorPosition =
+    unlockedMines <= 1
+      ? 18
+      : 18 + (elevatorFloor / Math.max(unlockedMines - 1, 1)) * 72;
 
   return (
     <main className="game-page">
       <div className="game-container">
 
         {/* =========================
-            CABECERA
-        ========================== */}
+            HEADER
+        ========================= */}
 
-        <header className="top-bar">
-
-          <div className="profile">
-            <div className="avatar">
-              M
+        <header className="game-header">
+          <div>
+            <div className="game-logo">
+              🇨🇺 CUBAN-MINER ⛏️
             </div>
 
-            <div>
-              <div className="player-name">
-                MINERO
-              </div>
-
-              <div className="level">
-                NIVEL 1
-              </div>
+            <div className="game-subtitle">
+              MINA PRINCIPAL
             </div>
           </div>
 
-          <div className="coins">
-            <span>🪙</span>
-            <strong>{coins}</strong>
+          <div className="balance-box">
+            🪙 {coins}
           </div>
-
         </header>
 
+        {/* =========================
+            MENSAJE
+        ========================= */}
+
+        {message && (
+          <div className="game-message">
+            {message}
+          </div>
+        )}
 
         {/* =========================
-            ENERGÍA
-        ========================== */}
+            ÁREA PRINCIPAL DE LA MINA
+        ========================= */}
 
-        <div className="energy-area">
+        <section className="mine-area">
 
-          <div className="energy-text">
-            <span>ENERGÍA</span>
+          {/* =========================
+              SUPERFICIE
+          ========================= */}
 
-            <strong>
-              {energy}/100
-            </strong>
+          <div className="surface">
+
+            <div className="surface-sky">
+              ☁️
+            </div>
+
+            <div className="surface-ground">
+              <div className="ground-grass" />
+
+              <div className="warehouse">
+                <div className="warehouse-roof">
+                  🏭
+                </div>
+
+                <div className="warehouse-body">
+                  <strong>ALMACÉN</strong>
+
+                  <span>
+                    🪨 {storedMinerals}
+                  </span>
+                </div>
+              </div>
+
+              <div className="warehouse-stock">
+                📦
+              </div>
+
+              <div className="surface-worker">
+                👷
+              </div>
+
+              <div
+                className={`wagon ${
+                  wagonMoving ? "wagon-moving" : ""
+                }`}
+              >
+                <div className="wagon-body">
+                  🛒
+                </div>
+
+                <div className="wagon-minerals">
+                  🪨
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="energy-bar">
+          {/* =========================
+              POZO DEL ASCENSOR
+          ========================= */}
+
+          <div className="elevator-shaft">
+
+            <div className="elevator-rope" />
+
             <div
-              className="energy-fill"
+              className={`elevator-cage ${
+                elevatorWorking ? "elevator-moving" : ""
+              }`}
               style={{
-                width: `${energy}%`,
+                top: `${elevatorPosition}%`,
+              }}
+            >
+              <div className="elevator-bars" />
+
+              <div className="elevator-light" />
+
+              <div className="elevator-worker">
+                👷
+              </div>
+
+              <div className="elevator-bag">
+                🪨
+              </div>
+
+              <div className="elevator-control">
+                <i />
+                <i />
+                <i />
+              </div>
+
+              <div className="elevator-floor-label">
+                NIVEL {elevatorFloor + 1}
+              </div>
+            </div>
+          </div>
+
+          {/* =========================
+              MINA 1
+          ========================= */}
+
+          <div className="mine-floor">
+
+            <div className="mine-number">
+              MINA 1
+            </div>
+
+            <div className="mine-level">
+              NIVEL 1
+            </div>
+
+            <div className="mine-tunnel">
+
+              <div className="mine-ore-pile">
+                🪨
+              </div>
+
+              <div
+                className={`mine-worker ${
+                  hitting ? "working" : ""
+                }`}
+              >
+                <div className="mine-worker-body">
+                  👷
+                </div>
+
+                <div className="mine-worker-bag">
+                  🎒
+                </div>
+              </div>
+
+              <div className="mine-pickaxe">
+                ⛏️
+              </div>
+
+              <div className="mine-ore ore-glow">
+                💎
+              </div>
+            </div>
+          </div>
+
+          {/* =========================
+              MINA 2
+          ========================= */}
+
+          <div
+            className={`mine-floor ${
+              unlockedMines < 2 ? "locked" : ""
+            }`}
+          >
+            <div className="mine-number">
+              MINA 2
+            </div>
+
+            <div className="mine-level">
+              NIVEL 2
+            </div>
+
+            {unlockedMines < 2 ? (
+              <div className="mine-lock">
+                <button
+                  className="unlock-button"
+                  onClick={() => unlockMine(1)}
+                >
+                  🔒 DESBLOQUEAR MINA
+
+                  <span className="unlock-price">
+                    🪙 {minePrices[1]}
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <div className="mine-tunnel">
+
+                <div className="mine-ore-pile">
+                  🪨
+                </div>
+
+                <div className="mine-worker working">
+                  <div className="mine-worker-body">
+                    👷
+                  </div>
+
+                  <div className="mine-worker-bag">
+                    🎒
+                  </div>
+                </div>
+
+                <div className="mine-pickaxe">
+                  ⛏️
+                </div>
+
+                <div className="mine-ore ore-glow">
+                  💎
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* =========================
+              MINA 3
+          ========================= */}
+
+          <div
+            className={`mine-floor ${
+              unlockedMines < 3 ? "locked" : ""
+            }`}
+          >
+            <div className="mine-number">
+              MINA 3
+            </div>
+
+            <div className="mine-level">
+              NIVEL 3
+            </div>
+
+            {unlockedMines < 3 ? (
+              <div className="mine-lock">
+                <button
+                  className="unlock-button"
+                  onClick={() => unlockMine(2)}
+                >
+                  🔒 DESBLOQUEAR MINA
+
+                  <span className="unlock-price">
+                    🪙 {minePrices[2]}
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <div className="mine-tunnel">
+
+                <div className="mine-ore-pile">
+                  🪨
+                </div>
+
+                <div className="mine-worker working">
+                  <div className="mine-worker-body">
+                    👷
+                  </div>
+
+                  <div className="mine-worker-bag">
+                    🎒
+                  </div>
+                </div>
+
+                <div className="mine-pickaxe">
+                  ⛏️
+                </div>
+
+                <div className="mine-ore ore-glow">
+                  💎
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* =========================
+              MINA 4
+          ========================= */}
+
+          <div
+            className={`mine-floor ${
+              unlockedMines < 4 ? "locked" : ""
+            }`}
+          >
+            <div className="mine-number">
+              MINA 4
+            </div>
+
+            <div className="mine-level">
+              NIVEL 4
+            </div>
+
+            {unlockedMines < 4 ? (
+              <div className="mine-lock">
+                <button
+                  className="unlock-button"
+                  onClick={() => unlockMine(3)}
+                >
+                  🔒 DESBLOQUEAR MINA
+
+                  <span className="unlock-price">
+                    🪙 {minePrices[3]}
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <div className="mine-tunnel">
+
+                <div className="mine-ore-pile">
+                  🪨
+                </div>
+
+                <div className="mine-worker working">
+                  <div className="mine-worker-body">
+                    👷
+                  </div>
+
+                  <div className="mine-worker-bag">
+                    🎒
+                  </div>
+                </div>
+
+                <div className="mine-pickaxe">
+                  ⛏️
+                </div>
+
+                <div className="mine-ore ore-glow">
+                  💎
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* =========================
+            PANEL DE MINERÍA MANUAL
+        ========================= */}
+
+        <section className="manual-panel">
+
+          <div className="manual-title">
+            <strong>
+              ⛏️ MINERÍA MANUAL
+            </strong>
+
+            <span>
+              ⚡ {energy}/100
+            </span>
+          </div>
+
+          <div className="manual-progress">
+            <div
+              className="manual-progress-bar"
+              style={{
+                width: `${progress}%`,
               }}
             />
           </div>
 
-        </div>
-
-
-        {/* =========================
-            MUNDO DE LA MINA
-        ========================== */}
-
-        <section className="mine-world">
-
-          {/* =====================
-              SUPERFICIE
-          ====================== */}
-
-          <div className="surface">
-
-            <div className="sky-glow" />
-
-            <div className="mountain mountain-one" />
-            <div className="mountain mountain-two" />
-
-            {/* ALMACÉN */}
-
-            <div className="warehouse">
-
-              <div className="warehouse-roof">
-                🏭
-              </div>
-
-              <div className="warehouse-body">
-                ALMACÉN
-              </div>
-
-            </div>
-
-
-            {/* ZONA DE VAGONES */}
-
-            <div className="railway">
-
-              <div className="rail rail-one" />
-              <div className="rail rail-two" />
-
-              <div
-                className={`wagon ${
-                  wagonMoving ? "wagon-moving" : ""
-                }`}
-              >
-                <div className="wagon-box">
-                  ◆
-                </div>
-
-                <div className="wagon-wheel wheel-one" />
-                <div className="wagon-wheel wheel-two" />
-              </div>
-
-              <div className="wagon-worker">
-                👷
-              </div>
-
-            </div>
-
-
-            {/* ZONA DE ENTREGA */}
-
-            <div className="delivery-zone">
-
-              <div className="delivery-box">
-                📦
-              </div>
-
-              <div className="delivery-text">
-                {storedMinerals} MINERALES
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* =====================
-              ASCENSOR
-          ====================== */}
-
-          <div className="elevator-shaft">
-
-            <div className="shaft-line" />
-
-            <div
-              className={`elevator ${
-                elevatorWorking
-                  ? "elevator-working"
-                  : ""
-              }`}
-              style={{
-                top: `${elevatorFloor * 23 + 5}%`,
-              }}
-            >
-
-              <div className="elevator-roof">
-                🛗
-              </div>
-
-              <div className="elevator-cage">
-
-                <div className="elevator-worker">
-                  👷
-                </div>
-
-                <div className="elevator-bag">
-                  🎒
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* =====================
-              4 POZOS
-          ====================== */}
-
-          <div className="mine-shafts">
-
-            {[0, 1, 2, 3].map((index) => {
-
-              const unlocked =
-                index < unlockedMines;
-
-              const isActive =
-                index === unlockedMines - 1;
-
-              return (
-                <div
-                  key={index}
-                  className={`mine-floor ${
-                    unlocked
-                      ? "mine-floor-unlocked"
-                      : "mine-floor-locked"
-                  }`}
-                >
-
-                  {/* ROCA */}
-
-                  <div className="rock-wall">
-
-                    <div className="rock-detail detail-one" />
-                    <div className="rock-detail detail-two" />
-                    <div className="rock-detail detail-three" />
-                    <div className="rock-detail detail-four" />
-
-                    <div className="ore ore-a" />
-                    <div className="ore ore-b" />
-                    <div className="ore ore-c" />
-
-                  </div>
-
-
-                  {/* MINA */}
-
-                  {unlocked ? (
-                    <>
-
-                      <div className="mine-number">
-                        MINA {index + 1}
-                      </div>
-
-                      <div
-                        className={`small-miner ${
-                          isActive && hitting
-                            ? "small-miner-hit"
-                            : ""
-                        }`}
-                        onClick={
-                          index === 0
-                            ? mine
-                            : undefined
-                        }
-                      >
-
-                        <div className="small-helmet">
-                          <div className="small-lamp" />
-                        </div>
-
-                        <div className="small-head">
-                          <div className="small-eye left" />
-                          <div className="small-eye right" />
-                          <div className="small-beard" />
-                        </div>
-
-                        <div className="small-body">
-                          <div className="small-belt" />
-                        </div>
-
-                        <div className="small-arm left" />
-                        <div className="small-arm right" />
-
-                        <div className="small-leg left" />
-                        <div className="small-leg right" />
-
-                        <div
-                          className={`small-pickaxe ${
-                            hitting &&
-                            index === 0
-                              ? "small-pickaxe-hit"
-                              : ""
-                          }`}
-                        />
-
-                      </div>
-
-
-                      {/* SACO */}
-
-                      <div
-                        className={`mine-bag ${
-                          index <
-                          unlockedMines &&
-                          elevatorFloor === index
-                            ? "bag-active"
-                            : ""
-                        }`}
-                      >
-                        🎒
-                      </div>
-
-
-                      <div className="mine-production">
-                        +{index + 1} ◆
-                      </div>
-
-                    </>
-                  ) : (
-
-                    /* =================
-                       MINA BLOQUEADA
-                    ================== */
-
-                    <button
-                      className="unlock-button"
-                      onClick={() =>
-                        unlockMine(index)
-                      }
-                    >
-
-                      <span className="lock">
-                        🔒
-                      </span>
-
-                      <strong>
-                        DESBLOQUEAR
-                      </strong>
-
-                      <small>
-                        MINA {index + 1}
-                      </small>
-
-                      <b>
-                        🪙 {minePrices[index]}
-                      </b>
-
-                    </button>
-
-                  )}
-
-                </div>
-              );
-            })}
-
-          </div>
-
-
-          {/* =====================
-              INDICADOR DE MINERÍA
-          ====================== */}
-
-          <div className="manual-panel">
-
-            <div className="manual-title">
-              ⛏️ MINA PRINCIPAL
-            </div>
-
-            <div className="manual-progress">
-
-              <div
-                className="manual-progress-fill"
-                style={{
-                  width: `${progress}%`,
-                }}
-              />
-
-            </div>
-
-            <div className="manual-progress-text">
-              {hits}/{maxHits}
-            </div>
-
-          </div>
-
-
-          {/* MINERAL FLOTANTE */}
-
-          {hitting && (
-            <div className="impact">
-              ✦
-            </div>
-          )}
-
+          <button
+            className={`mine-button ${
+              hitting ? "hit" : ""
+            }`}
+            onClick={mine}
+            disabled={energy <= 0 || hitting}
+          >
+            {hitting
+              ? "⛏️ GOLPEANDO..."
+              : "⛏️ GOLPEAR LA ROCA"}
+          </button>
         </section>
-
 
         {/* =========================
             ESTADÍSTICAS
-        ========================== */}
+        ========================= */}
 
-        <div className="stats">
+        <section className="stats-grid">
 
-          <div className="stat">
-
-            <div className="stat-icon">
-              ◆
-            </div>
-
-            <div>
-              <small>
-                MINERALES
-              </small>
-
-              <strong>
-                {minerals}
-              </strong>
-            </div>
-
-          </div>
-
-
-          <div className="stat">
-
-            <div className="stat-icon">
-              🛗
-            </div>
-
-            <div>
-              <small>
-                MINAS
-              </small>
-
-              <strong>
-                {unlockedMines}/4
-              </strong>
-            </div>
-
-          </div>
-
-
-          <div className="stat">
-
-            <div className="stat-icon">
-              🚋
-            </div>
-
-            <div>
-              <small>
-                ALMACÉN
-              </small>
-
-              <strong>
-                {storedMinerals}
-              </strong>
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* =========================
-            MENÚ INFERIOR
-        ========================== */}
-
-        <nav className="bottom-menu">
-
-          <button
-            onClick={() =>
-              router.push("/game")
-            }
-          >
-            <span>⛏</span>
-            <small>MINAS</small>
-          </button>
-
-          <button
-            onClick={() =>
-              router.push("/shop")
-            }
-          >
-            <span>🛒</span>
-            <small>TIENDA</small>
-          </button>
-
-          <button
-            onClick={() =>
-              router.push("/friends")
-            }
-          >
-            <span>👥</span>
-            <small>REFERIDOS</small>
-          </button>
-
-          <button
-            onClick={() =>
-              router.push("/bank")
-            }
-          >
-            <span>💰</span>
-            <small>BANCO</small>
-          </button>
-
-          <button
-            onClick={() =>
-              router.push("/missions")
-            }
-          >
-            <span>🎯</span>
-            <small>MISIONES</small>
-          </button>
-
-          <button
-            onClick={() =>
-              router.push("/profile")
-            }
-          >
-            <span>👤</span>
-            <small>PERFIL</small>
-          </button>
-
-        </nav>
-
-      </div>
-
-
-      <style jsx>{`
-
-        * {
-          box-sizing: border-box;
-        }
-
-
-        .game-page {
-          width: 100%;
-          min-height: 100dvh;
-          background: #030303;
-          color: white;
-          overflow: hidden;
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-        }
-
-
-        .game-container {
-          width: 100%;
-          max-width: 600px;
-          height: 100dvh;
-          margin: 0 auto;
-          background: #080808;
-          position: relative;
-          overflow: hidden;
-        }
-
-
-        /* =========================
-           TOP BAR
-        ========================== */
-
-        .top-bar {
-          height: 58px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 7px 14px;
-          background: #0b0b0b;
-          border-bottom: 1px solid #292929;
-        }
-
-
-        .profile {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-        }
-
-
-        .avatar {
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background:
-            linear-gradient(
-              145deg,
-              #f5c542,
-              #8d6500
-            );
-          color: #111;
-          font-weight: 900;
-          font-size: 17px;
-          border: 2px solid #ffe08a;
-        }
-
-
-        .player-name {
-          font-size: 12px;
-          font-weight: 900;
-          letter-spacing: 1px;
-        }
-
-
-        .level {
-          margin-top: 2px;
-          font-size: 9px;
-          color: #8d8d8d;
-          font-weight: 700;
-        }
-
-
-        .coins {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 16px;
-        }
-
-
-        .coins strong {
-          color: #f4c542;
-        }
-
-
-        /* =========================
-           ENERGY
-        ========================== */
-
-        .energy-area {
-          padding: 7px 14px 8px;
-          background: #0c0c0c;
-        }
-
-
-        .energy-text {
-          display: flex;
-          justify-content: space-between;
-          font-size: 9px;
-          color: #999;
-          margin-bottom: 4px;
-          font-weight: 800;
-        }
-
-
-        .energy-text strong {
-          color: white;
-        }
-
-
-        .energy-bar {
-          width: 100%;
-          height: 6px;
-          background: #222;
-          border-radius: 20px;
-          overflow: hidden;
-        }
-
-
-        .energy-fill {
-          height: 100%;
-          background:
-            linear-gradient(
-              90deg,
-              #d99800,
-              #ffe27a
-            );
-          transition: width .25s ease;
-        }
-
-
-        /* =========================
-           MUNDO DE LA MINA
-        ========================== */
-
-        .mine-world {
-          height: calc(
-            100dvh - 184px
-          );
-          min-height: 390px;
-          position: relative;
-          overflow: hidden;
-          background:
-            linear-gradient(
-              #12100c 0%,
-              #19130b 8%,
-              #21170c 8%,
-              #0c0c0c 100%
-            );
-        }
-
-
-        /* =========================
-           SUPERFICIE
-        ========================== */
-
-        .surface {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 26%;
-          min-height: 92px;
-          background:
-            linear-gradient(
-              #253b21,
-              #172516
-            );
-          border-bottom: 6px solid #0d0d0d;
-          z-index: 20;
-          overflow: hidden;
-        }
-
-
-        .sky-glow {
-          position: absolute;
-          width: 130px;
-          height: 60px;
-          right: 15%;
-          top: 8px;
-          background:
-            radial-gradient(
-              circle,
-              rgba(255,205,70,.22),
-              transparent 70%
-            );
-        }
-
-
-        .mountain {
-          position: absolute;
-          bottom: 5px;
-          width: 0;
-          height: 0;
-          border-left: 65px solid transparent;
-          border-right: 65px solid transparent;
-          border-bottom: 65px solid #182319;
-        }
-
-
-        .mountain-one {
-          left: 5%;
-        }
-
-
-        .mountain-two {
-          left: 25%;
-          transform: scale(.7);
-        }
-
-
-        {/* =========================
-                ALMACÉN
-            ========================== */}
-
-            <div className="warehouse">
-
-              <div className="warehouse-roof">
-                🏭
-              </div>
-
-              <div className="warehouse-body">
-                ALMACÉN
-              </div>
-
-              <div className="warehouse-stock">
-                ◆ {storedMinerals}
-              </div>
-
-            </div>
-
-
-            {/* =========================
-                ZONA DE VAGONES
-            ========================== */}
-
-            <div className="railway">
-
-              <div className="rail rail-one" />
-              <div className="rail rail-two" />
-
-              <div
-                className={`wagon ${
-                  wagonMoving ? "wagon-moving" : ""
-                }`}
-              >
-
-                <div className="wagon-box">
-                  {storedMinerals > 0 ? "◆" : ""}
-                </div>
-
-                <div className="wagon-wheel wheel-one" />
-                <div className="wagon-wheel wheel-two" />
-
-              </div>
-
-              <div className="wagon-worker">
-                👷
-              </div>
-
-            </div>
-
-
-            {/* =========================
-                ZONA DE CARGA
-            ========================== */}
-
-            <div className="delivery-zone">
-
-              <div className="delivery-worker">
-                👷
-              </div>
-
-              <div className="delivery-box">
-                📦
-              </div>
-
-              <div className="delivery-text">
-                CARGA
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* =========================
-              ELEVADOR
-          ========================== */}
-
-          <div className="elevator-shaft">
-
-            <div className="shaft-line" />
-
-            <div
-              className={`elevator ${
-                elevatorWorking
-                  ? "elevator-working"
-                  : ""
-              }`}
-              style={{
-                top: `${elevatorFloor * 23 + 5}%`,
-              }}
-            >
-
-              <div className="elevator-roof">
-                🛗
-              </div>
-
-              <div className="elevator-cage">
-
-                <div className="elevator-worker">
-                  👷
-                </div>
-
-                <div className="elevator-bag">
-                  🎒
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* =========================
-              CUATRO POZOS
-          ========================== */}
-
-          <div className="mine-shafts">
-
-            {[0, 1, 2, 3].map((index) => {
-
-              const unlocked =
-                index < unlockedMines;
-
-              const isActive =
-                index === unlockedMines - 1;
-
-              return (
-
-                <div
-                  key={index}
-                  className={`mine-floor ${
-                    unlocked
-                      ? "mine-floor-unlocked"
-                      : "mine-floor-locked"
-                  }`}
-                >
-
-                  {/* ROCA */}
-
-                  <div className="rock-wall">
-
-                    <div className="rock-detail detail-one" />
-                    <div className="rock-detail detail-two" />
-                    <div className="rock-detail detail-three" />
-                    <div className="rock-detail detail-four" />
-
-                    <div className="ore ore-a" />
-                    <div className="ore ore-b" />
-                    <div className="ore ore-c" />
-
-                  </div>
-
-
-                  {unlocked ? (
-
-                    <>
-
-                      {/* NOMBRE DE LA MINA */}
-
-                      <div className="mine-number">
-                        MINA {index + 1}
-                      </div>
-
-
-                      {/* MINERO */}
-
-                      <div
-                        className={`small-miner ${
-                          isActive && hitting
-                            ? "small-miner-hit"
-                            : ""
-                        }`}
-                        onClick={
-                          index === 0
-                            ? mine
-                            : undefined
-                        }
-                      >
-
-                        <div className="small-helmet">
-
-                          <div className="small-lamp" />
-
-                        </div>
-
-
-                        <div className="small-head">
-
-                          <div className="small-eye left" />
-                          <div className="small-eye right" />
-
-                          <div className="small-beard" />
-
-                        </div>
-
-
-                        <div className="small-body">
-
-                          <div className="small-belt" />
-
-                        </div>
-
-
-                        <div className="small-arm left" />
-                        <div className="small-arm right" />
-
-                        <div className="small-leg left" />
-                        <div className="small-leg right" />
-
-
-                        <div
-                          className={`small-pickaxe ${
-                            hitting &&
-                            index === 0
-                              ? "small-pickaxe-hit"
-                              : ""
-                          }`}
-                        />
-
-                      </div>
-
-
-                      {/* SACO DE MINERALES */}
-
-                      <div
-                        className={`mine-bag ${
-                          elevatorFloor === index &&
-                          elevatorWorking
-                            ? "bag-active"
-                            : ""
-                        }`}
-                      >
-                        🎒
-                      </div>
-
-
-                      {/* PRODUCCIÓN */}
-
-                      <div className="mine-production">
-                        +{index + 1} ◆
-                      </div>
-
-
-                      {/* PUNTO DE RECOGIDA */}
-
-                      <div className="pickup-point">
-                        🪨
-                      </div>
-
-                    </>
-
-                  ) : (
-
-                    /* =====================
-                       MINA BLOQUEADA
-                    ====================== */
-
-                    <button
-                      className="unlock-button"
-                      onClick={() =>
-                        unlockMine(index)
-                      }
-                    >
-
-                      <span className="lock">
-                        🔒
-                      </span>
-
-                      <strong>
-                        DESBLOQUEAR
-                      </strong>
-
-                      <small>
-                        MINA {index + 1}
-                      </small>
-
-                      <b>
-                        🪙 {minePrices[index]}
-                      </b>
-
-                    </button>
-
-                  )}
-
-                </div>
-
-              );
-
-            })}
-
-          </div>
-
-
-          {/* =========================
-              PANEL DE MINERÍA MANUAL
-          ========================== */}
-
-          <div className="manual-panel">
-
-            <div className="manual-title">
-              ⛏️ MINA PRINCIPAL
-            </div>
-
-            <div className="manual-progress">
-
-              <div
-                className="manual-progress-fill"
-                style={{
-                  width: `${progress}%`,
-                }}
-              />
-
-            </div>
-
-            <div className="manual-progress-text">
-              {hits}/{maxHits}
-            </div>
-
-          </div>
-
-
-          {/* =========================
-              IMPACTO
-          ========================== */}
-
-          {hitting && (
-
-            <div className="impact">
-              ✦
-            </div>
-
-          )}
-
-        </section>
-
-
-        {/* =========================
-            ESTADÍSTICAS
-        ========================== */}
-
-        <div className="stats">
-
-          <div className="stat">
-
-            <div className="stat-icon">
-              ◆
-            </div>
-
-            <div>
-
-              <small>
-                MINERALES
-              </small>
-
-              <strong>
-                {minerals}
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div className="stat">
-
-            <div className="stat-icon">
-              🛗
-            </div>
-
-            <div>
-
-              <small>
-                MINAS
-              </small>
-
-              <strong>
-                {unlockedMines}/4
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div className="stat">
-
-            <div className="stat-icon">
-              🚋
-            </div>
-
-            <div>
-
-              <small>
-                ALMACÉN
-              </small>
-
-              <strong>
-                {storedMinerals}
-              </strong>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* =========================
-            MENÚ INFERIOR
-        ========================== */}
-
-        <nav className="bottom-menu">
-
-          <button
-            onClick={() =>
-              router.push("/game")
-            }
-          >
-
+          <div className="stat-card">
             <span>
-              ⛏
+              🪙
             </span>
+
+            <strong>
+              {coins}
+            </strong>
+
+            <small>
+              MONEDAS
+            </small>
+          </div>
+
+          <div className="stat-card">
+            <span>
+              🪨
+            </span>
+
+            <strong>
+              {minerals}
+            </strong>
+
+            <small>
+              MINERALES
+            </small>
+          </div>
+
+          <div className="stat-card">
+            <span>
+              ⛏️
+            </span>
+
+            <strong>
+              {unlockedMines}/4
+            </strong>
 
             <small>
               MINAS
             </small>
-
-          </button>
-
-
-          <button
-            onClick={() =>
-              router.push("/shop")
-            }
-          >
-
-            <span>
-              🛒
-            </span>
-
-            <small>
-              TIENDA
-            </small>
-
-          </button>
-
-
-          <button
-            onClick={() =>
-              router.push("/friends")
-            }
-          >
-
-            <span>
-              👥
-            </span>
-
-            <small>
-              REFERIDOS
-            </small>
-
-          </button>
-
-
-          <button
-            onClick={() =>
-              router.push("/bank")
-            }
-          >
-
-            <span>
-              💰
-            </span>
-
-            <small>
-              BANCO
-            </small>
-
-          </button>
-
-
-          <button
-            onClick={() =>
-              router.push("/missions")
-            }
-          >
-
-            <span>
-              🎯
-            </span>
-
-            <small>
-              MISIONES
-            </small>
-
-          </button>
-
-
-          <button
-            onClick={() =>
-              router.push("/profile")
-            }
-          >
-
-            <span>
-              👤
-            </span>
-
-            <small>
-              PERFIL
-            </small>
-
-          </button>
-
-        </nav>
-
+          </div>
+        </section>
       </div>
 
+      {/* =========================
+          MENÚ INFERIOR
+      ========================= */}
+
+      <nav className="bottom-menu">
+
+        <button
+          onClick={() => router.push("/game")}
+        >
+          <span>
+            ⛏️
+          </span>
+
+          <small>
+            MINAS
+          </small>
+        </button>
+
+        <button
+          onClick={() => router.push("/shop")}
+        >
+          <span>
+            🛒
+          </span>
+
+          <small>
+            TIENDA
+          </small>
+        </button>
+
+        <button
+          onClick={() => router.push("/friends")}
+        >
+          <span>
+            👥
+          </span>
+
+          <small>
+            REFERIDOS
+          </small>
+        </button>
+
+        <button
+          onClick={() => router.push("/bank")}
+        >
+          <span>
+            🏦
+          </span>
+
+          <small>
+            BANCO
+          </small>
+        </button>
+
+        <button
+          onClick={() => router.push("/missions")}
+        >
+          <span>
+            🎯
+          </span>
+
+          <small>
+            MISIONES
+          </small>
+        </button>
+
+        <button
+          onClick={() => router.push("/profile")}
+        >
+          <span>
+            👤
+          </span>
+
+          <small>
+            PERFIL
+          </small>
+        </button>
+
+      </nav>
+
+      {/* =========================
+          ESTILOS
+      ========================= */}
 
       <style jsx>{`
 
@@ -1432,494 +711,382 @@ export default function GamePage() {
           box-sizing: border-box;
         }
 
-
         .game-page {
-          width: 100%;
-          min-height: 100dvh;
-          background: #030303;
-          color: white;
-          overflow: hidden;
+          min-height: 100vh;
+          background:
+            radial-gradient(
+              circle at top,
+              #252525 0%,
+              #0c0c0c 45%,
+              #050505 100%
+            );
+          color: #fff;
           font-family:
             Arial,
             Helvetica,
             sans-serif;
+          padding-bottom: 75px;
+          overflow-x: hidden;
         }
-
 
         .game-container {
           width: 100%;
-          max-width: 600px;
-          height: 100dvh;
+          max-width: 520px;
           margin: 0 auto;
-          background: #080808;
-          position: relative;
-          overflow: hidden;
+          padding: 8px;
         }
 
+        /* HEADER */
 
-        /* =========================
-           TOP BAR
-        ========================== */
-
-        .top-bar {
-          height: 58px;
+        .game-header {
+          height: 52px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 7px 14px;
-          background: #0b0b0b;
-          border-bottom: 1px solid #292929;
+          gap: 8px;
+          padding: 7px 9px;
+          background: #101010;
+          border: 1px solid #292929;
+          border-radius: 10px;
+          margin-bottom: 8px;
+          box-shadow:
+            0 5px 15px rgba(0, 0, 0, 0.4);
         }
 
-
-        .profile {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-        }
-
-
-        .avatar {
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background:
-            linear-gradient(
-              145deg,
-              #f5c542,
-              #8d6500
-            );
-          color: #111;
-          font-weight: 900;
-          font-size: 17px;
-          border: 2px solid #ffe08a;
-        }
-
-
-        .player-name {
+        .game-logo {
           font-size: 12px;
-          font-weight: 900;
-          letter-spacing: 1px;
+          font-weight: 1000;
+          color: #f4c33d;
+          letter-spacing: 0.2px;
         }
 
-
-        .level {
+        .game-subtitle {
           margin-top: 2px;
+          font-size: 6px;
+          color: #666;
+          font-weight: 900;
+        }
+
+        .balance-box {
+          background: #181818;
+          border: 1px solid #3a3a3a;
+          border-radius: 7px;
+          padding: 6px 9px;
+          color: #f4c33d;
           font-size: 9px;
-          color: #8d8d8d;
-          font-weight: 700;
+          font-weight: 1000;
+          white-space: nowrap;
         }
 
+        /* MENSAJE */
 
-        .coins {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 16px;
-        }
-
-
-        .coins strong {
-          color: #f4c542;
-        }
-
-
-        /* =========================
-           ENERGÍA
-        ========================== */
-
-        .energy-area {
-          padding: 7px 14px 8px;
-          background: #0c0c0c;
-        }
-
-
-        .energy-text {
-          display: flex;
-          justify-content: space-between;
+        .game-message {
+          position: fixed;
+          left: 50%;
+          top: 40%;
+          transform: translate(-50%, -50%);
+          z-index: 1000;
+          background: rgba(0, 0, 0, 0.92);
+          border: 1px solid #f4c33d;
+          border-radius: 8px;
+          padding: 8px 13px;
+          color: #f4c33d;
           font-size: 9px;
-          color: #999;
-          margin-bottom: 4px;
-          font-weight: 800;
-        }
-
-
-        .energy-text strong {
-          color: white;
-        }
-
-
-        .energy-bar {
-          width: 100%;
-          height: 6px;
-          background: #222;
-          border-radius: 20px;
-          overflow: hidden;
-        }
-
-
-        .energy-fill {
-          height: 100%;
-          background:
-            linear-gradient(
-              90deg,
-              #d99800,
-              #ffe27a
-            );
-          transition: width .25s ease;
-        }
-
-
-        /* =========================
-           MUNDO DE LA MINA
-        ========================== */
-
-        .mine-world {
-          height:
-            calc(100dvh - 184px);
-          min-height: 390px;
-          position: relative;
-          overflow: hidden;
-          background:
-            linear-gradient(
-              #12100c 0%,
-              #19130b 8%,
-              #21170c 8%,
-              #0c0c0c 100%
-            );
-        }
-
-
-        /* =========================
-           SUPERFICIE
-        ========================== */
-
-        .surface {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 26%;
-          min-height: 92px;
-          background:
-            linear-gradient(
-              #253b21,
-              #172516
-            );
-          border-bottom:
-            6px solid #0d0d0d;
-          z-index: 20;
-          overflow: hidden;
-        }
-
-
-        .sky-glow {
-          position: absolute;
-          width: 130px;
-          height: 60px;
-          right: 15%;
-          top: 8px;
-          background:
-            radial-gradient(
-              circle,
-              rgba(255,205,70,.22),
-              transparent 70%
-            );
-        }
-
-
-        .mountain {
-          position: absolute;
-          bottom: 5px;
-          width: 0;
-          height: 0;
-          border-left:
-            65px solid transparent;
-          border-right:
-            65px solid transparent;
-          border-bottom:
-            65px solid #182319;
-        }
-
-
-        .mountain-one {
-          left: 5%;
-        }
-
-
-        .mountain-two {
-          left: 25%;
-          transform: scale(.7);
-        }
-
-
-        /* =========================
-           ALMACÉN
-        ========================== */
-
-        .warehouse {
-          position: absolute;
-          left: 4%;
-          bottom: 7px;
-          width: 78px;
-          height: 61px;
-          z-index: 8;
-          text-align: center;
-        }
-
-
-        .warehouse-roof {
-          height: 31px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 28px;
-        }
-
-
-        .warehouse-body {
-          height: 21px;
-          border-radius: 5px;
-          background: #5b351b;
-          border: 2px solid #9a612f;
-          font-size: 7px;
-          font-weight: 900;
-          padding-top: 5px;
-        }
-
-
-        .warehouse-stock {
-          margin-top: 2px;
-          color: #f0c13d;
-          font-size: 7px;
-          font-weight: 900;
-        }
-
-
-        /* =========================
-           VÍAS
-        ========================== */
-
-        .railway {
-          position: absolute;
-          left: 27%;
-          right: 4%;
-          bottom: 5px;
-          height: 44px;
-        }
-
-
-        .rail {
-          position: absolute;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: #555;
-        }
-
-
-        .rail-one {
-          top: 13px;
-        }
-
-
-        .rail-two {
-          top: 29px;
-        }
-
-
-        .wagon {
-          position: absolute;
-          left: 12%;
-          top: 1px;
-          width: 52px;
-          height: 36px;
-          transition:
-            transform 1.8s linear;
-          z-index: 6;
-        }
-
-
-        .wagon-moving {
-          transform:
-            translateX(115px);
-        }
-
-
-        .wagon-box {
-          position: absolute;
-          left: 5px;
-          top: 0;
-          width: 42px;
-          height: 23px;
-          border-radius:
-            5px 5px 2px 2px;
-          background: #734a23;
-          border:
-            2px solid #b97a37;
-          color: #e3b05e;
-          text-align: center;
-          padding-top: 2px;
-          font-size: 13px;
-        }
-
-
-        .wagon-wheel {
-          position: absolute;
-          bottom: 0;
-          width: 11px;
-          height: 11px;
-          border-radius: 50%;
-          background: #151515;
-          border: 2px solid #777;
-        }
-
-
-        .wheel-one {
-          left: 7px;
-        }
-
-
-        .wheel-two {
-          right: 7px;
-        }
-
-
-        .wagon-worker {
-          position: absolute;
-          right: -18px;
-          top: -5px;
-          font-size: 21px;
-        }
-
-
-        /* =========================
-           ZONA DE CARGA
-        ========================== */
-
-        .delivery-zone {
-          position: absolute;
-          right: 4%;
-          top: 8px;
-          width: 48px;
-          text-align: center;
-          z-index: 10;
-        }
-
-
-        .delivery-worker {
-          font-size: 20px;
-        }
-
-
-        .delivery-box {
-          font-size: 21px;
-        }
-
-
-        .delivery-text {
-          color: #d3a83d;
-          font-size: 7px;
-          font-weight: 900;
-        }
-
-
-        /* =========================
-           ELEVADOR
-        ========================== */
-
-        .elevator-shaft {
-          position: absolute;
-          left: 45%;
-          top: 20%;
-          width: 52px;
-          height: 77%;
-          z-index: 16;
+          font-weight: 1000;
+          white-space: nowrap;
+          animation: messagePop 1.2s ease forwards;
           pointer-events: none;
         }
 
+        @keyframes messagePop {
 
-        .shaft-line {
-          position: absolute;
-          left: 50%;
-          transform:
-            translateX(-50%);
-          top: 0;
-          bottom: 0;
-          width: 30px;
-          background:
-            linear-gradient(
-              90deg,
-              #111,
-              #454545,
-              #111
-            );
-          border-left: 2px solid #050505;
-          border-right: 2px solid #050505;
+          0% {
+            opacity: 0;
+            transform:
+              translate(-50%, -40%)
+              scale(0.8);
+          }
+
+          15% {
+            opacity: 1;
+            transform:
+              translate(-50%, -50%)
+              scale(1);
+          }
+
+          80% {
+            opacity: 1;
+          }
+
+          100% {
+            opacity: 0;
+            transform:
+              translate(-50%, -70%)
+              scale(1.05);
+          }
         }
 
+        /* =========================
+           ÁREA DE LA MINA
+        ========================= */
 
-        .elevator {
-          position: absolute;
-          left: 50%;
-          transform:
-            translateX(-50%);
-          width: 45px;
-          height: 54px;
-          transition:
-            top 1s ease-in-out;
+        .mine-area {
+          position: relative;
+          height: 360px;
+          overflow: hidden;
+          border-radius: 12px;
+          border: 1px solid #292929;
+          background:
+            linear-gradient(
+              180deg,
+              #202020 0%,
+              #17110c 30%,
+              #0d0b08 100%
+            );
+          box-shadow:
+            inset 0 0 30px rgba(0, 0, 0, 0.8),
+            0 8px 20px rgba(0, 0, 0, 0.45);
+        }
+
+        /* SUPERFICIE */
+
+        .surface {
+          position: relative;
+          height: 58px;
+          background:
+            linear-gradient(
+              180deg,
+              #303d52 0%,
+              #1c2633 55%,
+              #172014 56%,
+              #3a2919 100%
+            );
+          overflow: hidden;
           z-index: 30;
         }
 
-
-        .elevator-roof {
+        .surface-sky {
           position: absolute;
-          top: -8px;
-          left: 2px;
-          font-size: 22px;
+          left: 22px;
+          top: 4px;
+          font-size: 15px;
+          opacity: 0.55;
         }
 
-
-        .elevator-cage {
+                .surface-ground {
           position: absolute;
+          left: 0;
+          right: 0;
           bottom: 0;
-          width: 45px;
-          height: 42px;
-          border:
-            3px solid #9b762c;
+          height: 34px;
           background:
-            rgba(35,35,35,.95);
-          border-radius: 4px;
+            linear-gradient(
+              180deg,
+              #26371c,
+              #3b2817
+            );
+        }
+
+        .ground-grass {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: 5px;
+          background: #516c2b;
+          box-shadow:
+            0 1px 0 #17220f;
+        }
+
+        /* =========================
+           ALMACÉN
+        ========================= */
+
+        .warehouse {
+          position: absolute;
+          left: 10px;
+          bottom: 3px;
+          width: 84px;
+          height: 42px;
+          z-index: 20;
+        }
+
+        .warehouse-roof {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 84px;
+          height: 15px;
+          background:
+            linear-gradient(
+              180deg,
+              #7c4b21,
+              #432813
+            );
+          border-radius: 6px 6px 0 0;
+          border: 1px solid #2b190c;
+          text-align: center;
+          font-size: 14px;
+          line-height: 15px;
+        }
+
+        .warehouse-body {
+          position: absolute;
+          left: 8px;
+          right: 8px;
+          top: 13px;
+          bottom: 0;
+          background:
+            linear-gradient(
+              180deg,
+              #6b4527,
+              #3c2615
+            );
+          border: 1px solid #24160c;
+          border-radius: 2px;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 1px;
+          gap: 2px;
         }
 
-
-                .elevator-worker {
-          font-size: 18px;
+        .warehouse-body strong {
+          font-size: 7px;
+          color: #f0d29a;
         }
 
-        .elevator-bag {
-          font-size: 13px;
+        .warehouse-body span {
+          font-size: 7px;
+          color: #f4c33d;
+          font-weight: 900;
         }
 
-        .elevator-cage {
+        .warehouse-stock {
+          position: absolute;
+          left: 92px;
+          bottom: 4px;
+          font-size: 17px;
+        }
+
+        .surface-worker {
+          position: absolute;
+          right: 62px;
+          bottom: 3px;
+          font-size: 21px;
+          z-index: 10;
+        }
+
+        /* =========================
+           CARRO
+        ========================= */
+
+        .wagon {
+          position: absolute;
+          left: 180px;
+          bottom: 1px;
+          width: 48px;
+          height: 27px;
+          z-index: 15;
+        }
+
+        .wagon-moving {
+          animation: wagonMove 1.8s ease-in-out;
+        }
+
+        .wagon-body {
+          position: absolute;
+          left: 0;
+          bottom: 6px;
+          font-size: 24px;
+        }
+
+        .wagon-minerals {
+          position: absolute;
+          left: 16px;
+          bottom: 15px;
+          font-size: 10px;
+        }
+
+        .wagon::before,
+        .wagon::after {
+          content: "";
+          position: absolute;
+          bottom: 1px;
+          width: 7px;
+          height: 7px;
+          background: #111;
+          border: 1px solid #777;
+          border-radius: 50%;
+        }
+
+        .wagon::before {
+          left: 5px;
+        }
+
+        .wagon::after {
+          left: 31px;
+        }
+
+        @keyframes wagonMove {
+          0% {
+            transform: translateX(0);
+          }
+
+          100% {
+            transform: translateX(120px);
+          }
+        }
+
+        /* =========================
+           ASCENSOR
+        ========================= */
+
+        .elevator-shaft {
+          position: absolute;
+          left: 50%;
+          top: 45px;
+          bottom: 0;
+          width: 58px;
+          transform: translateX(-50%);
+          background:
+            linear-gradient(
+              90deg,
+              #090909,
+              #202020 50%,
+              #090909
+            );
+          border-left: 2px solid #303030;
+          border-right: 2px solid #303030;
+          z-index: 10;
+          pointer-events: none;
+        }
+
+        .elevator-rope {
+          position: absolute;
+          left: 50%;
+          top: -50px;
+          width: 3px;
+          height: 500px;
+          transform: translateX(-50%);
+          background: #777;
+          box-shadow:
+            0 0 3px #000;
+        }
+
+                .elevator-cage {
           position: absolute;
           left: 50%;
           transform: translateX(-50%);
           width: 48px;
-          height: 58px;
-          background: linear-gradient(
-            180deg,
-            #555 0%,
-            #292929 45%,
-            #151515 100%
-          );
+          height: 54px;
+          background:
+            linear-gradient(
+              180deg,
+              #555 0%,
+              #292929 45%,
+              #151515 100%
+            );
           border: 2px solid #777;
           border-radius: 5px;
           box-shadow:
@@ -1936,7 +1103,6 @@ export default function GamePage() {
           position: absolute;
           inset: 4px;
           border: 2px solid rgba(255, 255, 255, 0.18);
-          pointer-events: none;
         }
 
         .elevator-bars::before,
@@ -1957,27 +1123,16 @@ export default function GamePage() {
           right: 30%;
         }
 
-        .elevator-rope {
-          position: absolute;
-          left: 50%;
-          top: -500px;
-          transform: translateX(-50%);
-          width: 4px;
-          height: 500px;
-          background: #777;
-          box-shadow: 0 0 3px #000;
-          z-index: 4;
-        }
-
         .elevator-light {
           position: absolute;
+          top: 4px;
+          right: 4px;
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: #f5c542;
-          box-shadow: 0 0 8px #f5c542;
-          top: 4px;
-          right: 4px;
+          background: #56d364;
+          box-shadow:
+            0 0 7px #56d364;
         }
 
         .elevator-worker {
@@ -1988,21 +1143,21 @@ export default function GamePage() {
         }
 
         .elevator-bag {
+          position: absolute;
+          right: 4px;
+          bottom: 5px;
           font-size: 13px;
           line-height: 1;
-          position: absolute;
-          bottom: 5px;
-          right: 4px;
           z-index: 3;
         }
 
         .elevator-control {
           position: absolute;
-          right: 7px;
+          right: 4px;
           top: 50%;
           transform: translateY(-50%);
-          width: 12px;
-          height: 32px;
+          width: 10px;
+          height: 27px;
           background: #111;
           border: 1px solid #555;
           border-radius: 3px;
@@ -2014,7 +1169,6 @@ export default function GamePage() {
         }
 
         .elevator-control i {
-          display: block;
           width: 4px;
           height: 4px;
           border-radius: 50%;
@@ -2023,32 +1177,39 @@ export default function GamePage() {
 
         .elevator-control i:first-child {
           background: #56d364;
-          box-shadow: 0 0 5px #56d364;
+          box-shadow:
+            0 0 5px #56d364;
         }
 
         .elevator-floor-label {
           position: absolute;
-          left: 56px;
+          left: 54px;
           white-space: nowrap;
-          font-size: 7px;
+          background: rgba(0, 0, 0, 0.8);
+          border: 1px solid #444;
+          border-radius: 4px;
+          padding: 3px 5px;
+          font-size: 6px;
           font-weight: 900;
           color: #aaa;
-          background: rgba(0, 0, 0, 0.75);
-          border: 1px solid #444;
-          padding: 3px 5px;
-          border-radius: 4px;
         }
 
         .elevator-moving {
-          animation: elevatorShake 0.25s infinite alternate;
+          animation:
+            elevatorShake 0.25s infinite alternate;
         }
 
         @keyframes elevatorShake {
           from {
-            transform: translateX(-50%) translateY(-1px);
+            transform:
+              translateX(-50%)
+              translateY(-1px);
           }
+
           to {
-            transform: translateX(-50%) translateY(1px);
+            transform:
+              translateX(-50%)
+              translateY(1px);
           }
         }
 
@@ -2058,13 +1219,13 @@ export default function GamePage() {
 
         .mine-floor {
           position: relative;
-          height: 70px;
+          height: 75px;
           border-top: 2px solid #242424;
           background:
             linear-gradient(
               180deg,
-              rgba(55, 39, 25, 0.95),
-              rgba(27, 20, 14, 0.98)
+              rgba(55, 39, 25, 0.98),
+              rgba(27, 20, 14, 1)
             );
           overflow: hidden;
         }
@@ -2074,10 +1235,26 @@ export default function GamePage() {
           position: absolute;
           inset: 0;
           background-image:
-            radial-gradient(circle at 20% 30%, #66502d 0 2px, transparent 3px),
-            radial-gradient(circle at 70% 65%, #4c3b26 0 2px, transparent 3px),
-            radial-gradient(circle at 45% 80%, #725832 0 2px, transparent 3px),
-            radial-gradient(circle at 85% 20%, #3d3021 0 2px, transparent 3px);
+            radial-gradient(
+              circle at 20% 30%,
+              #66502d 0 2px,
+              transparent 3px
+            ),
+            radial-gradient(
+              circle at 70% 65%,
+              #4c3b26 0 2px,
+              transparent 3px
+            ),
+            radial-gradient(
+              circle at 45% 80%,
+              #725832 0 2px,
+              transparent 3px
+            ),
+            radial-gradient(
+              circle at 85% 20%,
+              #3d3021 0 2px,
+              transparent 3px
+            );
           opacity: 0.55;
         }
 
@@ -2104,16 +1281,27 @@ export default function GamePage() {
           z-index: 5;
         }
 
+        .mine-level {
+          position: absolute;
+          right: 8px;
+          top: 6px;
+          font-size: 7px;
+          color: #777;
+          font-weight: 900;
+          z-index: 5;
+        }
+
         .mine-tunnel {
           position: absolute;
           left: 25px;
           right: 8px;
           bottom: 9px;
-          height: 31px;
+          height: 35px;
           border-radius: 5px;
           background: #16120e;
           border: 2px solid #33281c;
-          box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+          box-shadow:
+            inset 0 0 15px rgba(0, 0, 0, 0.8);
           z-index: 3;
         }
 
@@ -2128,12 +1316,11 @@ export default function GamePage() {
           border-radius: 0 0 4px 4px;
         }
 
-        .mine-ore {
+        .mine-ore-pile {
           position: absolute;
-          right: 9px;
-          bottom: 6px;
+          left: 7px;
+          bottom: 5px;
           font-size: 17px;
-          filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.35));
           z-index: 5;
         }
 
@@ -2145,21 +1332,22 @@ export default function GamePage() {
           align-items: center;
           gap: 2px;
           z-index: 7;
-          transition: left 0.8s ease;
         }
 
         .mine-worker-body {
-          font-size: 22px;
-          filter: drop-shadow(0 2px 2px #000);
+          font-size: 21px;
+          filter:
+            drop-shadow(0 2px 2px #000);
         }
 
         .mine-worker-bag {
-          font-size: 14px;
+          font-size: 13px;
           transform: translateY(3px);
         }
 
         .mine-worker.working {
-          animation: workerWalk 1.5s infinite ease-in-out;
+          animation:
+            workerWalk 1.5s infinite ease-in-out;
         }
 
         @keyframes workerWalk {
@@ -2168,7 +1356,7 @@ export default function GamePage() {
           }
 
           50% {
-            transform: translateX(28px);
+            transform: translateX(25px);
           }
 
           100% {
@@ -2178,20 +1366,68 @@ export default function GamePage() {
 
         .mine-pickaxe {
           position: absolute;
-          left: 63px;
+          left: 62px;
           bottom: 22px;
-          font-size: 18px;
+          font-size: 17px;
           z-index: 8;
           transform: rotate(-25deg);
+          animation:
+            pickaxeHit 1.1s infinite ease-in-out;
         }
 
-        .mine-ore-pile {
+        @keyframes pickaxeHit {
+          0% {
+            transform: rotate(-45deg);
+          }
+
+          45% {
+            transform: rotate(15deg);
+          }
+
+          100% {
+            transform: rotate(-45deg);
+          }
+        }
+
+        .mine-ore {
           position: absolute;
-          left: 8px;
-          bottom: 5px;
+          right: 9px;
+          bottom: 6px;
           font-size: 17px;
           z-index: 5;
+          animation:
+            oreGlow 1.5s infinite;
         }
+
+        @keyframes oreGlow {
+          0% {
+            filter:
+              drop-shadow(
+                0 0 1px
+                rgba(255, 193, 7, 0.2)
+              );
+          }
+
+          50% {
+            filter:
+              drop-shadow(
+                0 0 6px
+                rgba(255, 193, 7, 0.65)
+              );
+          }
+
+          100% {
+            filter:
+              drop-shadow(
+                0 0 1px
+                rgba(255, 193, 7, 0.2)
+              );
+          }
+        }
+
+               /* =========================
+           DESBLOQUEAR MINAS
+        ========================= */
 
         .mine-lock {
           position: absolute;
@@ -2204,11 +1440,12 @@ export default function GamePage() {
 
         .unlock-button {
           border: 1px solid #d69d1c;
-          background: linear-gradient(
-            180deg,
-            #f4c33d,
-            #b77b0e
-          );
+          background:
+            linear-gradient(
+              180deg,
+              #f4c33d,
+              #b77b0e
+            );
           color: #16110a;
           border-radius: 7px;
           padding: 6px 10px;
@@ -2222,9 +1459,6 @@ export default function GamePage() {
 
         .unlock-button:active {
           transform: translateY(2px);
-          box-shadow:
-            0 1px 0 #704d08,
-            0 2px 5px rgba(0, 0, 0, 0.4);
         }
 
         .unlock-price {
@@ -2234,18 +1468,8 @@ export default function GamePage() {
           opacity: 0.8;
         }
 
-        .mine-level {
-          position: absolute;
-          right: 8px;
-          top: 5px;
-          font-size: 7px;
-          color: #777;
-          font-weight: 900;
-          z-index: 5;
-        }
-
         /* =========================
-           MANUAL MINING
+           PANEL MANUAL
         ========================= */
 
         .manual-panel {
@@ -2283,11 +1507,12 @@ export default function GamePage() {
 
         .manual-progress-bar {
           height: 100%;
-          background: linear-gradient(
-            90deg,
-            #8f6411,
-            #f4c33d
-          );
+          background:
+            linear-gradient(
+              90deg,
+              #8f6411,
+              #f4c33d
+            );
           border-radius: inherit;
           transition: width 0.2s ease;
         }
@@ -2296,11 +1521,12 @@ export default function GamePage() {
           width: 100%;
           border: 0;
           border-radius: 8px;
-          background: linear-gradient(
-            180deg,
-            #f4c33d,
-            #b97e12
-          );
+          background:
+            linear-gradient(
+              180deg,
+              #f4c33d,
+              #b97e12
+            );
           color: #16110a;
           padding: 10px;
           font-size: 10px;
@@ -2313,9 +1539,6 @@ export default function GamePage() {
 
         .mine-button:active {
           transform: translateY(2px);
-          box-shadow:
-            0 1px 0 #704d08,
-            0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         .mine-button:disabled {
@@ -2324,7 +1547,8 @@ export default function GamePage() {
         }
 
         .mine-button.hit {
-          animation: buttonHit 0.35s ease;
+          animation:
+            buttonHit 0.35s ease;
         }
 
         @keyframes buttonHit {
@@ -2342,12 +1566,13 @@ export default function GamePage() {
         }
 
         /* =========================
-           STATS
+           ESTADÍSTICAS
         ========================= */
 
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns:
+            repeat(3, 1fr);
           gap: 5px;
           margin-top: 8px;
         }
@@ -2381,50 +1606,7 @@ export default function GamePage() {
         }
 
         /* =========================
-           MENSAJES
-        ========================= */
-
-        .game-message {
-          position: absolute;
-          left: 50%;
-          top: 43%;
-          transform: translate(-50%, -50%);
-          z-index: 100;
-          background: rgba(0, 0, 0, 0.88);
-          border: 1px solid #f4c33d;
-          color: #f4c33d;
-          padding: 7px 12px;
-          border-radius: 8px;
-          font-size: 9px;
-          font-weight: 1000;
-          white-space: nowrap;
-          pointer-events: none;
-          animation: messagePop 1.2s ease forwards;
-        }
-
-        @keyframes messagePop {
-          0% {
-            opacity: 0;
-            transform: translate(-50%, -40%) scale(0.8);
-          }
-
-          15% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-          }
-
-          80% {
-            opacity: 1;
-          }
-
-          100% {
-            opacity: 0;
-            transform: translate(-50%, -70%) scale(1.05);
-          }
-        }
-
-        /* =========================
-           BOTTOM MENU
+           MENÚ INFERIOR
         ========================= */
 
         .bottom-menu {
@@ -2436,9 +1618,11 @@ export default function GamePage() {
           background: #090909;
           border-top: 1px solid #252525;
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
+          grid-template-columns:
+            repeat(6, 1fr);
           z-index: 500;
-          padding-bottom: env(safe-area-inset-bottom);
+          padding-bottom:
+            env(safe-area-inset-bottom);
         }
 
         .bottom-menu button {
@@ -2474,104 +1658,16 @@ export default function GamePage() {
         }
 
         /* =========================
-           ANIMACIONES
-        ========================= */
-
-        @keyframes minerHit {
-          0% {
-            transform: translateX(0);
-          }
-
-          35% {
-            transform: translateX(8px) rotate(2deg);
-          }
-
-          100% {
-            transform: translateX(0) rotate(0);
-          }
-        }
-
-        @keyframes pickaxeHit {
-          0% {
-            transform: rotate(-45deg);
-          }
-
-          45% {
-            transform: rotate(15deg);
-          }
-
-          100% {
-            transform: rotate(-45deg);
-          }
-        }
-
-        @keyframes spark {
-          0% {
-            transform: scale(0.3);
-            opacity: 1;
-          }
-
-          100% {
-            transform:
-              translateY(-30px)
-              translateX(10px)
-              scale(1.4);
-            opacity: 0;
-          }
-        }
-
-        @keyframes wagonMove {
-          0% {
-            transform: translateX(0);
-          }
-
-          100% {
-            transform: translateX(135px);
-          }
-        }
-
-        @keyframes oreGlow {
-          0% {
-            filter: drop-shadow(0 0 1px rgba(255, 193, 7, 0.2));
-          }
-
-          50% {
-            filter: drop-shadow(0 0 6px rgba(255, 193, 7, 0.65));
-          }
-
-          100% {
-            filter: drop-shadow(0 0 1px rgba(255, 193, 7, 0.2));
-          }
-        }
-
-        .ore-glow {
-          animation: oreGlow 1.5s infinite;
-        }
-
-        /* =========================
            RESPONSIVE
         ========================= */
 
         @media (max-width: 380px) {
-          .game-page {
-            padding-bottom: 70px;
-          }
-
-          .game-header {
-            padding: 7px 8px;
-          }
-
-          .header-title {
-            font-size: 12px;
-          }
-
-          .balance-box {
-            font-size: 8px;
-            padding: 5px 7px;
+          .game-container {
+            padding: 6px;
           }
 
           .mine-area {
-            height: 310px;
+            height: 335px;
           }
 
           .surface {
@@ -2579,25 +1675,22 @@ export default function GamePage() {
           }
 
           .mine-floor {
-            height: 63px;
+            height: 70px;
           }
 
-          .mine-tunnel {
-            left: 22px;
-            height: 28px;
+          .warehouse {
+            left: 7px;
+            transform: scale(0.9);
+            transform-origin: bottom left;
           }
 
-          .mine-worker-body {
-            font-size: 19px;
-          }
-
-          .mine-worker-bag {
-            font-size: 12px;
+          .wagon {
+            left: 155px;
           }
 
           .elevator-cage {
-            width: 42px;
-            height: 52px;
+            width: 43px;
+            height: 50px;
           }
 
           .elevator-worker {
@@ -2605,6 +1698,14 @@ export default function GamePage() {
           }
 
           .elevator-bag {
+            font-size: 12px;
+          }
+
+          .mine-worker-body {
+            font-size: 19px;
+          }
+
+          .mine-worker-bag {
             font-size: 12px;
           }
 
@@ -2622,11 +1723,6 @@ export default function GamePage() {
         }
 
         @media (min-width: 600px) {
-          .game-page {
-            max-width: 520px;
-            margin: 0 auto;
-          }
-
           .bottom-menu {
             left: 50%;
             right: auto;
@@ -2636,7 +1732,7 @@ export default function GamePage() {
             border-right: 1px solid #252525;
           }
         }
-      `}</style>
+              `}</style>
     </main>
   );
 }
