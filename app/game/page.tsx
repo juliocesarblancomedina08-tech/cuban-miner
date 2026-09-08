@@ -6,87 +6,63 @@ import { useRouter } from "next/navigation";
 export default function GamePage() {
   const router = useRouter();
 
-  const [coins, setCoins] = useState(0);
+  const [coins, setCoins] = useState(100);
   const [minerals, setMinerals] = useState(0);
   const [energy, setEnergy] = useState(100);
   const [hits, setHits] = useState(0);
-  const [mining, setMining] = useState(false);
+  const [hitting, setHitting] = useState(false);
 
   const maxHits = 10;
   const progress = Math.min((hits / maxHits) * 100, 100);
 
   function mine() {
-    if (mining || energy <= 0) {
-      return;
-    }
+    if (energy <= 0 || hitting) return;
 
-    setMining(true);
-    setEnergy((value) => Math.max(0, value - 1));
+    setHitting(true);
+    setEnergy((value) => Math.max(value - 2, 0));
 
-    const nextHits = hits + 1;
+    setTimeout(() => {
+      setHits((value) => {
+        const next = value + 1;
 
-    if (nextHits >= maxHits) {
-      setHits(0);
-      setMinerals((value) => value + 1);
-      setCoins((value) => value + 5);
-    } else {
-      setHits(nextHits);
-      setCoins((value) => value + 1);
-    }
+        if (next >= maxHits) {
+          setCoins((value) => value + 25);
+          setMinerals((value) => value + 1);
+          return 0;
+        }
 
-    window.setTimeout(() => {
-      setMining(false);
-    }, 300);
+        return next;
+      });
+
+      setHitting(false);
+    }, 350);
   }
 
   return (
     <main className="game-page">
-
       <div className="game-container">
 
-        {/* CABECERA */}
-
-        <header className="game-header">
-
-          <button
-            type="button"
-            className="profile-button"
-            onClick={() => router.push("/profile")}
-          >
-            <div className="avatar">
-              👷
-            </div>
+        {/* HEADER */}
+        <header className="top-bar">
+          <div className="profile">
+            <div className="avatar">M</div>
 
             <div>
-              <div className="small-label">
-                MINERO
-              </div>
-
-              <div className="level">
-                NIVEL 1
-              </div>
-            </div>
-          </button>
-
-          <div className="coins-box">
-            <div className="small-label">
-              MINER COINS
-            </div>
-
-            <div className="coins">
-              🪙 {coins.toLocaleString()}
+              <div className="player-name">MINERO</div>
+              <div className="level">NIVEL 1</div>
             </div>
           </div>
 
+          <div className="coins">
+            <span>🪙</span>
+            <strong>{coins}</strong>
+          </div>
         </header>
 
-        {/* ENERGÍA */}
-
-        <div className="energy-section">
-
-          <div className="energy-label">
-            <span>⚡ ENERGÍA</span>
-            <span>{energy}/100</span>
+        {/* ENERGY */}
+        <div className="energy-area">
+          <div className="energy-text">
+            ENERGÍA <strong>{energy}/100</strong>
           </div>
 
           <div className="energy-bar">
@@ -95,21 +71,22 @@ export default function GamePage() {
               style={{ width: `${energy}%` }}
             />
           </div>
-
         </div>
 
-        {/* MINA */}
-
+        {/* MINE */}
         <section
-          className={`mine ${mining ? "mine-hit" : ""}`}
+          className="mine"
           onClick={mine}
         >
 
-          <div className="mine-glow" />
+          <div className="ceiling" />
 
-          <div className="mine-ceiling" />
+          <div className="lamp">
+            <div className="lamp-light" />
+          </div>
 
-          <div className="mine-wall">
+          {/* TUNNEL BACKGROUND */}
+          <div className="tunnel-back">
 
             <div className="rock rock-1" />
             <div className="rock rock-2" />
@@ -119,244 +96,140 @@ export default function GamePage() {
 
           </div>
 
-          <div className="mine-floor" />
-
-          {/* LÁMPARA */}
-
-          <div className="lamp">
-
-            <div className="lamp-wire" />
-
-            <div className="lamp-light" />
-
-          </div>
-
-          {/* TÍTULO */}
-
-          <div className="mine-title">
-
-            <div>
-              MINA 01
-            </div>
-
-            <strong>
-              PRIMERA MINA
-            </strong>
-
-            <span>
-              EXTRAE MINERALES
-            </span>
-
-          </div>
-
-          {/* PARED PARA PICAR */}
-
+          {/* UNMINED ROCK */}
           <div className="ore-wall">
 
-            <div className="ore-crack crack-1" />
-            <div className="ore-crack crack-2" />
-            <div className="ore-crack crack-3" />
-            <div className="ore-crack crack-4" />
+            <div className="ore ore-1" />
+            <div className="ore ore-2" />
+            <div className="ore ore-3" />
+            <div className="ore ore-4" />
+            <div className="ore ore-5" />
 
-            <div className="ore-center">
-
-              <div className="ore-icon">
-                ◆
-              </div>
-
-              <div className="ore-name">
-                ROCA
-              </div>
-
-              <div className="ore-hits">
-                {hits}/{maxHits}
-              </div>
-
-            </div>
+            <div className="crack crack-1" />
+            <div className="crack crack-2" />
+            <div className="crack crack-3" />
 
           </div>
 
-          {/* MINERO */}
-
-          <div className={`miner ${mining ? "miner-mining" : ""}`}>
-
-            <div className="miner-shadow" />
-
-            <div className="miner-legs">
-              <div className="leg left-leg" />
-              <div className="leg right-leg" />
-            </div>
-
-            <div className="miner-body">
-
-              <div className="shirt" />
-
-              <div className="belt" />
-
-            </div>
-
-            <div className="miner-head">
-
-              <div className="hair" />
-
-              <div className="eye eye-left" />
-              <div className="eye eye-right" />
-
-              <div className="beard" />
-
-            </div>
+          {/* MINER */}
+          <div className={`miner ${hitting ? "miner-hit" : ""}`}>
 
             <div className="helmet">
-
               <div className="helmet-light" />
-
             </div>
 
-            <div className="arm arm-back" />
-            <div className="arm arm-front" />
+            <div className="head">
+              <div className="eye eye-left" />
+              <div className="eye eye-right" />
+              <div className="beard" />
+            </div>
 
-            {/* PICO */}
+            <div className="body">
+              <div className="shirt" />
+              <div className="belt" />
+            </div>
 
-            <div className="pickaxe">
+            <div className="arm arm-left" />
+            <div className="arm arm-right" />
 
-              <div className="pickaxe-stick" />
+            <div className="leg leg-left" />
+            <div className="leg leg-right" />
 
-              <div className="pickaxe-metal">
-
-                <div className="metal-left" />
-                <div className="metal-right" />
-
-              </div>
-
+            {/* PICKAXE */}
+            <div className={`pickaxe ${hitting ? "pickaxe-hit" : ""}`}>
+              <div className="pickaxe-handle" />
+              <div className="pickaxe-head" />
             </div>
 
           </div>
 
-          {/* IMPACTO */}
-
-          {mining && (
+          {/* IMPACT */}
+          {hitting && (
             <div className="impact">
-
-              <span className="spark spark-1">✦</span>
-              <span className="spark spark-2">✦</span>
-              <span className="spark spark-3">✧</span>
-              <span className="spark spark-4">✦</span>
-
-              <span className="dust dust-1" />
-              <span className="dust dust-2" />
-              <span className="dust dust-3" />
-
+              <span>✦</span>
+              <span>✧</span>
+              <span>•</span>
+              <span>✦</span>
+              <span>•</span>
             </div>
           )}
 
-          {/* PROGRESO */}
-
+          {/* ROCK PROGRESS */}
           <div className="rock-progress">
 
-            <div className="progress-top">
-              <span>
-                RESISTENCIA DE LA ROCA
-              </span>
-
-              <span>
-                {Math.round(progress)}%
-              </span>
+            <div className="progress-title">
+              MINANDO ROCA
             </div>
 
             <div className="progress-bar">
-
               <div
                 className="progress-fill"
                 style={{ width: `${progress}%` }}
               />
-
             </div>
 
-            <div className="tap-text">
-              {energy > 0
-                ? "👆 TOCA LA PANTALLA PARA PICAR"
-                : "⚡ SIN ENERGÍA"}
+            <div className="progress-number">
+              {hits}/{maxHits}
             </div>
 
+          </div>
+
+          <div className="tap-hint">
+            TOCA PARA MINAR
           </div>
 
         </section>
 
-        {/* INFORMACIÓN */}
-
+        {/* STATS */}
         <div className="stats">
 
-          <div>
-            <span>
-              MINERALES
-            </span>
-
-            <strong>
-              💎 {minerals}
-            </strong>
+          <div className="stat">
+            <div className="stat-icon">◆</div>
+            <div>
+              <small>MINERALES</small>
+              <strong>{minerals}</strong>
+            </div>
           </div>
 
-          <div>
-            <span>
-              GANANCIA
-            </span>
-
-            <strong>
-              +1 🪙
-            </strong>
+          <div className="stat">
+            <div className="stat-icon">⛏</div>
+            <div>
+              <small>FUERZA</small>
+              <strong>1</strong>
+            </div>
           </div>
 
         </div>
 
-        {/* MENÚ */}
-
+        {/* BOTTOM MENU */}
         <nav className="bottom-menu">
 
-          <button
-            type="button"
-            className="menu-active"
-            onClick={() => router.push("/game")}
-          >
-            <span>⛏️</span>
+          <button onClick={() => router.push("/game")}>
+            <span>⛏</span>
             <small>MINAS</small>
           </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/shop")}
-          >
+          <button onClick={() => router.push("/shop")}>
             <span>🛒</span>
             <small>TIENDA</small>
           </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/friends")}
-          >
+          <button onClick={() => router.push("/friends")}>
             <span>👥</span>
             <small>REFERIDOS</small>
           </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/bank")}
-          >
-            <span>🏦</span>
+          <button onClick={() => router.push("/bank")}>
+            <span>💰</span>
             <small>BANCO</small>
           </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/missions")}
-          >
+          <button onClick={() => router.push("/missions")}>
             <span>🎯</span>
             <small>MISIONES</small>
           </button>
 
-          <button
-            type="button"
-            onClick={() => router.push("/profile")}
-          >
+          <button onClick={() => router.push("/profile")}>
             <span>👤</span>
             <small>PERFIL</small>
           </button>
@@ -366,520 +239,349 @@ export default function GamePage() {
       </div>
 
       <style jsx>{`
-
         * {
           box-sizing: border-box;
         }
 
         .game-page {
-          position: fixed;
-          inset: 0;
+          min-height: 100dvh;
           width: 100%;
-          height: 100dvh;
-          overflow: hidden;
-          background: #000;
+          background: #050505;
           color: white;
+          overflow: hidden;
+          font-family: Arial, Helvetica, sans-serif;
         }
 
         .game-container {
           width: 100%;
-          max-width: 480px;
-          height: 100%;
-          margin: auto;
-          display: flex;
-          flex-direction: column;
-          background: #050403;
+          max-width: 600px;
+          min-height: 100dvh;
+          margin: 0 auto;
+          background: #090909;
+          position: relative;
+          overflow: hidden;
         }
 
-        .game-header {
+        .top-bar {
+          height: 70px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 14px 15px 8px;
-          background: #050403;
-          border-bottom: 1px solid rgba(255, 190, 50, .1);
+          padding: 10px 16px;
+          background: #0b0b0b;
+          border-bottom: 1px solid #242424;
         }
 
-        .profile-button {
+        .profile {
           display: flex;
           align-items: center;
-          gap: 9px;
-          border: 1px solid rgba(255,255,255,.08);
-          border-radius: 13px;
-          padding: 7px 10px;
-          background: rgba(255,255,255,.04);
-          color: white;
+          gap: 10px;
         }
 
         .avatar {
-          width: 38px;
-          height: 38px;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 50%;
-          background: #21170b;
-          font-size: 22px;
+          background: linear-gradient(145deg, #f5c542, #8d6500);
+          color: #111;
+          font-weight: 900;
+          font-size: 19px;
+          border: 2px solid #ffe08a;
         }
 
-        .small-label {
-          font-size: 9px;
+        .player-name {
+          font-size: 13px;
           font-weight: 900;
-          color: rgba(255,255,255,.4);
+          letter-spacing: 1px;
         }
 
         .level {
-          margin-top: 2px;
-          font-size: 12px;
-          font-weight: 900;
-          color: #f5bd3e;
-        }
-
-        .coins-box {
-          text-align: right;
+          margin-top: 3px;
+          font-size: 10px;
+          color: #a5a5a5;
+          font-weight: 700;
         }
 
         .coins {
-          margin-top: 2px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
           font-size: 17px;
-          font-weight: 900;
-          color: #f5bd3e;
         }
 
-        .energy-section {
-          padding: 4px 15px 10px;
-          background: #050403;
+        .coins span {
+          font-size: 19px;
         }
 
-        .energy-label {
+        .coins strong {
+          color: #f4c542;
+        }
+
+        .energy-area {
+          padding: 10px 16px;
+          background: #0c0c0c;
+        }
+
+        .energy-text {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 4px;
-          font-size: 9px;
-          font-weight: 900;
-          color: rgba(255,255,255,.45);
+          font-size: 10px;
+          color: #999;
+          margin-bottom: 5px;
+          font-weight: 800;
         }
 
-        .energy-label span:last-child {
-          color: #f5bd3e;
+        .energy-text strong {
+          color: white;
         }
 
         .energy-bar {
+          width: 100%;
           height: 7px;
-          overflow: hidden;
+          background: #222;
           border-radius: 20px;
-          background: rgba(255,255,255,.08);
+          overflow: hidden;
         }
 
         .energy-fill {
           height: 100%;
-          border-radius: 20px;
-          background: linear-gradient(
-            90deg,
-            #8a5b12,
-            #e5a927,
-            #ffe07a
-          );
-          transition: width .25s ease;
+          background: linear-gradient(90deg, #e5a900, #ffe27a);
+          transition: width 0.25s ease;
         }
 
         .mine {
+          height: calc(100dvh - 190px);
+          min-height: 500px;
           position: relative;
-          flex: 1;
-          min-height: 0;
           overflow: hidden;
+          background:
+            radial-gradient(circle at 50% 45%, #343434 0%, #181818 38%, #080808 100%);
           cursor: pointer;
-          background:
-            radial-gradient(
-              ellipse at 50% 35%,
-              rgba(176, 119, 32, .13),
-              transparent 55%
-            ),
-            linear-gradient(
-              180deg,
-              #1b140c,
-              #0b0805 55%,
-              #030303
-            );
+          user-select: none;
         }
 
-        .mine-glow {
+        .ceiling {
           position: absolute;
-          left: 50%;
-          top: 15%;
-          width: 280px;
-          height: 280px;
-          transform: translateX(-50%);
-          border-radius: 50%;
-          background: rgba(255, 190, 50, .08);
-          filter: blur(55px);
-        }
-
-        .mine-ceiling {
-          position: absolute;
-          left: -10%;
           top: 0;
-          width: 120%;
-          height: 65px;
-          background: linear-gradient(
-            135deg,
-            #312519,
-            #0c0906,
-            #241a0e
-          );
-          clip-path: polygon(
-            0 0,
-            100% 0,
-            100% 65%,
-            82% 48%,
-            65% 72%,
-            48% 45%,
-            30% 70%,
-            12% 45%,
-            0 60%
-          );
+          left: 0;
+          width: 100%;
+          height: 90px;
+          background:
+            linear-gradient(135deg, #1c1c1c 25%, #101010 25%, #101010 50%, #1c1c1c 50%, #1c1c1c 75%, #101010 75%);
+          background-size: 35px 35px;
+          opacity: 0.9;
+          border-bottom: 2px solid #050505;
         }
 
-        .mine-wall {
+        .tunnel-back {
           position: absolute;
-          inset: 55px 0 55px;
+          inset: 80px 0 0;
           background:
-            radial-gradient(
-              circle,
-              rgba(255,255,255,.04) 0 2px,
-              transparent 3px
-            );
-          background-size: 75px 75px;
+            radial-gradient(circle at 50% 40%, #3c3c3c, #171717 55%, #080808 100%);
         }
 
         .rock {
           position: absolute;
-          border: 1px solid rgba(255,255,255,.035);
-          border-radius: 50%;
-          opacity: .7;
+          background: #282828;
+          border-radius: 45%;
+          opacity: 0.7;
         }
 
         .rock-1 {
-          width: 100px;
-          height: 55px;
-          left: 3%;
-          top: 15%;
-          transform: rotate(25deg);
+          width: 80px;
+          height: 45px;
+          left: 5%;
+          top: 18%;
+          transform: rotate(20deg);
         }
 
         .rock-2 {
-          width: 120px;
-          height: 65px;
+          width: 100px;
+          height: 55px;
           right: 5%;
-          top: 23%;
+          top: 28%;
           transform: rotate(-20deg);
         }
 
         .rock-3 {
-          width: 90px;
-          height: 50px;
-          left: 10%;
-          bottom: 25%;
+          width: 70px;
+          height: 40px;
+          left: 8%;
+          bottom: 30%;
         }
 
         .rock-4 {
-          width: 130px;
-          height: 60px;
-          right: 8%;
-          bottom: 18%;
-          transform: rotate(18deg);
+          width: 100px;
+          height: 50px;
+          right: 3%;
+          bottom: 20%;
         }
 
         .rock-5 {
-          width: 70px;
-          height: 45px;
-          left: 43%;
-          top: 15%;
-        }
-
-        .mine-floor {
-          position: absolute;
-          left: -10%;
-          bottom: 0;
-          width: 120%;
-          height: 80px;
-          background: linear-gradient(
-            165deg,
-            #21180d,
-            #090705
-          );
-          clip-path: polygon(
-            0 30%,
-            20% 10%,
-            40% 30%,
-            60% 8%,
-            80% 28%,
-            100% 5%,
-            100% 100%,
-            0 100%
-          );
+          width: 60px;
+          height: 35px;
+          left: 30%;
+          top: 12%;
         }
 
         .lamp {
           position: absolute;
+          top: 15px;
           left: 50%;
-          top: 0;
-          z-index: 5;
           transform: translateX(-50%);
-        }
-
-        .lamp-wire {
-          width: 2px;
+          width: 25px;
           height: 25px;
-          margin: auto;
-          background: #555;
+          border-radius: 50%;
+          background: #f5d66b;
+          box-shadow:
+            0 0 20px #f5d66b,
+            0 0 60px rgba(245, 214, 107, 0.5);
+          z-index: 8;
         }
 
         .lamp-light {
-          width: 26px;
-          height: 18px;
-          border-radius: 8px 8px 12px 12px;
-          background: #f3b934;
-          box-shadow:
-            0 0 12px #ffd85a,
-            0 0 40px rgba(255,190,50,.55);
-        }
-
-        .mine-title {
           position: absolute;
-          top: 12px;
-          left: 0;
-          right: 0;
-          z-index: 8;
-          text-align: center;
-        }
-
-        .mine-title div {
-          font-size: 9px;
-          font-weight: 900;
-          letter-spacing: .35em;
-          color: rgba(255,190,50,.6);
-        }
-
-        .mine-title strong {
-          display: block;
-          margin-top: 3px;
-          font-size: 20px;
-        }
-
-        .mine-title span {
-          display: block;
-          margin-top: 2px;
-          font-size: 9px;
-          color: rgba(255,255,255,.35);
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 180px;
+          height: 220px;
+          background: radial-gradient(
+            ellipse,
+            rgba(255, 220, 100, 0.13),
+            transparent 70%
+          );
+          pointer-events: none;
         }
 
         .ore-wall {
           position: absolute;
-          right: -5px;
-          top: 29%;
-          width: 43%;
-          height: 40%;
-          min-height: 155px;
-          border-radius: 30px 0 0 30px;
-          border: 2px solid rgba(255,255,255,.08);
+          right: -30px;
+          top: 115px;
+          width: 48%;
+          height: 62%;
           background:
-            radial-gradient(
-              circle at 30% 30%,
-              rgba(255,255,255,.08) 0 3px,
-              transparent 4px
-            ),
-            radial-gradient(
-              circle at 70% 70%,
-              rgba(255,255,255,.06) 0 3px,
-              transparent 4px
-            ),
-            linear-gradient(
-              135deg,
-              #554838,
-              #292016 50%,
-              #100d09
-            );
-          background-size: 50px 50px, 70px 70px, auto;
-          box-shadow:
-            inset 15px 0 30px rgba(0,0,0,.45),
-            0 15px 30px rgba(0,0,0,.5);
+            radial-gradient(circle at 30% 30%, #555, #292929 60%, #151515);
+          border-radius: 30% 0 0 35%;
+          border-left: 7px solid #101010;
+          box-shadow: inset 15px 0 30px rgba(0, 0, 0, 0.7);
+          z-index: 3;
         }
 
-        .ore-center {
+        .ore {
           position: absolute;
-          inset: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
+          width: 18px;
+          height: 18px;
+          background: #5c5c5c;
+          transform: rotate(45deg);
+          box-shadow: 0 0 7px rgba(255, 210, 80, 0.25);
         }
 
-        .ore-icon {
-          font-size: 35px;
-          color: rgba(255,199,82,.35);
+        .ore-1 {
+          left: 25%;
+          top: 20%;
         }
 
-        .ore-name {
-          margin-top: 4px;
-          font-size: 9px;
-          font-weight: 900;
-          color: rgba(255,255,255,.5);
+        .ore-2 {
+          left: 60%;
+          top: 35%;
         }
 
-        .ore-hits {
-          margin-top: 5px;
-          font-size: 10px;
-          font-weight: 900;
-          color: #eab63f;
+        .ore-3 {
+          left: 40%;
+          top: 60%;
         }
 
-        .ore-crack {
+        .ore-4 {
+          left: 75%;
+          top: 70%;
+        }
+
+        .ore-5 {
+          left: 20%;
+          top: 78%;
+        }
+
+        .crack {
           position: absolute;
-          height: 2px;
-          width: 65px;
-          background: rgba(0,0,0,.6);
+          width: 70px;
+          height: 3px;
+          background: #111;
           transform-origin: left;
+          opacity: 0.8;
         }
 
         .crack-1 {
           left: 15%;
-          top: 25%;
-          transform: rotate(35deg);
+          top: 42%;
+          transform: rotate(25deg);
         }
 
         .crack-2 {
           left: 45%;
-          top: 35%;
-          transform: rotate(-55deg);
+          top: 52%;
+          transform: rotate(-35deg);
         }
 
         .crack-3 {
-          left: 20%;
-          top: 65%;
-          transform: rotate(-15deg);
-        }
-
-        .crack-4 {
-          left: 55%;
-          top: 72%;
-          transform: rotate(35deg);
+          left: 30%;
+          top: 70%;
+          transform: rotate(20deg);
         }
 
         .miner {
           position: absolute;
-          left: 17%;
-          top: 36%;
-          z-index: 15;
-          width: 140px;
+          left: 32%;
+          bottom: 20%;
+          width: 120px;
           height: 220px;
-          transform-origin: 50% 85%;
+          z-index: 10;
+          transition: transform 0.2s ease;
         }
 
-        .miner-mining {
-          animation: minerHit .3s ease-in-out;
+        .miner-hit {
+          animation: minerHit 0.35s ease;
         }
 
-        .miner-shadow {
+        .helmet {
           position: absolute;
-          left: 5px;
-          bottom: 0;
-          width: 125px;
+          top: 0;
+          left: 30px;
+          width: 60px;
+          height: 35px;
+          border-radius: 35px 35px 10px 10px;
+          background: linear-gradient(#e5b62e, #8d6500);
+          border: 3px solid #f8d866;
+        }
+
+        .helmet-light {
+          position: absolute;
+          left: 22px;
+          top: -8px;
+          width: 18px;
           height: 18px;
           border-radius: 50%;
-          background: rgba(0,0,0,.65);
-          filter: blur(5px);
+          background: white;
+          box-shadow: 0 0 18px white;
         }
 
-        .miner-legs {
+        .head {
           position: absolute;
-          bottom: 18px;
-          left: 43px;
-          width: 55px;
-          height: 65px;
-        }
-
-        .leg {
-          position: absolute;
-          bottom: 0;
-          width: 22px;
-          height: 65px;
-          border-radius: 12px;
-          background: linear-gradient(
-            90deg,
-            #29251e,
-            #111
-          );
-        }
-
-        .left-leg {
-          left: 2px;
-          transform: rotate(5deg);
-        }
-
-        .right-leg {
-          right: 2px;
-          transform: rotate(-5deg);
-        }
-
-        .miner-body {
-          position: absolute;
-          left: 36px;
-          bottom: 68px;
-          width: 70px;
-          height: 92px;
-        }
-
-        .shirt {
-          position: absolute;
-          inset: 0;
-          border-radius: 25px 25px 15px 15px;
-          background: linear-gradient(
-            90deg,
-            #543d1d,
-            #c28b35 45%,
-            #61461e
-          );
-        }
-
-        .belt {
-          position: absolute;
-          left: 4px;
-          right: 4px;
-          bottom: 18px;
-          height: 9px;
-          border-radius: 4px;
-          background: #2c2117;
-        }
-
-        .miner-head {
-          position: absolute;
-          left: 47px;
-          top: 46px;
-          z-index: 5;
-          width: 47px;
-          height: 57px;
-          border-radius: 45%;
-          background: linear-gradient(
-            120deg,
-            #d28a58,
-            #854a2c
-          );
-        }
-
-        .hair {
-          position: absolute;
-          left: 6px;
-          top: -3px;
-          width: 35px;
-          height: 16px;
-          border-radius: 50%;
-          background: #211711;
+          top: 30px;
+          left: 38px;
+          width: 45px;
+          height: 55px;
+          border-radius: 45% 45% 40% 40%;
+          background: #b87845;
+          border: 3px solid #6f4026;
         }
 
         .eye {
           position: absolute;
-          top: 25px;
+          top: 20px;
           width: 5px;
           height: 5px;
           border-radius: 50%;
@@ -887,45 +589,297 @@ export default function GamePage() {
         }
 
         .eye-left {
-          left: 11px;
+          left: 10px;
         }
 
         .eye-right {
-          right: 11px;
+          right: 10px;
         }
 
         .beard {
           position: absolute;
           left: 7px;
-          bottom: 0;
-          width: 33px;
-          height: 23px;
-          border-radius: 35%;
-          background: #321e16;
+          bottom: 4px;
+          width: 31px;
+          height: 19px;
+          border-radius: 5px 5px 14px 14px;
+          background: #33231b;
         }
 
-        .helmet {
+        .body {
           position: absolute;
-          left: 37px;
-          top: 27px;
-          z-index: 8;
+          top: 80px;
+          left: 27px;
           width: 70px;
-          height: 38px;
-          border-radius: 50px 50px 15px 15px;
-          background: linear-gradient(
-            #f3c64f,
-            #956016
-          );
-          box-shadow: 0 4px 12px rgba(0,0,0,.5);
+          height: 75px;
+          border-radius: 15px 15px 8px 8px;
+          background: linear-gradient(90deg, #31536c, #182b39);
+          border: 3px solid #0c151b;
         }
 
-        .helmet-light {
+        .shirt {
           position: absolute;
-          left: 50%;
+          inset: 10px;
+          border-radius: 10px;
+          border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .belt {
+          position: absolute;
+          left: 0;
+          bottom: 12px;
+          width: 100%;
+          height: 8px;
+          background: #2d2018;
+        }
+
+        .arm {
+          position: absolute;
+          top: 90px;
+          width: 18px;
+          height: 65px;
+          border-radius: 12px;
+          background: #a96d3f;
+          transform-origin: top center;
+        }
+
+        .arm-left {
+          left: 15px;
+          transform: rotate(35deg);
+        }
+
+        .arm-right {
+          right: 8px;
+          transform: rotate(-45deg);
+        }
+
+        .leg {
+          position: absolute;
+          top: 150px;
+          width: 25px;
+          height: 65px;
+          border-radius: 8px;
+          background: #1a2932;
+        }
+
+        .leg-left {
+          left: 34px;
+          transform: rotate(7deg);
+        }
+
+        .leg-right {
+          right: 27px;
+          transform: rotate(-7deg);
+        }
+
+        .pickaxe {
+          position: absolute;
+          top: 75px;
+          right: -35px;
+          width: 110px;
+          height: 110px;
+          transform: rotate(-45deg);
+          transform-origin: center;
+        }
+
+        .pickaxe-hit {
+          animation: pickaxeHit 0.35s ease;
+        }
+
+        .pickaxe-handle {
+          position: absolute;
+          width: 10px;
+          height: 105px;
+          left: 50px;
           top: 5px;
-          width: 12px;
-          height: 12px;
+          border-radius: 10px;
+          background: linear-gradient(90deg, #70451e, #bd7d39, #70451e);
+        }
+
+        .pickaxe-head {
+          position: absolute;
+          left: 20px;
+          top: 0;
+          width: 80px;
+          height: 15px;
+          border-radius: 10px;
+          background: linear-gradient(#cfcfcf, #555);
+        }
+
+        .impact {
+          position: absolute;
+          right: 27%;
+          top: 42%;
+          width: 100px;
+          height: 100px;
+          z-index: 20;
+          pointer-events: none;
+        }
+
+        .impact span {
+          position: absolute;
+          color: #f6d35f;
+          font-size: 25px;
+          animation: spark 0.35s ease-out forwards;
+        }
+
+        .impact span:nth-child(1) {
+          left: 45px;
+          top: 45px;
+        }
+
+        .impact span:nth-child(2) {
+          left: 15px;
+          top: 25px;
+        }
+
+        .impact span:nth-child(3) {
+          left: 70px;
+          top: 25px;
+        }
+
+        .impact span:nth-child(4) {
+          left: 20px;
+          top: 70px;
+        }
+
+        .impact span:nth-child(5) {
+          left: 75px;
+          top: 65px;
+        }
+
+        .rock-progress {
+          position: absolute;
+          left: 15%;
+          bottom: 8%;
+          width: 70%;
+          z-index: 30;
+          text-align: center;
+        }
+
+        .progress-title {
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          color: #d5d5d5;
+          margin-bottom: 7px;
+        }
+
+        .progress-bar {
+          height: 9px;
+          width: 100%;
+          background: #202020;
+          border-radius: 20px;
+          overflow: hidden;
+          border: 1px solid #383838;
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #d09b18, #ffe27b);
+          transition: width 0.25s ease;
+        }
+
+        .progress-number {
+          margin-top: 5px;
+          font-size: 10px;
+          color: #888;
+        }
+
+        .tap-hint {
+          position: absolute;
+          top: 92px;
+          left: 50%;
           transform: translateX(-50%);
-          border-radius: 50%;
-          background: #fff0a5;
-          box-shadow: 0 
+          padding: 7px 14px;
+          border-radius: 20px;
+          background: rgba(0, 0, 0, 0.55);
+          color: #f2c84b;
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          z-index: 40;
+        }
+
+        .stats {
+          height: 65px;
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          background: #0b0b0b;
+          border-top: 1px solid #242424;
+          border-bottom: 1px solid #242424;
+        }
+
+        .stat {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .stat-icon {
+          color: #f0c23e;
+          font-size: 20px;
+        }
+
+        .stat small {
+          display: block;
+          color: #777;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+        .stat strong {
+          display: block;
+          font-size: 14px;
+          margin-top: 2px;
+        }
+
+        .bottom-menu {
+          min-height: 70px;
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          background: #080808;
+          border-top: 1px solid #292929;
+        }
+
+        .bottom-menu button {
+          border: 0;
+          background: transparent;
+          color: #777;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          cursor: pointer;
+        }
+
+        .bottom-menu button span {
+          font-size: 19px;
+        }
+
+        .bottom-menu button small {
+          font-size: 7px;
+          font-weight: 900;
+        }
+
+        .bottom-menu button:first-child {
+          color: #f3c33e;
+        }
+
+        @keyframes minerHit {
+          0% {
+            transform: translateX(0);
+          }
+
+          35% {
+            transform: translateX(15px) rotate(2deg);
+          }
+
+          100% {
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes pickaxe
