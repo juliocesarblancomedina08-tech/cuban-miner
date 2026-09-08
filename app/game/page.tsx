@@ -3,6 +3,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        initDataUnsafe?: {
+          user?: {
+            username?: string;
+            first_name?: string;
+          };
+        };
+      };
+    };
+  }
+}
+
 export default function GamePage() {
   const router = useRouter();
 
@@ -19,18 +34,14 @@ export default function GamePage() {
 
   const [surfaceMinerals, setSurfaceMinerals] =
     useState(0);
-
   const [storedMinerals, setStoredMinerals] =
     useState(0);
-
   const [wagonMoving, setWagonMoving] =
     useState(false);
 
   const [message, setMessage] = useState("");
-
   const [showProfile, setShowProfile] =
     useState(false);
-
   const [username, setUsername] =
     useState("MINERO");
 
@@ -57,36 +68,17 @@ export default function GamePage() {
 
   const maxHits = 10;
 
-  const progress =
-    Math.min(
-      (hits / maxHits) * 100,
-      100
-    );
-
-  /*
-   * =========================
-   * USUARIO
-   * =========================
-   */
+  const progress = Math.min(
+    (hits / maxHits) * 100,
+    100
+  );
 
   useEffect(() => {
     try {
       const telegram =
         typeof window !== "undefined"
-          ? (
-              window as typeof window & {
-                Telegram?: {
-                  WebApp?: {
-                    initDataUnsafe?: {
-                      user?: {
-                        username?: string;
-                        first_name?: string;
-                      };
-                    };
-                  };
-                };
-              }
-            ).Telegram?.WebApp;
+          ? window.Telegram?.WebApp
+          : undefined;
 
       const telegramUser =
         telegram?.initDataUnsafe?.user;
@@ -106,35 +98,21 @@ export default function GamePage() {
       }
 
       const savedUsername =
-        localStorage.getItem(
-          "username"
-        ) ||
-        localStorage.getItem(
-          "userName"
-        ) ||
+        localStorage.getItem("username") ||
+        localStorage.getItem("userName") ||
         localStorage.getItem(
           "telegram_username"
         );
 
       if (savedUsername) {
-        setUsername(
-          savedUsername
-        );
+        setUsername(savedUsername);
       }
     } catch {
       setUsername("MINERO");
     }
   }, []);
 
-  /*
-   * =========================
-   * MENSAJES
-   * =========================
-   */
-
-  function showMessage(
-    text: string
-  ) {
+  function showMessage(text: string) {
     setMessage(text);
 
     setTimeout(() => {
@@ -142,51 +120,32 @@ export default function GamePage() {
     }, 1400);
   }
 
-  /*
-   * =========================
-   * MINERÍA MANUAL
-   * =========================
-   */
-
   function mine() {
-    if (
-      energy <= 0 ||
-      hitting
-    ) {
+    if (energy <= 0 || hitting) {
       return;
     }
 
     setHitting(true);
 
-    setEnergy(
-      (value) =>
-        Math.max(
-          value - 2,
-          0
-        )
+    setEnergy((value) =>
+      Math.max(value - 2, 0)
     );
 
     setTimeout(() => {
       setHits((value) => {
-        const next =
-          value + 1;
+        const next = value + 1;
 
-        if (
-          next >= maxHits
-        ) {
-          setCoins(
-            (value) =>
-              value + 25
+        if (next >= maxHits) {
+          setCoins((value) =>
+            value + 25
           );
 
-          setMinerals(
-            (value) =>
-              value + 1
+          setMinerals((value) =>
+            value + 1
           );
 
-          setSurfaceMinerals(
-            (value) =>
-              value + 1
+          setSurfaceMinerals((value) =>
+            value + 1
           );
 
           showMessage(
@@ -203,17 +162,8 @@ export default function GamePage() {
     }, 350);
   }
 
-  /*
-   * =========================
-   * DESBLOQUEAR MINA
-   * =========================
-   */
-
-  function unlockMine(
-    index: number
-  ) {
-    const price =
-      minePrices[index];
+  function unlockMine(index: number) {
+    const price = minePrices[index];
 
     if (
       unlockedMines >=
@@ -222,18 +172,15 @@ export default function GamePage() {
       return;
     }
 
-    if (
-      coins < price
-    ) {
+    if (coins < price) {
       showMessage(
         "❌ MONEDAS INSUFICIENTES"
       );
       return;
     }
 
-    setCoins(
-      (value) =>
-        value - price
+    setCoins((value) =>
+      value - price
     );
 
     setUnlockedMines(
@@ -243,40 +190,22 @@ export default function GamePage() {
     setElevatorFloor(0);
 
     showMessage(
-      `⛏️ MINA ${
-        index + 1
-      } DESBLOQUEADA`
+      `⛏️ MINA ${index + 1} DESBLOQUEADA`
     );
   }
 
-  /*
-   * =========================
-   * ASCENSOR
-   * =========================
-   *
-   * El ascensor solamente
-   * utiliza las minas que
-   * están desbloqueadas.
-   */
-
   useEffect(() => {
-    if (
-      unlockedMines <= 0
-    ) {
+    if (unlockedMines <= 0) {
       return;
     }
 
     const elevatorInterval =
       setInterval(() => {
-
-        setElevatorWorking(
-          true
-        );
+        setElevatorWorking(true);
 
         setElevatorFloor(
           (floor) => {
-            const next =
-              floor + 1;
+            const next = floor + 1;
 
             if (
               next >=
@@ -290,17 +219,13 @@ export default function GamePage() {
         );
 
         setTimeout(() => {
-
           setElevatorWorking(
             false
           );
 
           setSurfaceMinerals(
             (value) => {
-
-              if (
-                value <= 0
-              ) {
+              if (value <= 0) {
                 return value;
               }
 
@@ -312,36 +237,22 @@ export default function GamePage() {
               return value - 1;
             }
           );
-
         }, 900);
-
       }, 3500);
 
-    return () => {
+    return () =>
       clearInterval(
         elevatorInterval
       );
-    };
-  }, [
-    unlockedMines,
-  ]);
-
-  /*
-   * =========================
-   * PRODUCCIÓN AUTOMÁTICA
-   * =========================
-   */
+  }, [unlockedMines]);
 
   useEffect(() => {
-    if (
-      unlockedMines <= 1
-    ) {
+    if (unlockedMines <= 1) {
       return;
     }
 
     const autoMineInterval =
       setInterval(() => {
-
         const amount =
           unlockedMines - 1;
 
@@ -357,29 +268,17 @@ export default function GamePage() {
 
         setCoins(
           (value) =>
-            value +
-            amount * 2
+            value + amount * 2
         );
-
       }, 5000);
 
-    return () => {
+    return () =>
       clearInterval(
         autoMineInterval
       );
-    };
-  }, [
-    unlockedMines,
-  ]);
-
-  /*
-   * =========================
-   * VAGONETA
-   * =========================
-   */
+  }, [unlockedMines]);
 
   useEffect(() => {
-
     if (
       storedMinerals <= 0 ||
       wagonMoving
@@ -387,13 +286,10 @@ export default function GamePage() {
       return;
     }
 
-    setWagonMoving(
-      true
-    );
+    setWagonMoving(true);
 
     const timer =
       setTimeout(() => {
-
         setStoredMinerals(
           (value) =>
             Math.max(
@@ -407,113 +303,66 @@ export default function GamePage() {
             value + 5
         );
 
-        setWagonMoving(
-          false
-        );
-
+        setWagonMoving(false);
       }, 1800);
 
-    return () => {
+    return () =>
       clearTimeout(timer);
-    };
-
   }, [
     storedMinerals,
     wagonMoving,
   ]);
 
-  /*
-   * =========================
-   * ENERGÍA
-   * =========================
-   */
-
   useEffect(() => {
-
     const energyTimer =
       setInterval(() => {
-
-        setEnergy(
-          (value) =>
-            Math.min(
-              value + 1,
-              100
-            )
+        setEnergy((value) =>
+          Math.min(
+            value + 1,
+            100
+          )
         );
-
       }, 3000);
 
-    return () => {
+    return () =>
       clearInterval(
         energyTimer
       );
-    };
-
   }, []);
-
-  /*
-   * =========================
-   * POSICIÓN ASCENSOR
-   * =========================
-   */
 
   const elevatorPosition =
     unlockedMines <= 1
       ? 8
       : 8 +
-        (
-          elevatorFloor /
+        (elevatorFloor /
           Math.max(
             unlockedMines - 1,
             1
-          )
-        ) *
-        78;
-
-  /*
-   * =========================
-   * PERFIL
-   * =========================
-   */
+          )) *
+          78;
 
   function openProfile() {
-    setShowProfile(
-      true
-    );
+    setShowProfile(true);
   }
 
   function closeProfile() {
-    setShowProfile(
-      false
-    );
+    setShowProfile(false);
   }
 
-  /*
-   * =========================
-   * MAPA
-   * =========================
-   */
-
   function openMap() {
-    router.push(
-      "/mapa"
-    );
+    router.push("/mapa");
   }
 
   return (
     <main className="game-page">
-
       <div className="game-container">
 
         <header className="game-header">
 
           <button
             className="profile-header"
-            onClick={
-              openProfile
-            }
+            onClick={openProfile}
           >
-
             <div className="profile-avatar">
               👷
             </div>
@@ -521,7 +370,6 @@ export default function GamePage() {
             <div className="profile-name">
               {username}
             </div>
-
           </button>
 
           <div className="header-center">
@@ -566,6 +414,7 @@ export default function GamePage() {
             </div>
 
             <div className="mountain mountain-one" />
+
             <div className="mountain mountain-two" />
 
             <div className="surface-ground">
@@ -587,8 +436,7 @@ export default function GamePage() {
                   </strong>
 
                   <span>
-                    🪨{" "}
-                    {storedMinerals}
+                    🪨 {storedMinerals}
                   </span>
 
                 </div>
@@ -622,11 +470,8 @@ export default function GamePage() {
               </div>
 
             </div>
-          </div>
 
-          {/* =========================
-              ASCENSOR DINÁMICO
-          ========================= */}
+          </div>
 
           <div
             className="elevator-shaft"
@@ -711,33 +556,51 @@ export default function GamePage() {
                     <section className="mine-level mine-level-one">
 
             <div className="mine-wall">
+
               <div className="rock-layer rock-layer-one" />
               <div className="rock-layer rock-layer-two" />
               <div className="rock-layer rock-layer-three" />
 
               <div className="mine-sign">
-                <span>⛏️</span>
-                <strong>MINA 1</strong>
-                <small>CARBÓN</small>
+
+                <span>
+                  ⛏️
+                </span>
+
+                <strong>
+                  MINA 1
+                </strong>
+
+                <small>
+                  CARBÓN
+                </small>
+
               </div>
 
               <div className="mine-tunnel">
+
                 <div className="tunnel-roof" />
 
                 <div className="mine-cart">
+
                   <div className="cart-body">
                     🛒
                   </div>
+
                   <div className="cart-rocks">
                     🪨 🪨
                   </div>
+
                 </div>
 
                 <div
                   className={`miner-character ${
-                    hitting ? "miner-hitting" : ""
+                    hitting
+                      ? "miner-hitting"
+                      : ""
                   }`}
                 >
+
                   <div className="miner-helmet">
                     ⛑️
                   </div>
@@ -749,27 +612,43 @@ export default function GamePage() {
                   <div className="miner-pickaxe">
                     ⛏️
                   </div>
+
                 </div>
 
                 <div className="coal-rock coal-one">
-                  <span>🪨</span>
+
+                  <span>
+                    🪨
+                  </span>
+
                   <i />
                   <i />
                   <i />
+
                 </div>
 
                 <div className="coal-rock coal-two">
-                  <span>🪨</span>
+
+                  <span>
+                    🪨
+                  </span>
+
                   <i />
                   <i />
                   <i />
+
                 </div>
 
                 <div className="coal-rock coal-three">
-                  <span>🪨</span>
+
+                  <span>
+                    🪨
+                  </span>
+
                   <i />
                   <i />
                   <i />
+
                 </div>
 
                 <div className="mine-lamp lamp-one">
@@ -793,12 +672,15 @@ export default function GamePage() {
                 </div>
 
               </div>
+
             </div>
 
             <div className="manual-mining-panel">
 
               <div className="mining-panel-header">
+
                 <div>
+
                   <strong>
                     ⛏️ EXTRACCIÓN MANUAL
                   </strong>
@@ -806,23 +688,29 @@ export default function GamePage() {
                   <span>
                     Golpea la roca para extraer carbón
                   </span>
+
                 </div>
 
                 <div className="energy-mini">
                   ⚡ {energy}/100
                 </div>
+
               </div>
 
               <div className="mining-progress">
+
                 <div
                   className="mining-progress-fill"
                   style={{
-                    width: `${progress}%`,
+                    width:
+                      `${progress}%`,
                   }}
                 />
+
               </div>
 
               <div className="mining-progress-text">
+
                 <span>
                   GOLPES
                 </span>
@@ -830,11 +718,14 @@ export default function GamePage() {
                 <strong>
                   {hits}/{maxHits}
                 </strong>
+
               </div>
 
               <button
                 className={`mine-button ${
-                  hitting ? "mine-button-hit" : ""
+                  hitting
+                    ? "mine-button-hit"
+                    : ""
                 }`}
                 onClick={mine}
                 disabled={
@@ -842,20 +733,25 @@ export default function GamePage() {
                   hitting
                 }
               >
+
                 <span className="mine-button-icon">
                   ⛏️
                 </span>
 
                 <span className="mine-button-text">
+
                   {hitting
                     ? "¡GOLPEANDO!"
                     : energy <= 0
                     ? "SIN ENERGÍA"
                     : "GOLPEAR ROCA"}
+
                 </span>
+
               </button>
 
               <div className="mining-reward">
+
                 <span>
                   🎁 RECOMPENSA
                 </span>
@@ -863,17 +759,24 @@ export default function GamePage() {
                 <strong>
                   10 golpes → +25 🪙 +1 🪨
                 </strong>
+
               </div>
 
             </div>
 
           </section>
 
+
           <section className="mine-level mine-level-two">
 
             <div className="mine-depth-marker">
-              <span>↓</span>
+
+              <span>
+                ↓
+              </span>
+
               NIVEL 2
+
             </div>
 
             <div className="mine-wall">
@@ -883,9 +786,19 @@ export default function GamePage() {
               <div className="rock-layer rock-layer-three" />
 
               <div className="mine-sign copper-sign">
-                <span>🟠</span>
-                <strong>MINA 2</strong>
-                <small>COBRE</small>
+
+                <span>
+                  🟠
+                </span>
+
+                <strong>
+                  MINA 2
+                </strong>
+
+                <small>
+                  COBRE
+                </small>
+
               </div>
 
               <div className="mine-tunnel">
@@ -893,13 +806,27 @@ export default function GamePage() {
                 <div className="tunnel-roof" />
 
                 <div className="copper-vein">
-                  <span>🟠</span>
-                  <span>🟠</span>
-                  <span>🟠</span>
-                  <span>🟠</span>
+
+                  <span>
+                    🟠
+                  </span>
+
+                  <span>
+                    🟠
+                  </span>
+
+                  <span>
+                    🟠
+                  </span>
+
+                  <span>
+                    🟠
+                  </span>
+
                 </div>
 
                 <div className="miner-character auto-miner">
+
                   <div className="miner-helmet">
                     ⛑️
                   </div>
@@ -911,6 +838,7 @@ export default function GamePage() {
                   <div className="miner-pickaxe">
                     ⛏️
                   </div>
+
                 </div>
 
                 <div className="mine-drill">
@@ -932,6 +860,7 @@ export default function GamePage() {
               </div>
 
               {unlockedMines < 2 && (
+
                 <div className="locked-mine-overlay">
 
                   <div className="locked-icon">
@@ -953,6 +882,7 @@ export default function GamePage() {
                       unlockMine(1)
                     }
                   >
+
                     <span>
                       ⛏️ DESBLOQUEAR
                     </span>
@@ -960,9 +890,11 @@ export default function GamePage() {
                     <strong>
                       🪙 {minePrices[1]}
                     </strong>
+
                   </button>
 
                 </div>
+
               )}
 
             </div>
@@ -972,8 +904,13 @@ export default function GamePage() {
                     <section className="mine-level mine-level-three">
 
             <div className="mine-depth-marker">
-              <span>↓</span>
+
+              <span>
+                ↓
+              </span>
+
               NIVEL 3
+
             </div>
 
             <div className="mine-wall">
@@ -983,9 +920,19 @@ export default function GamePage() {
               <div className="rock-layer rock-layer-three" />
 
               <div className="mine-sign iron-sign">
-                <span>⚙️</span>
-                <strong>MINA 3</strong>
-                <small>HIERRO</small>
+
+                <span>
+                  ⚙️
+                </span>
+
+                <strong>
+                  MINA 3
+                </strong>
+
+                <small>
+                  HIERRO
+                </small>
+
               </div>
 
               <div className="mine-tunnel">
@@ -993,14 +940,31 @@ export default function GamePage() {
                 <div className="tunnel-roof" />
 
                 <div className="iron-vein">
-                  <span>⚙️</span>
-                  <span>⚙️</span>
-                  <span>⚙️</span>
-                  <span>⚙️</span>
-                  <span>⚙️</span>
+
+                  <span>
+                    ⚙️
+                  </span>
+
+                  <span>
+                    ⚙️
+                  </span>
+
+                  <span>
+                    ⚙️
+                  </span>
+
+                  <span>
+                    ⚙️
+                  </span>
+
+                  <span>
+                    ⚙️
+                  </span>
+
                 </div>
 
                 <div className="miner-character auto-miner">
+
                   <div className="miner-helmet">
                     ⛑️
                   </div>
@@ -1012,6 +976,7 @@ export default function GamePage() {
                   <div className="miner-pickaxe">
                     ⛏️
                   </div>
+
                 </div>
 
                 <div className="iron-machine">
@@ -1041,6 +1006,7 @@ export default function GamePage() {
               </div>
 
               {unlockedMines < 3 && (
+
                 <div className="locked-mine-overlay">
 
                   <div className="locked-icon">
@@ -1062,6 +1028,7 @@ export default function GamePage() {
                       unlockMine(2)
                     }
                   >
+
                     <span>
                       ⛏️ DESBLOQUEAR
                     </span>
@@ -1069,9 +1036,11 @@ export default function GamePage() {
                     <strong>
                       🪙 {minePrices[2]}
                     </strong>
+
                   </button>
 
                 </div>
+
               )}
 
             </div>
@@ -1082,8 +1051,13 @@ export default function GamePage() {
           <section className="mine-level mine-level-four">
 
             <div className="mine-depth-marker">
-              <span>↓</span>
+
+              <span>
+                ↓
+              </span>
+
               NIVEL 4
+
             </div>
 
             <div className="mine-wall">
@@ -1093,9 +1067,19 @@ export default function GamePage() {
               <div className="rock-layer rock-layer-three" />
 
               <div className="mine-sign gold-sign">
-                <span>🟡</span>
-                <strong>MINA 4</strong>
-                <small>ORO</small>
+
+                <span>
+                  🟡
+                </span>
+
+                <strong>
+                  MINA 4
+                </strong>
+
+                <small>
+                  ORO
+                </small>
+
               </div>
 
               <div className="mine-tunnel">
@@ -1103,15 +1087,35 @@ export default function GamePage() {
                 <div className="tunnel-roof" />
 
                 <div className="gold-vein">
-                  <span>🟡</span>
-                  <span>🟡</span>
-                  <span>🟡</span>
-                  <span>🟡</span>
-                  <span>🟡</span>
-                  <span>🟡</span>
+
+                  <span>
+                    🟡
+                  </span>
+
+                  <span>
+                    🟡
+                  </span>
+
+                  <span>
+                    🟡
+                  </span>
+
+                  <span>
+                    🟡
+                  </span>
+
+                  <span>
+                    🟡
+                  </span>
+
+                  <span>
+                    🟡
+                  </span>
+
                 </div>
 
                 <div className="miner-character auto-miner">
+
                   <div className="miner-helmet">
                     ⛑️
                   </div>
@@ -1123,6 +1127,7 @@ export default function GamePage() {
                   <div className="miner-pickaxe">
                     ⛏️
                   </div>
+
                 </div>
 
                 <div className="gold-machine">
@@ -1156,6 +1161,7 @@ export default function GamePage() {
               </div>
 
               {unlockedMines < 4 && (
+
                 <div className="locked-mine-overlay">
 
                   <div className="locked-icon">
@@ -1177,6 +1183,7 @@ export default function GamePage() {
                       unlockMine(3)
                     }
                   >
+
                     <span>
                       ⛏️ DESBLOQUEAR
                     </span>
@@ -1184,9 +1191,11 @@ export default function GamePage() {
                     <strong>
                       🪙 {minePrices[3]}
                     </strong>
+
                   </button>
 
                 </div>
+
               )}
 
             </div>
@@ -1203,11 +1212,13 @@ export default function GamePage() {
             <div className="production-grid">
 
               <div className="production-card">
+
                 <span className="production-icon">
                   🪨
                 </span>
 
                 <div>
+
                   <small>
                     EXTRAÍDO
                   </small>
@@ -1215,15 +1226,20 @@ export default function GamePage() {
                   <strong>
                     {minerals}
                   </strong>
+
                 </div>
+
               </div>
 
+
               <div className="production-card">
+
                 <span className="production-icon">
                   📦
                 </span>
 
                 <div>
+
                   <small>
                     ALMACENADO
                   </small>
@@ -1231,15 +1247,20 @@ export default function GamePage() {
                   <strong>
                     {storedMinerals}
                   </strong>
+
                 </div>
+
               </div>
 
+
               <div className="production-card">
+
                 <span className="production-icon">
                   🪨
                 </span>
 
                 <div>
+
                   <small>
                     EN SUPERFICIE
                   </small>
@@ -1247,15 +1268,16 @@ export default function GamePage() {
                   <strong>
                     {surfaceMinerals}
                   </strong>
+
                 </div>
+
               </div>
 
             </div>
 
           </section>
 
-
-          <section className="mine-info-panel">
+                    <section className="mine-info-panel">
 
             <div className="mine-info-title">
               ⛏️ SISTEMA DE MINAS
@@ -1282,6 +1304,7 @@ export default function GamePage() {
                       </span>
 
                       <div>
+
                         <strong>
                           MINA {index + 1}
                         </strong>
@@ -1289,6 +1312,7 @@ export default function GamePage() {
                         <small>
                           {name}
                         </small>
+
                       </div>
 
                     </div>
@@ -1298,6 +1322,7 @@ export default function GamePage() {
                       {unlockedMines >=
                       index + 1 ? (
                         <>
+
                           <span>
                             DESBLOQUEADA
                           </span>
@@ -1305,9 +1330,11 @@ export default function GamePage() {
                           <b>
                             ✓
                           </b>
+
                         </>
                       ) : (
                         <>
+
                           <span>
                             BLOQUEADA
                           </span>
@@ -1315,6 +1342,7 @@ export default function GamePage() {
                           <b>
                             🔒
                           </b>
+
                         </>
                       )}
 
@@ -1333,11 +1361,14 @@ export default function GamePage() {
 
         </section>
 
-                {showProfile && (
+
+        {showProfile && (
+
           <div
             className="profile-modal-backdrop"
             onClick={closeProfile}
           >
+
             <div
               className="profile-modal"
               onClick={(event) =>
@@ -1438,11 +1469,13 @@ export default function GamePage() {
                     );
                   }}
                 >
+
                   <span>
                     👤
                   </span>
 
                   <div>
+
                     <strong>
                       MI PERFIL
                     </strong>
@@ -1450,11 +1483,13 @@ export default function GamePage() {
                     <small>
                       Ver información de tu cuenta
                     </small>
+
                   </div>
 
                   <b>
                     ›
                   </b>
+
                 </button>
 
 
@@ -1466,11 +1501,13 @@ export default function GamePage() {
                     );
                   }}
                 >
+
                   <span>
                     👥
                   </span>
 
                   <div>
+
                     <strong>
                       REFERIDOS
                     </strong>
@@ -1478,11 +1515,13 @@ export default function GamePage() {
                     <small>
                       Invita amigos y gana recompensas
                     </small>
+
                   </div>
 
                   <b>
                     ›
                   </b>
+
                 </button>
 
 
@@ -1494,11 +1533,13 @@ export default function GamePage() {
                     );
                   }}
                 >
+
                   <span>
                     🎯
                   </span>
 
                   <div>
+
                     <strong>
                       MISIONES
                     </strong>
@@ -1506,11 +1547,13 @@ export default function GamePage() {
                     <small>
                       Completa tareas y gana monedas
                     </small>
+
                   </div>
 
                   <b>
                     ›
                   </b>
+
                 </button>
 
               </div>
@@ -1524,7 +1567,9 @@ export default function GamePage() {
               </button>
 
             </div>
+
           </div>
+
         )}
 
 
@@ -1637,8 +1682,7 @@ export default function GamePage() {
 
         </nav>
 
-      </div>
+              </div>
     </main>
   );
 }
-
