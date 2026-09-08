@@ -16,7 +16,9 @@ export default function GamePage() {
   const progress = Math.min((hits / maxHits) * 100, 100);
 
   function mine() {
-    if (energy <= 0 || hitting) return;
+    if (energy <= 0 || hitting) {
+      return;
+    }
 
     setHitting(true);
     setEnergy((value) => Math.max(value - 2, 0));
@@ -42,7 +44,6 @@ export default function GamePage() {
     <main className="game-page">
       <div className="game-container">
 
-        {/* HEADER */}
         <header className="top-bar">
           <div className="profile">
             <div className="avatar">M</div>
@@ -59,10 +60,10 @@ export default function GamePage() {
           </div>
         </header>
 
-        {/* ENERGY */}
         <div className="energy-area">
           <div className="energy-text">
-            ENERGÍA <strong>{energy}/100</strong>
+            <span>ENERGÍA</span>
+            <strong>{energy}/100</strong>
           </div>
 
           <div className="energy-bar">
@@ -73,11 +74,7 @@ export default function GamePage() {
           </div>
         </div>
 
-        {/* MINE */}
-        <section
-          className="mine"
-          onClick={mine}
-        >
+        <section className="mine" onClick={mine}>
 
           <div className="ceiling" />
 
@@ -85,20 +82,15 @@ export default function GamePage() {
             <div className="lamp-light" />
           </div>
 
-          {/* TUNNEL BACKGROUND */}
           <div className="tunnel-back">
-
             <div className="rock rock-1" />
             <div className="rock rock-2" />
             <div className="rock rock-3" />
             <div className="rock rock-4" />
             <div className="rock rock-5" />
-
           </div>
 
-          {/* UNMINED ROCK */}
           <div className="ore-wall">
-
             <div className="ore ore-1" />
             <div className="ore ore-2" />
             <div className="ore ore-3" />
@@ -108,10 +100,8 @@ export default function GamePage() {
             <div className="crack crack-1" />
             <div className="crack crack-2" />
             <div className="crack crack-3" />
-
           </div>
 
-          {/* MINER */}
           <div className={`miner ${hitting ? "miner-hit" : ""}`}>
 
             <div className="helmet">
@@ -135,15 +125,17 @@ export default function GamePage() {
             <div className="leg leg-left" />
             <div className="leg leg-right" />
 
-            {/* PICKAXE */}
-            <div className={`pickaxe ${hitting ? "pickaxe-hit" : ""}`}>
+            <div
+              className={`pickaxe ${
+                hitting ? "pickaxe-hit" : ""
+              }`}
+            >
               <div className="pickaxe-handle" />
               <div className="pickaxe-head" />
             </div>
 
           </div>
 
-          {/* IMPACT */}
           {hitting && (
             <div className="impact">
               <span>✦</span>
@@ -154,9 +146,7 @@ export default function GamePage() {
             </div>
           )}
 
-          {/* ROCK PROGRESS */}
           <div className="rock-progress">
-
             <div className="progress-title">
               MINANDO ROCA
             </div>
@@ -171,7 +161,6 @@ export default function GamePage() {
             <div className="progress-number">
               {hits}/{maxHits}
             </div>
-
           </div>
 
           <div className="tap-hint">
@@ -180,11 +169,11 @@ export default function GamePage() {
 
         </section>
 
-        {/* STATS */}
         <div className="stats">
 
           <div className="stat">
             <div className="stat-icon">◆</div>
+
             <div>
               <small>MINERALES</small>
               <strong>{minerals}</strong>
@@ -193,6 +182,7 @@ export default function GamePage() {
 
           <div className="stat">
             <div className="stat-icon">⛏</div>
+
             <div>
               <small>FUERZA</small>
               <strong>1</strong>
@@ -201,7 +191,6 @@ export default function GamePage() {
 
         </div>
 
-        {/* BOTTOM MENU */}
         <nav className="bottom-menu">
 
           <button onClick={() => router.push("/game")}>
@@ -285,7 +274,11 @@ export default function GamePage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(145deg, #f5c542, #8d6500);
+          background: linear-gradient(
+            145deg,
+            #f5c542,
+            #8d6500
+          );
           color: #111;
           font-weight: 900;
           font-size: 19px;
@@ -348,19 +341,29 @@ export default function GamePage() {
 
         .energy-fill {
           height: 100%;
-          background: linear-gradient(90deg, #e5a900, #ffe27a);
+          background: linear-gradient(
+            90deg,
+            #e5a900,
+            #ffe27a
+          );
           transition: width 0.25s ease;
         }
 
         .mine {
-          height: calc(100dvh - 190px);
+          height: calc(100dvh - 205px);
           min-height: 500px;
           position: relative;
           overflow: hidden;
           background:
-            radial-gradient(circle at 50% 45%, #343434 0%, #181818 38%, #080808 100%);
+            radial-gradient(
+              circle at 50% 45%,
+              #343434 0%,
+              #181818 38%,
+              #080808 100%
+            );
           cursor: pointer;
           user-select: none;
+          touch-action: manipulation;
         }
 
         .ceiling {
@@ -370,9 +373,16 @@ export default function GamePage() {
           width: 100%;
           height: 90px;
           background:
-            linear-gradient(135deg, #1c1c1c 25%, #101010 25%, #101010 50%, #1c1c1c 50%, #1c1c1c 75%, #101010 75%);
+            linear-gradient(
+              135deg,
+              #1c1c1c 25%,
+              #101010 25%,
+              #101010 50%,
+              #1c1c1c 50%,
+              #1c1c1c 75%,
+              #101010 75%
+            );
           background-size: 35px 35px;
-          opacity: 0.9;
           border-bottom: 2px solid #050505;
         }
 
@@ -380,7 +390,12 @@ export default function GamePage() {
           position: absolute;
           inset: 80px 0 0;
           background:
-            radial-gradient(circle at 50% 40%, #3c3c3c, #171717 55%, #080808 100%);
+            radial-gradient(
+              circle at 50% 40%,
+              #3c3c3c,
+              #171717 55%,
+              #080808 100%
+            );
         }
 
         .rock {
@@ -449,11 +464,12 @@ export default function GamePage() {
           transform: translateX(-50%);
           width: 180px;
           height: 220px;
-          background: radial-gradient(
-            ellipse,
-            rgba(255, 220, 100, 0.13),
-            transparent 70%
-          );
+          background:
+            radial-gradient(
+              ellipse,
+              rgba(255, 220, 100, 0.13),
+              transparent 70%
+            );
           pointer-events: none;
         }
 
@@ -464,10 +480,16 @@ export default function GamePage() {
           width: 48%;
           height: 62%;
           background:
-            radial-gradient(circle at 30% 30%, #555, #292929 60%, #151515);
+            radial-gradient(
+              circle at 30% 30%,
+              #555,
+              #292929 60%,
+              #151515
+            );
           border-radius: 30% 0 0 35%;
           border-left: 7px solid #101010;
-          box-shadow: inset 15px 0 30px rgba(0, 0, 0, 0.7);
+          box-shadow:
+            inset 15px 0 30px rgba(0, 0, 0, 0.7);
           z-index: 3;
         }
 
@@ -477,7 +499,8 @@ export default function GamePage() {
           height: 18px;
           background: #5c5c5c;
           transform: rotate(45deg);
-          box-shadow: 0 0 7px rgba(255, 210, 80, 0.25);
+          box-shadow:
+            0 0 7px rgba(255, 210, 80, 0.25);
         }
 
         .ore-1 {
@@ -534,12 +557,11 @@ export default function GamePage() {
 
         .miner {
           position: absolute;
-          left: 32%;
+          left: 31%;
           bottom: 20%;
           width: 120px;
           height: 220px;
           z-index: 10;
-          transition: transform 0.2s ease;
         }
 
         .miner-hit {
@@ -553,7 +575,10 @@ export default function GamePage() {
           width: 60px;
           height: 35px;
           border-radius: 35px 35px 10px 10px;
-          background: linear-gradient(#e5b62e, #8d6500);
+          background: linear-gradient(
+            #e5b62e,
+            #8d6500
+          );
           border: 3px solid #f8d866;
         }
 
@@ -613,7 +638,12 @@ export default function GamePage() {
           width: 70px;
           height: 75px;
           border-radius: 15px 15px 8px 8px;
-          background: linear-gradient(90deg, #31536c, #182b39);
+          background:
+            linear-gradient(
+              90deg,
+              #31536c,
+              #182b39
+            );
           border: 3px solid #0c151b;
         }
 
@@ -693,7 +723,13 @@ export default function GamePage() {
           left: 50px;
           top: 5px;
           border-radius: 10px;
-          background: linear-gradient(90deg, #70451e, #bd7d39, #70451e);
+          background:
+            linear-gradient(
+              90deg,
+              #70451e,
+              #bd7d39,
+              #70451e
+            );
         }
 
         .pickaxe-head {
@@ -703,7 +739,11 @@ export default function GamePage() {
           width: 80px;
           height: 15px;
           border-radius: 10px;
-          background: linear-gradient(#cfcfcf, #555);
+          background:
+            linear-gradient(
+              #d8d8d8,
+              #555
+            );
         }
 
         .impact {
@@ -776,7 +816,12 @@ export default function GamePage() {
 
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #d09b18, #ffe27b);
+          background:
+            linear-gradient(
+              90deg,
+              #d09b18,
+              #ffe27b
+            );
           transition: width 0.25s ease;
         }
 
@@ -799,6 +844,7 @@ export default function GamePage() {
           font-weight: 900;
           letter-spacing: 1px;
           z-index: 40;
+          white-space: nowrap;
         }
 
         .stats {
@@ -874,12 +920,66 @@ export default function GamePage() {
           }
 
           35% {
-            transform: translateX(15px) rotate(2deg);
+            transform:
+              translateX(15px)
+              rotate(2deg);
           }
 
           100% {
-            transform: translateX(0);
+            transform:
+              translateX(0)
+              rotate(0);
           }
         }
 
-        @keyframes pickaxe
+        @keyframes pickaxeHit {
+          0% {
+            transform: rotate(-45deg);
+          }
+
+          45% {
+            transform: rotate(15deg);
+          }
+
+          100% {
+            transform: rotate(-45deg);
+          }
+        }
+
+        @keyframes spark {
+          0% {
+            transform: scale(0.3);
+            opacity: 1;
+          }
+
+          100% {
+            transform:
+              translateY(-30px)
+              scale(1.4);
+            opacity: 0;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .miner {
+            left: 27%;
+            transform: scale(0.9);
+            transform-origin: bottom center;
+          }
+
+          .ore-wall {
+            width: 52%;
+          }
+
+          .bottom-menu button span {
+            font-size: 17px;
+          }
+
+          .bottom-menu button small {
+            font-size: 6px;
+          }
+        }
+      `}</style>
+    </main>
+  );
+}
