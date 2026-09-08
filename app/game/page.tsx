@@ -1640,5 +1640,5 @@ export default function GamePage() {
       </div>
     </main>
   );
-              }
+}
 
