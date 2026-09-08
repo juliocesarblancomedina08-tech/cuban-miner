@@ -25,32 +25,23 @@ export default function GamePage() {
   const [minerals, setMinerals] = useState(0);
   const [energy, setEnergy] = useState(100);
   const [hits, setHits] = useState(0);
-  const [hitting, setHitting] = useState(false);
 
   const [unlockedMines, setUnlockedMines] = useState(1);
   const [elevatorFloor, setElevatorFloor] = useState(0);
-  const [elevatorWorking, setElevatorWorking] =
-    useState(false);
+  const [elevatorWorking, setElevatorWorking] = useState(false);
 
-  const [surfaceMinerals, setSurfaceMinerals] =
-    useState(0);
-  const [storedMinerals, setStoredMinerals] =
-    useState(0);
-  const [wagonMoving, setWagonMoving] =
-    useState(false);
+  const [surfaceMinerals, setSurfaceMinerals] = useState(0);
+  const [storedMinerals, setStoredMinerals] = useState(0);
+
+  const [minerWorking, setMinerWorking] = useState(false);
+  const [minerCarrying, setMinerCarrying] = useState(false);
+  const [wagonMoving, setWagonMoving] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const [message, setMessage] = useState("");
-  const [showProfile, setShowProfile] =
-    useState(false);
-  const [username, setUsername] =
-    useState("MINERO");
+  const [username, setUsername] = useState("MINERO");
 
-  const minePrices = [
-    0,
-    250,
-    750,
-    2000,
-  ];
+  const minePrices = [0, 250, 750, 2000];
 
   const mineNames = [
     "CARBÓN",
@@ -59,19 +50,17 @@ export default function GamePage() {
     "ORO",
   ];
 
-  const mineIcons = [
-    "🪨",
-    "🟠",
-    "⚙️",
-    "🟡",
+  const mineMaterials = [
+    "Carbón",
+    "Cobre",
+    "Hierro",
+    "Oro",
   ];
 
   const maxHits = 10;
 
-  const progress = Math.min(
-    (hits / maxHits) * 100,
-    100
-  );
+  const progress =
+    Math.min(hits, maxHits) / maxHits * 100;
 
   useEffect(() => {
     try {
@@ -84,25 +73,19 @@ export default function GamePage() {
         telegram?.initDataUnsafe?.user;
 
       if (telegramUser?.username) {
-        setUsername(
-          `@${telegramUser.username}`
-        );
+        setUsername(`@${telegramUser.username}`);
         return;
       }
 
       if (telegramUser?.first_name) {
-        setUsername(
-          telegramUser.first_name
-        );
+        setUsername(telegramUser.first_name);
         return;
       }
 
       const savedUsername =
         localStorage.getItem("username") ||
         localStorage.getItem("userName") ||
-        localStorage.getItem(
-          "telegram_username"
-        );
+        localStorage.getItem("telegram_username");
 
       if (savedUsername) {
         setUsername(savedUsername);
@@ -112,256 +95,153 @@ export default function GamePage() {
     }
   }, []);
 
-  function showMessage(text: string) {
+  const showMessage = (text: string) => {
     setMessage(text);
 
     setTimeout(() => {
       setMessage("");
-    }, 1400);
-  }
+    }, 2200);
+  };
 
-  function mine() {
-    if (energy <= 0 || hitting) {
+  const mine = () => {
+    if (energy <= 0) {
+      showMessage("⚡ SIN ENERGÍA");
       return;
     }
 
-    setHitting(true);
+    setMinerWorking(true);
+    setEnergy((value) => Math.max(0, value - 2));
 
-    setEnergy((value) =>
-      Math.max(value - 2, 0)
-    );
+    const nextHits = hits + 1;
+
+    if (nextHits >= maxHits) {
+      setHits(0);
+      setCoins((value) => value + 25);
+      setMinerals((value) => value + 1);
+      setSurfaceMinerals((value) => value + 1);
+      setMinerCarrying(true);
+
+      showMessage("⛏️ ¡MINERAL EXTRAÍDO!");
+
+      setTimeout(() => {
+        setMinerWorking(false);
+      }, 900);
+
+      setTimeout(() => {
+        setMinerCarrying(false);
+        setStoredMinerals((value) => value + 1);
+      }, 2200);
+
+      return;
+    }
+
+    setHits(nextHits);
 
     setTimeout(() => {
-      setHits((value) => {
-        const next = value + 1;
+      setMinerWorking(false);
+    }, 650);
+  };
 
-        if (next >= maxHits) {
-          setCoins((value) =>
-            value + 25
-          );
-
-          setMinerals((value) =>
-            value + 1
-          );
-
-          setSurfaceMinerals((value) =>
-            value + 1
-          );
-
-          showMessage(
-            "+25 🪙  +1 🪨"
-          );
-
-          return 0;
-        }
-
-        return next;
-      });
-
-      setHitting(false);
-    }, 350);
-  }
-
-  function unlockMine(index: number) {
+  const unlockMine = (index: number) => {
     const price = minePrices[index];
 
-    if (
-      unlockedMines >=
-      index + 1
-    ) {
+    if (unlockedMines >= index + 1) {
+      showMessage("⛏️ ESTA MINA YA ESTÁ ABIERTA");
       return;
     }
 
     if (coins < price) {
-      showMessage(
-        "❌ MONEDAS INSUFICIENTES"
-      );
+      showMessage("💰 MONEDAS INSUFICIENTES");
       return;
     }
 
-    setCoins((value) =>
-      value - price
-    );
-
-    setUnlockedMines(
-      index + 1
-    );
-
+    setCoins((value) => value - price);
+    setUnlockedMines(index + 1);
     setElevatorFloor(0);
 
     showMessage(
-      `⛏️ MINA ${index + 1} DESBLOQUEADA`
+      `🔓 ${mineNames[index]} DESBLOQUEADA`
     );
-  }
+  };
 
   useEffect(() => {
-    if (unlockedMines <= 0) {
-      return;
-    }
-
-    const elevatorInterval =
-      setInterval(() => {
-        setElevatorWorking(true);
-
-        setElevatorFloor(
-          (floor) => {
-            const next = floor + 1;
-
-            if (
-              next >=
-              unlockedMines
-            ) {
-              return 0;
-            }
-
-            return next;
-          }
-        );
-
-        setTimeout(() => {
-          setElevatorWorking(
-            false
-          );
-
-          setSurfaceMinerals(
-            (value) => {
-              if (value <= 0) {
-                return value;
-              }
-
-              setStoredMinerals(
-                (stored) =>
-                  stored + 1
-              );
-
-              return value - 1;
-            }
-          );
-        }, 900);
-      }, 3500);
-
-    return () =>
-      clearInterval(
-        elevatorInterval
+    const timer = setInterval(() => {
+      setEnergy((value) =>
+        Math.min(100, value + 1)
       );
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (unlockedMines <= 1) return;
+
+      setElevatorWorking(true);
+
+      setElevatorFloor((floor) => {
+        if (floor >= unlockedMines - 1) {
+          return 0;
+        }
+
+        return floor + 1;
+      });
+
+      setTimeout(() => {
+        setElevatorWorking(false);
+      }, 1500);
+    }, 3500);
+
+    return () => clearInterval(timer);
   }, [unlockedMines]);
 
   useEffect(() => {
-    if (unlockedMines <= 1) {
-      return;
-    }
-
-    const autoMineInterval =
-      setInterval(() => {
-        const amount =
-          unlockedMines - 1;
-
-        setSurfaceMinerals(
-          (value) =>
-            value + amount
-        );
-
-        setMinerals(
-          (value) =>
-            value + amount
-        );
-
-        setCoins(
-          (value) =>
-            value + amount * 2
-        );
-      }, 5000);
-
-    return () =>
-      clearInterval(
-        autoMineInterval
-      );
-  }, [unlockedMines]);
-
-  useEffect(() => {
-    if (
-      storedMinerals <= 0 ||
-      wagonMoving
-    ) {
-      return;
-    }
+    if (storedMinerals <= 0) return;
 
     setWagonMoving(true);
 
-    const timer =
-      setTimeout(() => {
-        setStoredMinerals(
-          (value) =>
-            Math.max(
-              value - 1,
-              0
-            )
-        );
-
-        setCoins(
-          (value) =>
-            value + 5
-        );
-
-        setWagonMoving(false);
-      }, 1800);
-
-    return () =>
-      clearTimeout(timer);
-  }, [
-    storedMinerals,
-    wagonMoving,
-  ]);
-
-  useEffect(() => {
-    const energyTimer =
-      setInterval(() => {
-        setEnergy((value) =>
-          Math.min(
-            value + 1,
-            100
-          )
-        );
-      }, 3000);
-
-    return () =>
-      clearInterval(
-        energyTimer
+    const timer = setTimeout(() => {
+      setStoredMinerals((value) =>
+        Math.max(0, value - 1)
       );
-  }, []);
+
+      setSurfaceMinerals((value) =>
+        Math.max(0, value - 1)
+      );
+
+      setCoins((value) => value + 5);
+
+      setWagonMoving(false);
+
+      showMessage("🚃 MINERAL ENTREGADO");
+    }, 1800);
+
+    return () => clearTimeout(timer);
+  }, [storedMinerals]);
+
+  const elevatorHeight =
+    Math.max(82, unlockedMines * 82);
 
   const elevatorPosition =
-    unlockedMines <= 1
-      ? 8
-      : 8 +
-        (elevatorFloor /
-          Math.max(
-            unlockedMines - 1,
-            1
-          )) *
-          78;
-
-  function openProfile() {
-    setShowProfile(true);
-  }
-
-  function closeProfile() {
-    setShowProfile(false);
-  }
-
-  function openMap() {
-    router.push("/mapa");
-  }
+    elevatorFloor * 82;
 
   return (
     <main className="game-page">
+
       <div className="game-container">
+
+        {message && (
+          <div className="game-message">
+            {message}
+          </div>
+        )}
 
         <header className="game-header">
 
           <button
             className="profile-header"
-            onClick={openProfile}
+            onClick={() => setShowProfile(true)}
           >
             <div className="profile-avatar">
               👷
@@ -373,126 +253,176 @@ export default function GamePage() {
           </button>
 
           <div className="header-center">
-
-            <div className="mine-title">
-              ⛏️ MINA DE{" "}
-              {mineNames[0]}
-            </div>
-
             <div className="mine-title-sub">
-              NIVEL 1
+              OPERACIÓN MINERA
             </div>
-
           </div>
 
           <div className="balance-box">
-            🪙 {coins}
+            <span>🪙</span>
+            {coins}
           </div>
 
         </header>
-
-        {message && (
-          <div className="game-message">
-            {message}
-          </div>
-        )}
 
         <section className="mine-area">
 
           <div className="surface">
 
-            <div className="sun">
-              ☀️
+            <div className="surface-sky">
+              <div className="sky-light" />
+              <div className="sky-cloud sky-cloud-1" />
+              <div className="sky-cloud sky-cloud-2" />
             </div>
 
-            <div className="cloud cloud-one">
-              ☁️
+            <div className="surface-mountains">
+              <div className="mountain-back mountain-back-1" />
+              <div className="mountain-back mountain-back-2" />
+              <div className="mountain-front mountain-front-1" />
+              <div className="mountain-front mountain-front-2" />
             </div>
 
-            <div className="cloud cloud-two">
-              ☁️
-            </div>
+            <div className="mine-entrance">
 
-            <div className="mountain mountain-one" />
+              <div className="mine-entrance-rock rock-left" />
+              <div className="mine-entrance-rock rock-right" />
 
-            <div className="mountain mountain-two" />
+              <div className="mine-entrance-frame">
 
-            <div className="surface-ground">
+                <div className="mine-entrance-light" />
 
-              <div className="ground-grass" />
-
-              <div className="warehouse">
-
-                <div className="warehouse-roof">
-                  <span />
-                  <span />
-                  <span />
-                </div>
-
-                <div className="warehouse-body">
-
-                  <strong>
-                    ALMACÉN
-                  </strong>
-
-                  <span>
-                    🪨 {storedMinerals}
-                  </span>
-
+                <div className="mine-entrance-dark">
+                  <div className="entrance-depth" />
                 </div>
 
               </div>
 
-              <div className="warehouse-stock">
-                📦
+              <div className="mine-rail-entry">
+                <span />
+                <span />
+                <span />
+                <span />
               </div>
 
-              <div className="surface-worker">
-                👷
+            </div>
+
+            <div className="surface-machine">
+
+              <div className="machine-body" />
+
+              <div className="machine-wheel machine-wheel-left" />
+              <div className="machine-wheel machine-wheel-right" />
+
+              <div className="machine-light" />
+
+              <div className="machine-smoke smoke-1" />
+              <div className="machine-smoke smoke-2" />
+
+            </div>
+
+            <div className="surface-warehouse">
+
+              <div className="warehouse-roof-3d" />
+
+              <div className="warehouse-main-3d">
+
+                <div className="warehouse-door-3d" />
+
+                <div className="warehouse-window window-left" />
+                <div className="warehouse-window window-right" />
+
+                <div className="warehouse-lamp-3d" />
+
               </div>
 
-              <div
-                className={`wagon ${
-                  wagonMoving
-                    ? "wagon-moving"
-                    : ""
-                }`}
+              <div className="warehouse-crates">
+                <span />
+                <span />
+                <span />
+              </div>
+
+            </div>
+
+            <div className="surface-miner">
+
+              <div className="human-miner">
+
+                <div className="human-head">
+                  <div className="human-hair" />
+                  <div className="human-face" />
+                </div>
+
+                <div className="human-helmet">
+                  <div className="helmet-light" />
+                </div>
+
+                <div className="human-neck" />
+
+                <div className="human-body">
+                  <div className="human-shirt" />
+                  <div className="human-belt" />
+                </div>
+
+                <div className="human-arm human-arm-left" />
+                <div className="human-arm human-arm-right" />
+
+                <div className="human-leg human-leg-left" />
+                <div className="human-leg human-leg-right" />
+
+                <div className="human-boot human-boot-left" />
+                <div className="human-boot human-boot-right" />
+
+              </div>
+
+            </div>
+
+            <div className="surface-dust dust-surface-1" />
+            <div className="surface-dust dust-surface-2" />
+            <div className="surface-dust dust-surface-3" />
+
+            <div className="start-mining-area">
+
+              <div className="start-mining-label">
+                READY TO WORK?
+              </div>
+
+              <button
+                className="start-mining-button"
+                onClick={mine}
+                disabled={energy <= 0}
               >
 
-                <div className="wagon-body">
-                  🛒
-                </div>
+                <span className="start-mining-shine" />
 
-                <div className="wagon-minerals">
-                  🪨
-                </div>
+                <span className="start-mining-icon">
+                  ⛏
+                </span>
 
-              </div>
+                <span className="start-mining-text">
+                  START MINING
+                </span>
+
+                <span className="start-mining-energy">
+                  ENERGY {energy}/100
+                </span>
+
+              </button>
 
             </div>
 
           </div>
 
-          <div
+                    <div
             className="elevator-shaft"
             style={{
-              height:
-                `${
-                  58 +
-                  unlockedMines *
-                    82
-                }px`,
+              height: `${58 + elevatorHeight}px`,
             }}
           >
 
             <div
               className="elevator-rail"
               style={{
-                height:
-                  `${
-                    unlockedMines *
-                    82
-                  }px`,
+                height: `${elevatorHeight}px`,
               }}
             />
 
@@ -501,14 +431,10 @@ export default function GamePage() {
             <div
               className="elevator-rope"
               style={{
-                height:
-                  `${
-                    Math.max(
-                      unlockedMines *
-                        82,
-                      55
-                    )
-                  }px`,
+                height: `${Math.max(
+                  elevatorHeight,
+                  55
+                )}px`,
               }}
             />
 
@@ -519,14 +445,18 @@ export default function GamePage() {
                   : ""
               }`}
               style={{
-                top:
-                  `${elevatorPosition}%`,
+                bottom: `${elevatorPosition}px`,
               }}
             >
 
               <div className="elevator-top-light" />
 
-              <div className="elevator-bars" />
+              <div className="elevator-bars">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
 
               <div className="elevator-light" />
 
@@ -535,1033 +465,561 @@ export default function GamePage() {
               </div>
 
               <div className="elevator-bag">
-                🪨
+                {storedMinerals > 0 ? "⛏️" : ""}
               </div>
 
-              <div className="elevator-control">
-                <i />
-                <i />
-                <i />
-              </div>
+            </div>
 
-              <div className="elevator-floor-label">
-                NIVEL{" "}
-                {elevatorFloor + 1}
-              </div>
+            <div className="elevator-control">
+              <i />
+              <i />
+              <i />
+            </div>
 
+            <div className="elevator-floor-label">
+              NIVEL {elevatorFloor + 1}
             </div>
 
           </div>
 
-                    <section className="mine-level mine-level-one">
+          {/* MINA 1 */}
+
+          <section className="mine-level coal-mine">
+
+            <div className="mine-depth-marker">
+              NIVEL 01 · CARBÓN
+            </div>
 
             <div className="mine-wall">
+              <div className="rock-layer" />
 
-              <div className="rock-layer rock-layer-one" />
-              <div className="rock-layer rock-layer-two" />
-              <div className="rock-layer rock-layer-three" />
+              <div className="coal-rock coal-one" />
+              <div className="coal-rock coal-two" />
+              <div className="coal-rock coal-three" />
+              <div className="coal-rock coal-four" />
 
-              <div className="mine-sign">
-
-                <span>
-                  ⛏️
-                </span>
-
-                <strong>
-                  MINA 1
-                </strong>
-
-                <small>
-                  CARBÓN
-                </small>
-
-              </div>
+              <div className="mine-lamp lamp-left" />
+              <div className="mine-lamp lamp-right" />
 
               <div className="mine-tunnel">
 
-                <div className="tunnel-roof" />
+                <div className="mine-rails">
 
-                <div className="mine-cart">
-
-                  <div className="cart-body">
-                    🛒
-                  </div>
-
-                  <div className="cart-rocks">
-                    🪨 🪨
-                  </div>
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
 
                 </div>
 
-                <div
-                  className={`miner-character ${
-                    hitting
-                      ? "miner-hitting"
-                      : ""
-                  }`}
+              </div>
+
+            </div>
+
+            <div
+              className={`miner ${
+                minerWorking
+                  ? "miner-working"
+                  : ""
+              }`}
+            >
+
+              <div className="miner-head" />
+              <div className="miner-body" />
+
+              <div className="miner-arm miner-arm-left" />
+              <div className="miner-arm miner-arm-right" />
+
+              <div className="miner-leg miner-leg-left" />
+              <div className="miner-leg miner-leg-right" />
+
+              <div className="miner-pickaxe" />
+
+            </div>
+
+            <div className="miner-boss">
+              <div className="boss-head" />
+              <div className="boss-helmet" />
+              <div className="boss-body" />
+              <div className="boss-arm boss-arm-left" />
+              <div className="boss-arm boss-arm-right" />
+            </div>
+
+            <div className="mine-box">
+              <div className="mine-box-lid" />
+              <div className="mine-box-body" />
+              <div className="mine-box-metal" />
+              <div className="mine-box-minerals">
+                {storedMinerals > 0 ? "◆ ◆ ◆" : ""}
+              </div>
+            </div>
+
+            {minerWorking && (
+              <>
+                <div className="dust dust-one" />
+                <div className="dust dust-two" />
+                <div className="dust dust-three" />
+                <div className="dust dust-four" />
+
+                <div className="mineral-particle particle-one" />
+                <div className="mineral-particle particle-two" />
+                <div className="mineral-particle particle-three" />
+                <div className="mineral-particle particle-four" />
+              </>
+            )}
+
+            <div className="mine-floor-glow" />
+
+          </section>
+
+          {/* MINA 2 */}
+
+          <section className="mine-level copper-mine">
+
+            <div className="mine-depth-marker">
+              NIVEL 02 · COBRE
+            </div>
+
+            <div className="mine-wall">
+
+              <div className="rock-layer" />
+
+              <div className="copper-vein copper-one" />
+              <div className="copper-vein copper-two" />
+
+              <div className="copper-spark spark-one" />
+              <div className="copper-spark spark-two" />
+              <div className="copper-spark spark-three" />
+
+              <div className="mine-tunnel">
+
+                <div className="mine-rails">
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="mine-worker-static">
+              <div className="miner-head" />
+              <div className="miner-body" />
+            </div>
+
+            <div className="mine-box">
+              <div className="mine-box-lid" />
+              <div className="mine-box-body" />
+              <div className="mine-box-metal" />
+            </div>
+
+            {unlockedMines < 2 && (
+              <div className="locked-mine-overlay">
+
+                <div className="lock-icon">
+                  🔒
+                </div>
+
+                <strong>
+                  MINA BLOQUEADA
+                </strong>
+
+                <span>
+                  Desbloquea esta zona
+                </span>
+
+                <button
+                  className="unlock-button"
+                  onClick={() => unlockMine(1)}
                 >
-
-                  <div className="miner-helmet">
-                    ⛑️
-                  </div>
-
-                  <div className="miner-body">
-                    👷
-                  </div>
-
-                  <div className="miner-pickaxe">
-                    ⛏️
-                  </div>
-
-                </div>
-
-                <div className="coal-rock coal-one">
-
-                  <span>
-                    🪨
-                  </span>
-
-                  <i />
-                  <i />
-                  <i />
-
-                </div>
-
-                <div className="coal-rock coal-two">
-
-                  <span>
-                    🪨
-                  </span>
-
-                  <i />
-                  <i />
-                  <i />
-
-                </div>
-
-                <div className="coal-rock coal-three">
-
-                  <span>
-                    🪨
-                  </span>
-
-                  <i />
-                  <i />
-                  <i />
-
-                </div>
-
-                <div className="mine-lamp lamp-one">
-                  💡
-                </div>
-
-                <div className="mine-lamp lamp-two">
-                  💡
-                </div>
-
-                <div className="mine-particle particle-one">
-                  ✦
-                </div>
-
-                <div className="mine-particle particle-two">
-                  ✦
-                </div>
-
-                <div className="mine-particle particle-three">
-                  ✦
-                </div>
+                  🪙 {minePrices[1]}
+                </button>
 
               </div>
-
-            </div>
-
-            <div className="manual-mining-panel">
-
-              <div className="mining-panel-header">
-
-                <div>
-
-                  <strong>
-                    ⛏️ EXTRACCIÓN MANUAL
-                  </strong>
-
-                  <span>
-                    Golpea la roca para extraer carbón
-                  </span>
-
-                </div>
-
-                <div className="energy-mini">
-                  ⚡ {energy}/100
-                </div>
-
-              </div>
-
-              <div className="mining-progress">
-
-                <div
-                  className="mining-progress-fill"
-                  style={{
-                    width:
-                      `${progress}%`,
-                  }}
-                />
-
-              </div>
-
-              <div className="mining-progress-text">
-
-                <span>
-                  GOLPES
-                </span>
-
-                <strong>
-                  {hits}/{maxHits}
-                </strong>
-
-              </div>
-
-              <button
-                className={`mine-button ${
-                  hitting
-                    ? "mine-button-hit"
-                    : ""
-                }`}
-                onClick={mine}
-                disabled={
-                  energy <= 0 ||
-                  hitting
-                }
-              >
-
-                <span className="mine-button-icon">
-                  ⛏️
-                </span>
-
-                <span className="mine-button-text">
-
-                  {hitting
-                    ? "¡GOLPEANDO!"
-                    : energy <= 0
-                    ? "SIN ENERGÍA"
-                    : "GOLPEAR ROCA"}
-
-                </span>
-
-              </button>
-
-              <div className="mining-reward">
-
-                <span>
-                  🎁 RECOMPENSA
-                </span>
-
-                <strong>
-                  10 golpes → +25 🪙 +1 🪨
-                </strong>
-
-              </div>
-
-            </div>
+            )}
 
           </section>
 
+                    {/* MINA 3 */}
 
-          <section className="mine-level mine-level-two">
+          <section className="mine-level iron-mine">
 
             <div className="mine-depth-marker">
-
-              <span>
-                ↓
-              </span>
-
-              NIVEL 2
-
+              NIVEL 03 · HIERRO
             </div>
 
             <div className="mine-wall">
 
-              <div className="rock-layer rock-layer-one" />
-              <div className="rock-layer rock-layer-two" />
-              <div className="rock-layer rock-layer-three" />
+              <div className="rock-layer" />
 
-              <div className="mine-sign copper-sign">
-
-                <span>
-                  🟠
-                </span>
-
-                <strong>
-                  MINA 2
-                </strong>
-
-                <small>
-                  COBRE
-                </small>
-
-              </div>
+              <div className="iron-rock iron-one" />
+              <div className="iron-rock iron-two" />
+              <div className="iron-rock iron-three" />
+              <div className="iron-rock iron-four" />
 
               <div className="mine-tunnel">
 
-                <div className="tunnel-roof" />
-
-                <div className="copper-vein">
-
-                  <span>
-                    🟠
-                  </span>
-
-                  <span>
-                    🟠
-                  </span>
-
-                  <span>
-                    🟠
-                  </span>
-
-                  <span>
-                    🟠
-                  </span>
-
-                </div>
-
-                <div className="miner-character auto-miner">
-
-                  <div className="miner-helmet">
-                    ⛑️
-                  </div>
-
-                  <div className="miner-body">
-                    👷
-                  </div>
-
-                  <div className="miner-pickaxe">
-                    ⛏️
-                  </div>
-
-                </div>
-
-                <div className="mine-drill">
-                  ⚙️
-                </div>
-
-                <div className="mine-lamp lamp-one">
-                  💡
-                </div>
-
-                <div className="copper-particle copper-particle-one">
-                  ✦
-                </div>
-
-                <div className="copper-particle copper-particle-two">
-                  ✦
+                <div className="mine-rails">
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
                 </div>
 
               </div>
 
-              {unlockedMines < 2 && (
+            </div>
 
-                <div className="locked-mine-overlay">
+            <div className="mine-worker-static">
+              <div className="miner-head" />
+              <div className="miner-body" />
+            </div>
 
-                  <div className="locked-icon">
-                    🔒
-                  </div>
+            <div className="mine-box">
+              <div className="mine-box-lid" />
+              <div className="mine-box-body" />
+              <div className="mine-box-metal" />
+            </div>
 
-                  <strong>
-                    MINA BLOQUEADA
-                  </strong>
+            {unlockedMines < 3 && (
+              <div className="locked-mine-overlay">
 
-                  <span>
-                    Desbloquea esta mina
-                    para extraer COBRE
-                  </span>
-
-                  <button
-                    className="unlock-button"
-                    onClick={() =>
-                      unlockMine(1)
-                    }
-                  >
-
-                    <span>
-                      ⛏️ DESBLOQUEAR
-                    </span>
-
-                    <strong>
-                      🪙 {minePrices[1]}
-                    </strong>
-
-                  </button>
-
+                <div className="lock-icon">
+                  🔒
                 </div>
 
-              )}
+                <strong>
+                  MINA BLOQUEADA
+                </strong>
 
-            </div>
+                <span>
+                  Desbloquea esta zona
+                </span>
+
+                <button
+                  className="unlock-button"
+                  onClick={() => unlockMine(2)}
+                >
+                  🪙 {minePrices[2]}
+                </button>
+
+              </div>
+            )}
 
           </section>
 
-                    <section className="mine-level mine-level-three">
+          {/* MINA 4 */}
+
+          <section className="mine-level gold-mine">
 
             <div className="mine-depth-marker">
-
-              <span>
-                ↓
-              </span>
-
-              NIVEL 3
-
+              NIVEL 04 · ORO
             </div>
 
             <div className="mine-wall">
 
-              <div className="rock-layer rock-layer-one" />
-              <div className="rock-layer rock-layer-two" />
-              <div className="rock-layer rock-layer-three" />
+              <div className="rock-layer" />
 
-              <div className="mine-sign iron-sign">
+              <div className="gold-vein gold-one" />
+              <div className="gold-vein gold-two" />
 
-                <span>
-                  ⚙️
-                </span>
-
-                <strong>
-                  MINA 3
-                </strong>
-
-                <small>
-                  HIERRO
-                </small>
-
-              </div>
+              <div className="gold-nugget gold-nugget-one" />
+              <div className="gold-nugget gold-nugget-two" />
+              <div className="gold-nugget gold-nugget-three" />
 
               <div className="mine-tunnel">
 
-                <div className="tunnel-roof" />
-
-                <div className="iron-vein">
-
-                  <span>
-                    ⚙️
-                  </span>
-
-                  <span>
-                    ⚙️
-                  </span>
-
-                  <span>
-                    ⚙️
-                  </span>
-
-                  <span>
-                    ⚙️
-                  </span>
-
-                  <span>
-                    ⚙️
-                  </span>
-
-                </div>
-
-                <div className="miner-character auto-miner">
-
-                  <div className="miner-helmet">
-                    ⛑️
-                  </div>
-
-                  <div className="miner-body">
-                    👷
-                  </div>
-
-                  <div className="miner-pickaxe">
-                    ⛏️
-                  </div>
-
-                </div>
-
-                <div className="iron-machine">
-                  ⚙️
-                </div>
-
-                <div className="mine-lamp lamp-one">
-                  💡
-                </div>
-
-                <div className="mine-lamp lamp-two">
-                  💡
-                </div>
-
-                <div className="iron-particle iron-particle-one">
-                  ✦
-                </div>
-
-                <div className="iron-particle iron-particle-two">
-                  ✦
-                </div>
-
-                <div className="iron-particle iron-particle-three">
-                  ✦
+                <div className="mine-rails">
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
+                  <span className="rail-sleeper" />
                 </div>
 
               </div>
 
-              {unlockedMines < 3 && (
+            </div>
 
-                <div className="locked-mine-overlay">
+            <div className="mine-worker-static">
+              <div className="miner-head" />
+              <div className="miner-body" />
+            </div>
 
-                  <div className="locked-icon">
-                    🔒
-                  </div>
+            <div className="mine-box">
+              <div className="mine-box-lid" />
+              <div className="mine-box-body" />
+              <div className="mine-box-metal" />
+            </div>
 
-                  <strong>
-                    MINA BLOQUEADA
-                  </strong>
+            {unlockedMines < 4 && (
+              <div className="locked-mine-overlay">
 
-                  <span>
-                    Desbloquea esta mina
-                    para extraer HIERRO
-                  </span>
-
-                  <button
-                    className="unlock-button"
-                    onClick={() =>
-                      unlockMine(2)
-                    }
-                  >
-
-                    <span>
-                      ⛏️ DESBLOQUEAR
-                    </span>
-
-                    <strong>
-                      🪙 {minePrices[2]}
-                    </strong>
-
-                  </button>
-
+                <div className="lock-icon">
+                  🔒
                 </div>
 
-              )}
+                <strong>
+                  MINA BLOQUEADA
+                </strong>
 
-            </div>
+                <span>
+                  Desbloquea esta zona
+                </span>
+
+                <button
+                  className="unlock-button"
+                  onClick={() => unlockMine(3)}
+                >
+                  🪙 {minePrices[3]}
+                </button>
+
+              </div>
+            )}
 
           </section>
 
+          <section className="mining-panel">
 
-          <section className="mine-level mine-level-four">
+            <div className="mining-panel-title">
 
-            <div className="mine-depth-marker">
+              <strong>
+                ⛏️ PRODUCCIÓN
+              </strong>
 
               <span>
-                ↓
+                {mineMaterials[unlockedMines - 1]}
               </span>
 
-              NIVEL 4
+            </div>
+
+            <div className="mining-progress">
+
+              <div
+                className="mining-progress-bar"
+                style={{
+                  width: `${progress}%`,
+                }}
+              />
 
             </div>
 
-            <div className="mine-wall">
+            <div className="mining-stats">
 
-              <div className="rock-layer rock-layer-one" />
-              <div className="rock-layer rock-layer-two" />
-              <div className="rock-layer rock-layer-three" />
-
-              <div className="mine-sign gold-sign">
-
-                <span>
-                  🟡
-                </span>
-
+              <div className="mining-stat">
                 <strong>
-                  MINA 4
+                  {energy}
                 </strong>
-
-                <small>
-                  ORO
-                </small>
-
+                <span>
+                  Energía
+                </span>
               </div>
 
-              <div className="mine-tunnel">
-
-                <div className="tunnel-roof" />
-
-                <div className="gold-vein">
-
-                  <span>
-                    🟡
-                  </span>
-
-                  <span>
-                    🟡
-                  </span>
-
-                  <span>
-                    🟡
-                  </span>
-
-                  <span>
-                    🟡
-                  </span>
-
-                  <span>
-                    🟡
-                  </span>
-
-                  <span>
-                    🟡
-                  </span>
-
-                </div>
-
-                <div className="miner-character auto-miner">
-
-                  <div className="miner-helmet">
-                    ⛑️
-                  </div>
-
-                  <div className="miner-body">
-                    👷
-                  </div>
-
-                  <div className="miner-pickaxe">
-                    ⛏️
-                  </div>
-
-                </div>
-
-                <div className="gold-machine">
-                  ⚙️
-                </div>
-
-                <div className="mine-lamp lamp-one">
-                  💡
-                </div>
-
-                <div className="mine-lamp lamp-two">
-                  💡
-                </div>
-
-                <div className="gold-particle gold-particle-one">
-                  ✦
-                </div>
-
-                <div className="gold-particle gold-particle-two">
-                  ✦
-                </div>
-
-                <div className="gold-particle gold-particle-three">
-                  ✦
-                </div>
-
-                <div className="gold-particle gold-particle-four">
-                  ✦
-                </div>
-
+              <div className="mining-stat">
+                <strong>
+                  {minerals}
+                </strong>
+                <span>
+                  Minerales
+                </span>
               </div>
 
-              {unlockedMines < 4 && (
-
-                <div className="locked-mine-overlay">
-
-                  <div className="locked-icon">
-                    🔒
-                  </div>
-
-                  <strong>
-                    MINA BLOQUEADA
-                  </strong>
-
-                  <span>
-                    Desbloquea esta mina
-                    para extraer ORO
-                  </span>
-
-                  <button
-                    className="unlock-button"
-                    onClick={() =>
-                      unlockMine(3)
-                    }
-                  >
-
-                    <span>
-                      ⛏️ DESBLOQUEAR
-                    </span>
-
-                    <strong>
-                      🪙 {minePrices[3]}
-                    </strong>
-
-                  </button>
-
-                </div>
-
-              )}
+              <div className="mining-stat">
+                <strong>
+                  {surfaceMinerals}
+                </strong>
+                <span>
+                  Producción
+                </span>
+              </div>
 
             </div>
+
+            <button
+              className="mine-button"
+              onClick={mine}
+              disabled={energy <= 0}
+            >
+              ⛏️ EXTRAER MINERAL
+            </button>
 
           </section>
 
-
-          <section className="production-panel">
+                    <section className="production-panel">
 
             <div className="production-title">
-              📊 PRODUCCIÓN DE LA MINA
+              🏭 CENTRO DE PRODUCCIÓN
             </div>
 
-            <div className="production-grid">
+            <div className="production-value">
 
-              <div className="production-card">
+              <strong>
+                Mineral almacenado
+              </strong>
 
-                <span className="production-icon">
-                  🪨
-                </span>
+              <span>
+                {storedMinerals}
+              </span>
 
-                <div>
+            </div>
 
-                  <small>
-                    EXTRAÍDO
-                  </small>
+            <div className="production-value">
 
-                  <strong>
-                    {minerals}
-                  </strong>
+              <strong>
+                Minas activas
+              </strong>
 
-                </div>
-
-              </div>
-
-
-              <div className="production-card">
-
-                <span className="production-icon">
-                  📦
-                </span>
-
-                <div>
-
-                  <small>
-                    ALMACENADO
-                  </small>
-
-                  <strong>
-                    {storedMinerals}
-                  </strong>
-
-                </div>
-
-              </div>
-
-
-              <div className="production-card">
-
-                <span className="production-icon">
-                  🪨
-                </span>
-
-                <div>
-
-                  <small>
-                    EN SUPERFICIE
-                  </small>
-
-                  <strong>
-                    {surfaceMinerals}
-                  </strong>
-
-                </div>
-
-              </div>
+              <span>
+                {unlockedMines}/4
+              </span>
 
             </div>
 
           </section>
 
-                    <section className="mine-info-panel">
+          <section className="mine-info-panel">
 
-            <div className="mine-info-title">
-              ⛏️ SISTEMA DE MINAS
+            <div className="mine-info-row">
+              <span>
+                Mina actual
+              </span>
+
+              <strong>
+                {mineNames[unlockedMines - 1]}
+              </strong>
             </div>
 
-            <div className="mine-info-list">
+            <div className="mine-info-row">
+              <span>
+                Profundidad
+              </span>
 
-              {mineNames.map(
-                (name, index) => (
-                  <div
-                    key={name}
-                    className={`mine-info-row ${
-                      unlockedMines >=
-                      index + 1
-                        ? "mine-info-unlocked"
-                        : "mine-info-locked"
-                    }`}
-                  >
+              <strong>
+                NIVEL {unlockedMines}
+              </strong>
+            </div>
 
-                    <div className="mine-info-left">
+            <div className="mine-info-row">
+              <span>
+                Monedas
+              </span>
 
-                      <span className="mine-info-icon">
-                        {mineIcons[index]}
-                      </span>
-
-                      <div>
-
-                        <strong>
-                          MINA {index + 1}
-                        </strong>
-
-                        <small>
-                          {name}
-                        </small>
-
-                      </div>
-
-                    </div>
-
-                    <div className="mine-info-status">
-
-                      {unlockedMines >=
-                      index + 1 ? (
-                        <>
-
-                          <span>
-                            DESBLOQUEADA
-                          </span>
-
-                          <b>
-                            ✓
-                          </b>
-
-                        </>
-                      ) : (
-                        <>
-
-                          <span>
-                            BLOQUEADA
-                          </span>
-
-                          <b>
-                            🔒
-                          </b>
-
-                        </>
-                      )}
-
-                    </div>
-
-                  </div>
-                )
-              )}
-
+              <strong>
+                🪙 {coins}
+              </strong>
             </div>
 
           </section>
-
-
-          <div className="bottom-space" />
 
         </section>
 
-
         {showProfile && (
-
           <div
-            className="profile-modal-backdrop"
-            onClick={closeProfile}
+            className="profile-modal"
+            onClick={() => setShowProfile(false)}
           >
 
             <div
-              className="profile-modal"
+              className="profile-card"
               onClick={(event) =>
                 event.stopPropagation()
               }
             >
 
-              <div className="profile-modal-header">
-
-                <div className="profile-modal-avatar">
-                  👷
-                </div>
-
-                <div className="profile-modal-user">
-
-                  <strong>
-                    {username}
-                  </strong>
-
-                  <span>
-                    ⛏️ MINERO
-                  </span>
-
-                </div>
-
-                <button
-                  className="profile-close"
-                  onClick={closeProfile}
-                >
-                  ✕
-                </button>
-
+              <div className="profile-avatar-large">
+                👷
               </div>
 
+              <h2>
+                {username}
+              </h2>
 
-              <div className="profile-stats">
+              <p>
+                MINERO DE CUBAN-MINER
+              </p>
+
+              <div className="profile-stat-grid">
 
                 <div className="profile-stat">
-
-                  <span>
-                    🪙
-                  </span>
-
-                  <small>
-                    MONEDAS
-                  </small>
-
                   <strong>
                     {coins}
                   </strong>
-
+                  <span>
+                    Monedas
+                  </span>
                 </div>
 
-
                 <div className="profile-stat">
-
-                  <span>
-                    🪨
-                  </span>
-
-                  <small>
-                    MINERALES
-                  </small>
-
                   <strong>
                     {minerals}
                   </strong>
-
+                  <span>
+                    Minerales
+                  </span>
                 </div>
-
 
                 <div className="profile-stat">
-
-                  <span>
-                    ⛏️
-                  </span>
-
-                  <small>
-                    GOLPES
-                  </small>
-
                   <strong>
-                    {hits}
+                    {unlockedMines}
                   </strong>
+                  <span>
+                    Minas
+                  </span>
+                </div>
 
+                <div className="profile-stat">
+                  <strong>
+                    {energy}
+                  </strong>
+                  <span>
+                    Energía
+                  </span>
                 </div>
 
               </div>
 
-
-              <div className="profile-menu">
-
-                <button
-                  onClick={() => {
-                    closeProfile();
-                    router.push(
-                      "/profile"
-                    );
-                  }}
-                >
-
-                  <span>
-                    👤
-                  </span>
-
-                  <div>
-
-                    <strong>
-                      MI PERFIL
-                    </strong>
-
-                    <small>
-                      Ver información de tu cuenta
-                    </small>
-
-                  </div>
-
-                  <b>
-                    ›
-                  </b>
-
-                </button>
-
-
-                <button
-                  onClick={() => {
-                    closeProfile();
-                    router.push(
-                      "/friends"
-                    );
-                  }}
-                >
-
-                  <span>
-                    👥
-                  </span>
-
-                  <div>
-
-                    <strong>
-                      REFERIDOS
-                    </strong>
-
-                    <small>
-                      Invita amigos y gana recompensas
-                    </small>
-
-                  </div>
-
-                  <b>
-                    ›
-                  </b>
-
-                </button>
-
-
-                <button
-                  onClick={() => {
-                    closeProfile();
-                    router.push(
-                      "/missions"
-                    );
-                  }}
-                >
-
-                  <span>
-                    🎯
-                  </span>
-
-                  <div>
-
-                    <strong>
-                      MISIONES
-                    </strong>
-
-                    <small>
-                      Completa tareas y gana monedas
-                    </small>
-
-                  </div>
-
-                  <b>
-                    ›
-                  </b>
-
-                </button>
-
-              </div>
-
+              <button
+                className="profile-menu-button"
+                onClick={() =>
+                  router.push("/profile")
+                }
+              >
+                👤 PERFIL
+              </button>
 
               <button
-                className="profile-modal-close-button"
-                onClick={closeProfile}
+                className="profile-menu-button"
+                onClick={() =>
+                  router.push("/friends")
+                }
+              >
+                👥 REFERIDOS
+              </button>
+
+              <button
+                className="profile-menu-button"
+                onClick={() =>
+                  router.push("/missions")
+                }
+              >
+                🎯 MISIONES
+              </button>
+
+              <button
+                className="profile-close"
+                onClick={() =>
+                  setShowProfile(false)
+                }
               >
                 CERRAR
               </button>
@@ -1569,120 +1027,69 @@ export default function GamePage() {
             </div>
 
           </div>
-
         )}
 
-
-        <nav className="bottom-navigation">
+        <nav className="bottom-nav">
 
           <button
-            className="bottom-nav-item active"
+            className="active"
             onClick={() =>
               router.push("/game")
             }
           >
-
-            <span className="bottom-nav-icon">
-              ⛏️
-            </span>
-
-            <span className="bottom-nav-label">
-              MINAS
-            </span>
-
+            <span>⛏️</span>
+            MINAS
           </button>
 
-
           <button
-            className="bottom-nav-item"
             onClick={() =>
               router.push("/shop")
             }
           >
-
-            <span className="bottom-nav-icon">
-              🛒
-            </span>
-
-            <span className="bottom-nav-label">
-              TIENDA
-            </span>
-
+            <span>🛒</span>
+            TIENDA
           </button>
 
-
           <button
-            className="bottom-nav-item"
             onClick={() =>
               router.push("/friends")
             }
           >
-
-            <span className="bottom-nav-icon">
-              👥
-            </span>
-
-            <span className="bottom-nav-label">
-              REFERIDOS
-            </span>
-
+            <span>👥</span>
+            REFERIDOS
           </button>
 
-
           <button
-            className="bottom-nav-item"
             onClick={() =>
               router.push("/bank")
             }
           >
-
-            <span className="bottom-nav-icon">
-              🏦
-            </span>
-
-            <span className="bottom-nav-label">
-              BANCO
-            </span>
-
+            <span>🏦</span>
+            BANCO
           </button>
 
-
           <button
-            className="bottom-nav-item"
             onClick={() =>
               router.push("/missions")
             }
           >
-
-            <span className="bottom-nav-icon">
-              🎯
-            </span>
-
-            <span className="bottom-nav-label">
-              MISIONES
-            </span>
-
+            <span>🎯</span>
+            MISIONES
           </button>
 
-
           <button
-            className="bottom-nav-item"
-            onClick={openMap}
+            onClick={() =>
+              router.push("/mapa")
+            }
           >
-
-            <span className="bottom-nav-icon">
-              🌍
-            </span>
-
-            <span className="bottom-nav-label">
-              MAPA
-            </span>
-
+            <span>🌍</span>
+            MAPA
           </button>
 
         </nav>
 
-              </div>
+      </div>
+
     </main>
   );
 }
