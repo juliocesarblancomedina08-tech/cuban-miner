@@ -3,22 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: {
-        initDataUnsafe?: {
-          user?: {
-            username?: string;
-            first_name?: string;
-            last_name?: string;
-          };
-        };
-      };
-    };
-  }
-}
-
 export default function ProfilePage() {
   const router = useRouter();
 
@@ -38,15 +22,15 @@ export default function ProfilePage() {
 
   const [showStats, setShowStats] = useState(false);
 
-  /* =========================================
-     TELEGRAM USER
-  ========================================= */
+  /* =====================================
+     OBTENER USUARIO DE TELEGRAM
+  ====================================== */
 
   useEffect(() => {
     try {
       const telegram =
         typeof window !== "undefined"
-          ? window.Telegram?.WebApp
+          ? (window as any).Telegram?.WebApp
           : undefined;
 
       const telegramUser =
@@ -87,9 +71,9 @@ export default function ProfilePage() {
     }
   }, []);
 
-  /* =========================================
-     LOAD GAME DATA
-  ========================================= */
+  /* =====================================
+     CARGAR DATOS DEL JUEGO
+  ====================================== */
 
   useEffect(() => {
     try {
@@ -112,43 +96,66 @@ export default function ProfilePage() {
           "miningHits"
         );
 
-      if (savedCoins) {
+      const savedXP =
+        localStorage.getItem(
+          "miningXP"
+        );
+
+      if (savedCoins !== null) {
         setCoins(
           Number(savedCoins)
         );
       }
 
-      if (savedMinerals) {
+      if (savedMinerals !== null) {
         setMinerals(
           Number(savedMinerals)
         );
       }
 
-      if (savedEnergy) {
+      if (savedEnergy !== null) {
         setEnergy(
           Number(savedEnergy)
         );
       }
 
-      if (savedMines) {
+      if (savedMines !== null) {
         setUnlockedMines(
-          Number(savedMines)
+          Math.max(
+            1,
+            Number(savedMines)
+          )
         );
       }
 
-      if (savedHits) {
+      if (savedHits !== null) {
         setMiningHits(
           Number(savedHits)
         );
       }
+
+      if (savedXP !== null) {
+        const xp = Math.max(
+          0,
+          Number(savedXP)
+        );
+
+        setLevel(
+          Math.floor(xp / 100) + 1
+        );
+
+        setExperience(
+          xp % 100
+        );
+      }
     } catch {
-      /* Datos locales opcionales */
+      // Datos locales opcionales
     }
   }, []);
 
-  /* =========================================
-     EXPERIENCE
-  ========================================= */
+  /* =====================================
+     EXPERIENCIA
+  ====================================== */
 
   const experienceMax = 100;
 
@@ -161,9 +168,9 @@ export default function ProfilePage() {
       )
     );
 
-  /* =========================================
-     LEVEL
-  ========================================= */
+  /* =====================================
+     RANGO
+  ====================================== */
 
   const levelName =
     level <= 1
@@ -174,9 +181,9 @@ export default function ProfilePage() {
       ? "EXPERTO"
       : "MAESTRO";
 
-  /* =========================================
-     RANK
-  ========================================= */
+  /* =====================================
+     RANGO DE EXPLORACIÓN
+  ====================================== */
 
   const rank =
     unlockedMines >= 4
@@ -187,28 +194,22 @@ export default function ProfilePage() {
       ? "EXPLORADOR"
       : "APRENDIZ";
 
-  /* =========================================
-     NAVIGATION
-  ========================================= */
+  /* =====================================
+     NAVEGACIÓN
+  ====================================== */
 
-  const goTo = (
-    path: string
-  ) => {
+  const goTo = (path: string) => {
     router.push(path);
   };
-
-  /* =========================================
-     RENDER
-  ========================================= */
 
   return (
     <main className="profile-page">
 
       <div className="profile-page-container">
 
-        {/* =====================================
-            TOP BAR
-        ====================================== */}
+        {/* =================================
+            CABECERA
+        ================================== */}
 
         <header className="profile-header">
 
@@ -239,9 +240,9 @@ export default function ProfilePage() {
 
         </header>
 
-        {/* =====================================
-            HERO
-        ====================================== */}
+        {/* =================================
+            PERFIL PRINCIPAL
+        ================================== */}
 
         <section className="profile-hero">
 
@@ -308,7 +309,7 @@ export default function ProfilePage() {
 
           </div>
 
-          {/* PLAYER NAME */}
+          {/* NOMBRE */}
 
           <div className="player-name-area">
 
@@ -326,7 +327,7 @@ export default function ProfilePage() {
 
           </div>
 
-          {/* LEVEL */}
+          {/* NIVEL */}
 
           <div className="player-level-box">
 
@@ -369,9 +370,9 @@ export default function ProfilePage() {
 
         </section>
 
-                {/* =====================================
-            MAIN STATISTICS
-        ====================================== */}
+                {/* =================================
+            RECURSOS
+        ================================== */}
 
         <section className="profile-main-stats">
 
@@ -473,15 +474,16 @@ export default function ProfilePage() {
 
         </section>
 
-        {/* =====================================
-            MINING PERFORMANCE
-        ====================================== */}
+        {/* =================================
+            ACTIVIDAD MINERA
+        ================================== */}
 
         <section className="profile-section">
 
           <div className="profile-section-heading">
 
             <div>
+
               <div className="section-kicker">
                 RENDIMIENTO
               </div>
@@ -489,6 +491,7 @@ export default function ProfilePage() {
               <h2>
                 ACTIVIDAD MINERA
               </h2>
+
             </div>
 
             <div className="section-decoration">
@@ -544,15 +547,16 @@ export default function ProfilePage() {
 
         </section>
 
-        {/* =====================================
-            ACHIEVEMENTS
-        ====================================== */}
+        {/* =================================
+            LOGROS
+        ================================== */}
 
         <section className="profile-section">
 
           <div className="profile-section-heading">
 
             <div>
+
               <div className="section-kicker">
                 PROGRESO
               </div>
@@ -560,6 +564,7 @@ export default function ProfilePage() {
               <h2>
                 LOGROS
               </h2>
+
             </div>
 
             <button
@@ -761,15 +766,16 @@ export default function ProfilePage() {
 
         </section>
 
-                {/* =====================================
-            PLAYER INFORMATION
-        ====================================== */}
+                {/* =================================
+            DATOS DEL JUGADOR
+        ================================== */}
 
         <section className="profile-section">
 
           <div className="profile-section-heading">
 
             <div>
+
               <div className="section-kicker">
                 IDENTIDAD
               </div>
@@ -777,6 +783,7 @@ export default function ProfilePage() {
               <h2>
                 DATOS DEL JUGADOR
               </h2>
+
             </div>
 
           </div>
@@ -867,9 +874,9 @@ export default function ProfilePage() {
 
         </section>
 
-        {/* =====================================
-            ACTION BUTTONS
-        ====================================== */}
+        {/* =================================
+            BOTONES
+        ================================== */}
 
         <section className="profile-actions-section">
 
@@ -965,9 +972,9 @@ export default function ProfilePage() {
 
         </section>
 
-                {/* =====================================
-            FOOTER
-        ====================================== */}
+        {/* =================================
+            PIE
+        ================================== */}
 
         <footer className="profile-footer">
 
@@ -978,6 +985,7 @@ export default function ProfilePage() {
             </div>
 
             <div>
+
               <strong>
                 CUBAN-MINER
               </strong>
@@ -985,6 +993,7 @@ export default function ProfilePage() {
               <span>
                 MINING ADVENTURE
               </span>
+
             </div>
 
           </div>
@@ -998,9 +1007,9 @@ export default function ProfilePage() {
 
         </footer>
 
-        {/* =====================================
-            BOTTOM NAV
-        ====================================== */}
+        {/* =================================
+            MENÚ INFERIOR
+        ================================== */}
 
         <nav className="profile-bottom-nav">
 
@@ -1010,7 +1019,6 @@ export default function ProfilePage() {
               goTo("/game")
             }
           >
-
             <span>
               ⛏️
             </span>
@@ -1018,7 +1026,6 @@ export default function ProfilePage() {
             <small>
               MINAS
             </small>
-
           </button>
 
           <button
@@ -1027,7 +1034,6 @@ export default function ProfilePage() {
               goTo("/shop")
             }
           >
-
             <span>
               🛒
             </span>
@@ -1035,7 +1041,6 @@ export default function ProfilePage() {
             <small>
               TIENDA
             </small>
-
           </button>
 
           <button
@@ -1044,7 +1049,6 @@ export default function ProfilePage() {
               goTo("/friends")
             }
           >
-
             <span>
               👥
             </span>
@@ -1052,7 +1056,6 @@ export default function ProfilePage() {
             <small>
               REFERIDOS
             </small>
-
           </button>
 
           <button
@@ -1061,7 +1064,6 @@ export default function ProfilePage() {
               goTo("/bank")
             }
           >
-
             <span>
               🏦
             </span>
@@ -1069,7 +1071,6 @@ export default function ProfilePage() {
             <small>
               BANCO
             </small>
-
           </button>
 
           <button
@@ -1078,7 +1079,6 @@ export default function ProfilePage() {
               goTo("/missions")
             }
           >
-
             <span>
               🎯
             </span>
@@ -1086,7 +1086,6 @@ export default function ProfilePage() {
             <small>
               MISIONES
             </small>
-
           </button>
 
           <button
@@ -1095,7 +1094,6 @@ export default function ProfilePage() {
               goTo("/mapa")
             }
           >
-
             <span>
               🌍
             </span>
@@ -1103,7 +1101,6 @@ export default function ProfilePage() {
             <small>
               MAPA
             </small>
-
           </button>
 
         </nav>
@@ -1112,4 +1109,4 @@ export default function ProfilePage() {
 
     </main>
   );
-            }
+}
