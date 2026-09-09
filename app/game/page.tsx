@@ -104,6 +104,7 @@ export default function GamePage() {
 
       if (name) {
         setUsername(name);
+
         localStorage.setItem(
           "username",
           name
@@ -244,8 +245,10 @@ export default function GamePage() {
     setMineLevel(
       (old) => {
         const next = [...old];
+
         next[selectedMine] =
           level + 1;
+
         return next;
       }
     );
@@ -287,8 +290,10 @@ export default function GamePage() {
     setPickaxeLevel(
       (old) => {
         const next = [...old];
+
         next[selectedMine] =
           level + 1;
+
         return next;
       }
     );
@@ -315,7 +320,9 @@ export default function GamePage() {
     setMinerWorking(
       (old) => {
         const next = [...old];
+
         next[index] = true;
+
         return next;
       }
     );
@@ -359,7 +366,9 @@ export default function GamePage() {
             setMinerWorking(
               (old) => {
                 const next = [...old];
+
                 next[index] = true;
+
                 return next;
               }
             );
@@ -409,31 +418,34 @@ export default function GamePage() {
     working: boolean;
     pickaxeLevel: number;
   }) {
-    const group = useRef<THREE.Group>(null);
+    const group =
+      useRef<THREE.Group>(null);
 
     useFrame((state) => {
-      const time = state.clock.getElapsedTime();
+      const time =
+        state.clock.getElapsedTime();
 
       if (working) {
         const cycle = time * 4;
         const hit = Math.sin(cycle);
 
         if (group.current) {
-  group.current.rotation.z =
-    hit > 0 ? hit * 0.08 : 0;
+          group.current.rotation.z =
+            hit > 0
+              ? hit * 0.08
+              : 0;
 
-  group.current.position.y =
-    Math.abs(hit) * 0.025;
+          group.current.position.y =
+            Math.abs(hit) * 0.025;
         }
-        
-      if (group.current) {
-  group.current.rotation.z =
-    Math.sin(time * 1.5) * 0.015;
+      } else {
+        if (group.current) {
+          group.current.rotation.z =
+            Math.sin(time * 1.5) * 0.015;
 
-  group.current.position.y =
-    Math.sin(time * 1.5) * 0.01;
-      }
-      
+          group.current.position.y =
+            Math.sin(time * 1.5) * 0.01;
+        }
       }
     });
 
@@ -441,7 +453,7 @@ export default function GamePage() {
       0.72 + pickaxeLevel * 0.035;
 
     return (
-  <group ref={group}>
+      <group ref={group}>
 
         {/* SOMBRA */}
         <mesh
@@ -455,6 +467,7 @@ export default function GamePage() {
           <circleGeometry
             args={[0.32, 32]}
           />
+
           <meshBasicMaterial
             transparent
             opacity={0.35}
@@ -469,7 +482,11 @@ export default function GamePage() {
             0.25,
           ]}
           radius={0.035}
-          position={[-0.12, 0.2, 0]}
+          position={[
+            -0.12,
+            0.2,
+            0,
+          ]}
         >
           <meshStandardMaterial
             color="#20252a"
@@ -484,7 +501,11 @@ export default function GamePage() {
             0.25,
           ]}
           radius={0.035}
-          position={[0.12, 0.2, 0]}
+          position={[
+            0.12,
+            0.2,
+            0,
+          ]}
         >
           <meshStandardMaterial
             color="#20252a"
@@ -500,7 +521,11 @@ export default function GamePage() {
             0.16,
           ]}
           radius={0.035}
-          position={[-0.12, 0.42, 0]}
+          position={[
+            -0.12,
+            0.42,
+            0,
+          ]}
         >
           <meshStandardMaterial
             color="#263b4c"
@@ -515,7 +540,11 @@ export default function GamePage() {
             0.16,
           ]}
           radius={0.035}
-          position={[0.12, 0.42, 0]}
+          position={[
+            0.12,
+            0.42,
+            0,
+          ]}
         >
           <meshStandardMaterial
             color="#263b4c"
@@ -531,7 +560,11 @@ export default function GamePage() {
             0.28,
           ]}
           radius={0.08}
-          position={[0, 0.78, 0]}
+          position={[
+            0,
+            0.78,
+            0,
+          ]}
         >
           <meshStandardMaterial
             color="#d98b25"
@@ -547,7 +580,11 @@ export default function GamePage() {
             0.3,
           ]}
           radius={0.05}
-          position={[0, 0.81, 0.15]}
+          position={[
+            0,
+            0.81,
+            0.15,
+          ]}
         >
           <meshStandardMaterial
             color="#f2a52e"
@@ -557,10 +594,18 @@ export default function GamePage() {
 
         {/* CABEZA */}
         <mesh
-          position={[0, 1.17, 0]}
+          position={[
+            0,
+            1.17,
+            0,
+          ]}
         >
           <sphereGeometry
-            args={[0.25, 24, 24]}
+            args={[
+              0.25,
+              24,
+              24,
+            ]}
           />
 
           <meshStandardMaterial
@@ -571,10 +616,18 @@ export default function GamePage() {
 
         {/* OREJAS */}
         <mesh
-          position={[-0.245, 1.17, 0]}
+          position={[
+            -0.245,
+            1.17,
+            0,
+          ]}
         >
           <sphereGeometry
-            args={[0.055, 16, 16]}
+            args={[
+              0.055,
+              16,
+              16,
+            ]}
           />
 
           <meshStandardMaterial
@@ -583,10 +636,18 @@ export default function GamePage() {
         </mesh>
 
         <mesh
-          position={[0.245, 1.17, 0]}
+          position={[
+            0.245,
+            1.17,
+            0,
+          ]}
         >
           <sphereGeometry
-            args={[0.055, 16, 16]}
+            args={[
+              0.055,
+              16,
+              16,
+            ]}
           />
 
           <meshStandardMaterial
@@ -596,7 +657,11 @@ export default function GamePage() {
 
         {/* CASCO */}
         <mesh
-          position={[0, 1.38, 0]}
+          position={[
+            0,
+            1.38,
+            0,
+          ]}
         >
           <sphereGeometry
             args={[
@@ -645,7 +710,11 @@ export default function GamePage() {
           ]}
         >
           <sphereGeometry
-            args={[0.055, 16, 16]}
+            args={[
+              0.055,
+              16,
+              16,
+            ]}
           />
 
           <meshStandardMaterial
@@ -664,7 +733,11 @@ export default function GamePage() {
           ]}
         >
           <sphereGeometry
-            args={[0.025, 12, 12]}
+            args={[
+              0.025,
+              12,
+              12,
+            ]}
           />
 
           <meshStandardMaterial
@@ -680,7 +753,11 @@ export default function GamePage() {
           ]}
         >
           <sphereGeometry
-            args={[0.025, 12, 12]}
+            args={[
+              0.025,
+              12,
+              12,
+            ]}
           />
 
           <meshStandardMaterial
@@ -755,7 +832,6 @@ export default function GamePage() {
               : -0.25,
           ]}
         >
-
           <RoundedBox
             args={[
               0.055,
@@ -802,36 +878,34 @@ export default function GamePage() {
               roughness={0.35}
             />
           </mesh>
-
         </group>
 
       </group>
     );
-          }
+    }
 
   function Manager3D({
     active,
   }: {
     active: boolean;
   }) {
-    const group = useRef<THREE.Group>(null);
+    const group =
+      useRef<THREE.Group>(null);
 
     useFrame((state) => {
       const time =
         state.clock.getElapsedTime();
 
       if (active) {
-  if (group.current) {
-    group.current.position.y =
-      Math.sin(time * 2) * 0.025;
-  }
-} else {
-  if (group.current) {
-    group.current.position.y =
-      Math.sin(time) * 0.01;
-  }
-      }
-      
+        if (group.current) {
+          group.current.position.y =
+            Math.sin(time * 2) * 0.025;
+        }
+      } else {
+        if (group.current) {
+          group.current.position.y =
+            Math.sin(time) * 0.01;
+        }
       }
     });
 
@@ -1223,7 +1297,8 @@ export default function GamePage() {
 
   const totalMinerals =
     minerals.reduce(
-      (sum, value) => sum + value,
+      (sum, value) =>
+        sum + value,
       0
     );
 
@@ -1232,7 +1307,8 @@ export default function GamePage() {
 
   const totalMineLevels =
     mineLevel.reduce(
-      (sum, value) => sum + value,
+      (sum, value) =>
+        sum + value,
       0
     );
 
@@ -1244,10 +1320,14 @@ export default function GamePage() {
 
         <button
           className="profile-top"
-          onClick={() => router.push("/profile")}
+          onClick={() =>
+            router.push("/profile")
+          }
         >
           <div className="avatar">
-            {username.charAt(0).toUpperCase()}
+            {username
+              .charAt(0)
+              .toUpperCase()}
           </div>
 
           <div className="user-info">
@@ -1263,7 +1343,10 @@ export default function GamePage() {
 
         <div className="coin-box">
           <span>🪙</span>
-          <strong>{coins}</strong>
+
+          <strong>
+            {coins}
+          </strong>
         </div>
 
       </header>
@@ -1298,10 +1381,13 @@ export default function GamePage() {
 
             {/* ASCENSOR */}
             <div className="surface-elevator">
+
               <div className="elevator-roof" />
+
               <div className="elevator-door">
                 <span>🛗</span>
               </div>
+
             </div>
 
             {/* ALMACÉN */}
@@ -1310,6 +1396,7 @@ export default function GamePage() {
               <div className="warehouse-roof" />
 
               <div className="warehouse-front">
+
                 <strong>
                   ALMACÉN
                 </strong>
@@ -1319,6 +1406,7 @@ export default function GamePage() {
                 <span>
                   🪨 {totalMinerals}
                 </span>
+
               </div>
 
             </div>
@@ -1335,18 +1423,20 @@ export default function GamePage() {
                   position: [
                     0,
                     1.4,
-                    4
+                    4,
                   ],
-                  fov: 35
+                  fov: 35,
                 }}
               >
-                <ambientLight intensity={1.8} />
+                <ambientLight
+                  intensity={1.8}
+                />
 
                 <directionalLight
                   position={[
                     2,
                     4,
-                    3
+                    3,
                   ]}
                   intensity={3}
                 />
@@ -1390,7 +1480,7 @@ export default function GamePage() {
             className="vertical-elevator"
             style={{
               height:
-                `${unlockedMines * 190}px`
+                `${unlockedMines * 190}px`,
             }}
           >
 
@@ -1401,7 +1491,7 @@ export default function GamePage() {
               className="elevator-cabin-3d"
               style={{
                 top:
-                  `${selectedMine * 190}px`
+                  `${selectedMine * 190}px`,
               }}
             >
               🛗
@@ -1444,6 +1534,7 @@ export default function GamePage() {
                     <div className="mine-room-header">
 
                       <div>
+
                         <small>
                           NIVEL {index + 1}
                         </small>
@@ -1451,6 +1542,7 @@ export default function GamePage() {
                         <h2>
                           {mine.name}
                         </h2>
+
                       </div>
 
                       <div className="mine-header-right">
@@ -1480,9 +1572,9 @@ export default function GamePage() {
                               position: [
                                 0,
                                 1.5,
-                                5
+                                5,
                               ],
-                              fov: 42
+                              fov: 42,
                             }}
                           >
 
@@ -1494,7 +1586,7 @@ export default function GamePage() {
                               position={[
                                 3,
                                 5,
-                                4
+                                4,
                               ]}
                               intensity={3}
                             />
@@ -1503,7 +1595,7 @@ export default function GamePage() {
                               position={[
                                 0,
                                 2,
-                                1
+                                1,
                               ]}
                               intensity={5}
                               distance={5}
@@ -1537,14 +1629,19 @@ export default function GamePage() {
                                 : ""
                             }`}
                           >
+
                             <div className="wagon-body">
+
                               <div className="wagon-ore">
                                 {mine.mineral}
                               </div>
+
                             </div>
 
                             <div className="wagon-wheel" />
+
                             <div className="wagon-wheel second" />
+
                           </div>
 
                           {/* ENCARGADO */}
@@ -1589,9 +1686,8 @@ export default function GamePage() {
                             </small>
 
                             <strong>
-                              NIVEL {
-                                pickaxeLevel[index]
-                              }
+                              NIVEL{" "}
+                              {pickaxeLevel[index]}
                             </strong>
                           </div>
 
@@ -1645,6 +1741,7 @@ export default function GamePage() {
                             unlockMine(index)
                           }
                         >
+
                           <span>
                             🔓 DESBLOQUEAR
                           </span>
@@ -1653,6 +1750,7 @@ export default function GamePage() {
                             {mine.unlockPrice}
                             {" "}🪙
                           </b>
+
                         </button>
 
                       </div>
@@ -1669,12 +1767,13 @@ export default function GamePage() {
 
       </section>
 
-      {/* PANEL DE LA MINA */}
+            {/* PANEL DE LA MINA */}
       <section className="mine-control-panel">
 
         <div className="selected-mine-title">
 
           <div>
+
             <small>
               MINA SELECCIONADA
             </small>
@@ -1682,6 +1781,7 @@ export default function GamePage() {
             <h2>
               ⛏️ {selected.name}
             </h2>
+
           </div>
 
           <div className="mine-level-number">
@@ -1703,6 +1803,7 @@ export default function GamePage() {
             </span>
 
             <div>
+
               <strong>
                 UP MINA
               </strong>
@@ -1712,6 +1813,7 @@ export default function GamePage() {
                 {" "}→{" "}
                 {selectedMineLevel + 1}
               </small>
+
             </div>
 
             <b>
@@ -1731,6 +1833,7 @@ export default function GamePage() {
             </span>
 
             <div>
+
               <strong>
                 UP PICO
               </strong>
@@ -1740,6 +1843,7 @@ export default function GamePage() {
                 {" "}→{" "}
                 {selectedPickaxe + 1}
               </small>
+
             </div>
 
             <b>
@@ -1790,7 +1894,7 @@ export default function GamePage() {
 
       </section>
 
-            {/* MENÚ INFERIOR */}
+      {/* MENÚ INFERIOR */}
       <nav className="bottom-nav">
 
         <button
@@ -2415,7 +2519,8 @@ export default function GamePage() {
             );
           border:
             2px solid #9b6636;
-          border-radius: 3px 3px 7px 7px;
+          border-radius:
+            3px 3px 7px 7px;
           position: relative;
         }
 
