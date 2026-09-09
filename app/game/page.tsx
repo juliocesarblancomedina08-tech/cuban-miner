@@ -1,88 +1,101 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import {
+  OrbitControls,
+  PerspectiveCamera,
+  RoundedBox,
+} from "@react-three/drei";
+import * as THREE from "three";
 import { useRouter } from "next/navigation";
 
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: {
-        initDataUnsafe?: {
-          user?: {
-            username?: string;
-            first_name?: string;
-          };
-        };
-        ready?: () => void;
-        expand?: () => void;
-      };
-    };
-  }
-}
+type MineData = {
+  name: string;
+  mineral: string;
+  unlockPrice: number;
+  managerPrice: number;
+  baseIncome: number;
+};
 
-type MinerPhase = "idle" | "working" | "walking" | "loading";
+const MINES: MineData[] = [
+  {
+    name: "CARBÓN",
+    mineral: "carbón",
+    unlockPrice: 0,
+    managerPrice: 500,
+    baseIncome: 1,
+  },
+  {
+    name: "COBRE",
+    mineral: "cobre",
+    unlockPrice: 250,
+    managerPrice: 1200,
+    baseIncome: 3,
+  },
+  {
+    name: "HIERRO",
+    mineral: "hierro",
+    unlockPrice: 750,
+    managerPrice: 3500,
+    baseIncome: 8,
+  },
+  {
+    name: "ORO",
+    mineral: "oro",
+    unlockPrice: 2000,
+    managerPrice: 9000,
+    baseIncome: 20,
+  },
+];
 
 export default function GamePage() {
   const router = useRouter();
 
-  const [username, setUsername] = useState("MINERO");
-  const [coins, setCoins] = useState(100);
-  const [minerals, setMinerals] = useState(0);
-  const [energy, setEnergy] = useState(100);
+  const [username, setUsername] =
+    useState("MINERO");
 
-  const [hits, setHits] = useState(0);
-  const [hitting, setHitting] = useState(false);
-  const [miningStarted, setMiningStarted] = useState(false);
+  const [coins, setCoins] =
+    useState(100);
 
-  const maxHits = 10;
-  const progress = Math.min((hits / maxHits) * 100, 100);
+  const [unlockedMines, setUnlockedMines] =
+    useState(1);
 
-  const [unlockedMines, setUnlockedMines] = useState(1);
-
-  const mineNames = [
-    "CARBÓN",
-    "COBRE",
-    "HIERRO",
-    "ORO",
-  ];
-
-  const minePrices = [
-    0,
-    250,
-    750,
-    2000,
-  ];
-
-  const [minerPhase, setMinerPhase] =
-    useState<MinerPhase>("idle");
-
-  const [workerHasMineral, setWorkerHasMineral] =
-    useState(false);
-
-  const [surfaceMinerals, setSurfaceMinerals] =
+  const [selectedMine, setSelectedMine] =
     useState(0);
 
-  const [storedMinerals, setStoredMinerals] =
-    useState(0);
+  const [managerOwned, setManagerOwned] =
+    useState<boolean[]>(
+      [false, false, false, false]
+    );
 
-  const [elevatorFloor, setElevatorFloor] =
-    useState(0);
+  const [pickaxeLevel, setPickaxeLevel] =
+    useState<number[]>(
+      [1, 1, 1, 1]
+    );
 
-  const [elevatorWorking, setElevatorWorking] =
-    useState(false);
+  const [mineLevel, setMineLevel] =
+    useState<number[]>(
+      [1, 1, 1, 1]
+    );
 
-  const [wagonMoving, setWagonMoving] =
-    useState(false);
+  const [minerWorking, setMinerWorking] =
+    useState<boolean[]>(
+      [false, false, false, false]
+    );
+
+  const [minerals, setMinerals] =
+    useState<number[]>(
+      [0, 0, 0, 0]
+    );
 
   const [message, setMessage] =
     useState("");
 
-  const [showProfile, setShowProfile] =
-    useState(false);
-
   useEffect(() => {
     const telegramUser =
-      window.Telegram?.WebApp?.initDataUnsafe?.user;
+      window.Telegram?.WebApp
+        ?.initDataUnsafe?.user;
 
     if (telegramUser) {
       const name =
@@ -91,7 +104,10 @@ export default function GamePage() {
 
       if (name) {
         setUsername(name);
-        localStorage.setItem("username", name);
+        localStorage.setItem(
+          "username",
+          name
+        );
       }
 
       window.Telegram?.WebApp?.ready?.();
@@ -103,256 +119,1144 @@ export default function GamePage() {
     const saved =
       localStorage.getItem("username") ||
       localStorage.getItem("userName") ||
-      localStorage.getItem("telegram_username");
+      localStorage.getItem(
+        "telegram_username"
+      );
 
     if (saved) {
       setUsername(saved);
     }
   }, []);
 
-  const showMessage = (text: string) => {
+  const notify = (text: string) => {
     setMessage(text);
 
     setTimeout(() => {
       setMessage("");
-    }, 2500);
-  };
-
-  const playSound = (
-    frequency = 180,
-    duration = 80
-  ) => {
-    try {
-      const AudioContextClass =
-        window.AudioContext ||
-        (window as any).webkitAudioContext;
-
-      if (!AudioContextClass) return;
-
-      const audio =
-        new AudioContextClass();
-
-      const oscillator =
-        audio.createOscillator();
-
-      const gain =
-        audio.createGain();
-
-      oscillator.frequency.value =
-        frequency;
-
-      oscillator.type = "square";
-
-      gain.gain.setValueAtTime(
-        0.04,
-        audio.currentTime
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        audio.currentTime + duration / 1000
-      );
-
-      oscillator.connect(gain);
-      gain.connect(audio.destination);
-
-      oscillator.start();
-      oscillator.stop(
-        audio.currentTime + duration / 1000
-      );
-    } catch {}
-  };
-
-  const mine = () => {
-    if (!miningStarted) {
-      showMessage("⛏️ Pulsa COMENZAR MINERÍA primero");
-      return;
-    }
-
-    if (energy < 2) {
-      showMessage("⚡ No tienes suficiente energía");
-      return;
-    }
-
-    if (hitting) return;
-
-    setHitting(true);
-    setEnergy((value) => Math.max(0, value - 2));
-    setHits((value) => value + 1);
-
-    playSound(130, 70);
-
-    setTimeout(() => {
-      setHitting(false);
-    }, 180);
-
-    if (hits + 1 >= maxHits) {
-      setHits(0);
-      setMinerals((value) => value + 1);
-      setSurfaceMinerals((value) => value + 1);
-      setCoins((value) => value + 25);
-
-      showMessage(
-        "⛏️ ¡Mineral extraído! +1 🪨 +25 🪙"
-      );
-    }
-  };
-
-  const startMining = () => {
-    if (miningStarted) {
-      showMessage("⛏️ La minería ya está activa");
-      return;
-    }
-
-    setMiningStarted(true);
-    setMinerPhase("working");
-
-    showMessage("⛏️ Minería iniciada");
+    }, 2200);
   };
 
   const unlockMine = (index: number) => {
     if (index <= 0) return;
 
-    if (index >= unlockedMines) {
-      const price = minePrices[index];
-
-      if (coins < price) {
-        showMessage(
-          `❌ Necesitas ${price} 🪙`
-        );
-        return;
-      }
-
-      setCoins((value) => value - price);
-      setUnlockedMines(index + 1);
-      setElevatorFloor(index);
-
-      showMessage(
-        `🔓 ¡Mina de ${mineNames[index]} desbloqueada!`
-      );
-
-      playSound(500, 120);
+    if (index < unlockedMines) {
+      return;
     }
+
+    const price =
+      MINES[index].unlockPrice;
+
+    if (coins < price) {
+      notify(
+        `❌ Necesitas ${price} 🪙`
+      );
+      return;
+    }
+
+    setCoins(
+      (value) => value - price
+    );
+
+    setUnlockedMines(
+      index + 1
+    );
+
+    setSelectedMine(index);
+
+    notify(
+      `🔓 ${MINES[index].name} desbloqueada`
+    );
+  };
+
+  const buyManager = () => {
+    const mine = MINES[selectedMine];
+
+    if (
+      selectedMine >= unlockedMines
+    ) {
+      notify(
+        "🔒 Primero desbloquea esta mina"
+      );
+      return;
+    }
+
+    if (
+      managerOwned[selectedMine]
+    ) {
+      notify(
+        "👑 El jefe ya está contratado"
+      );
+      return;
+    }
+
+    if (coins < mine.managerPrice) {
+      notify(
+        `❌ Necesitas ${mine.managerPrice} 🪙`
+      );
+      return;
+    }
+
+    setCoins(
+      (value) =>
+        value - mine.managerPrice
+    );
+
+    setManagerOwned(
+      (old) => {
+        const next = [...old];
+        next[selectedMine] = true;
+        return next;
+      }
+    );
+
+    notify(
+      `👑 Jefe contratado en ${mine.name}`
+    );
+  };
+
+  const upgradeMine = () => {
+    if (
+      selectedMine >= unlockedMines
+    ) {
+      notify(
+        "🔒 Mina bloqueada"
+      );
+      return;
+    }
+
+    const level =
+      mineLevel[selectedMine];
+
+    const price =
+      100 * level;
+
+    if (coins < price) {
+      notify(
+        `❌ Necesitas ${price} 🪙`
+      );
+      return;
+    }
+
+    setCoins(
+      (value) => value - price
+    );
+
+    setMineLevel(
+      (old) => {
+        const next = [...old];
+        next[selectedMine] =
+          level + 1;
+        return next;
+      }
+    );
+
+    notify(
+      `⬆️ Mina mejorada a nivel ${
+        level + 1
+      }`
+    );
+  };
+
+  const upgradePickaxe = () => {
+    if (
+      selectedMine >= unlockedMines
+    ) {
+      notify(
+        "🔒 Mina bloqueada"
+      );
+      return;
+    }
+
+    const level =
+      pickaxeLevel[selectedMine];
+
+    const price =
+      75 * level;
+
+    if (coins < price) {
+      notify(
+        `❌ Necesitas ${price} 🪙`
+      );
+      return;
+    }
+
+    setCoins(
+      (value) => value - price
+    );
+
+    setPickaxeLevel(
+      (old) => {
+        const next = [...old];
+        next[selectedMine] =
+          level + 1;
+        return next;
+      }
+    );
+
+    notify(
+      `⛏️ Pico mejorado a nivel ${
+        level + 1
+      }`
+    );
+  };
+
+  const startManualMining = (
+    index: number
+  ) => {
+    if (index >= unlockedMines) {
+      notify(
+        "🔒 Esta mina está bloqueada"
+      );
+      return;
+    }
+
+    setSelectedMine(index);
+
+    setMinerWorking(
+      (old) => {
+        const next = [...old];
+        next[index] = true;
+        return next;
+      }
+    );
   };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setEnergy((value) =>
-        Math.min(100, value + 1)
-      );
-    }, 3000);
+    const timer =
+      setInterval(() => {
 
-    return () => clearInterval(timer);
-  }, []);
+        managerOwned.forEach(
+          (hasManager, index) => {
 
-  useEffect(() => {
-    if (!miningStarted) return;
+            if (!hasManager) return;
 
-    const timer = setInterval(() => {
-      setMinerPhase("working");
+            if (
+              index >= unlockedMines
+            ) {
+              return;
+            }
 
-      setTimeout(() => {
-        setMinerPhase("walking");
-      }, 1400);
+            const amount =
+              MINES[index].baseIncome *
+              mineLevel[index] *
+              pickaxeLevel[index];
 
-      setTimeout(() => {
-        setMinerPhase("loading");
-        setWorkerHasMineral(true);
-      }, 2800);
+            setMinerals(
+              (old) => {
+                const next = [...old];
 
-      setTimeout(() => {
-        setMinerPhase("idle");
-      }, 4000);
-    }, 5000);
+                next[index] += amount;
 
-    return () => clearInterval(timer);
-  }, [miningStarted]);
+                return next;
+              }
+            );
 
-  useEffect(() => {
-    if (!workerHasMineral) return;
-    if (elevatorWorking) return;
+            setCoins(
+              (value) =>
+                value + amount
+            );
 
-    setElevatorWorking(true);
+            setMinerWorking(
+              (old) => {
+                const next = [...old];
+                next[index] = true;
+                return next;
+              }
+            );
+          }
+        );
 
-    const timer = setTimeout(() => {
-      setStoredMinerals((value) =>
-        value + 1
-      );
+      }, 3000);
 
-      setSurfaceMinerals((value) =>
-        Math.max(0, value - 1)
-      );
+    return () =>
+      clearInterval(timer);
 
-      setWorkerHasMineral(false);
+  }, [
+    managerOwned,
+    unlockedMines,
+    mineLevel,
+    pickaxeLevel,
+  ]);
 
-      setElevatorWorking(false);
+  const selected =
+    MINES[selectedMine];
 
-      showMessage(
-        "🛗 Mineral enviado al almacén"
-      );
-    }, 2200);
+  const selectedManager =
+    managerOwned[selectedMine];
 
-    return () => clearTimeout(timer);
-  }, [workerHasMineral, elevatorWorking]);
+  const selectedPickaxe =
+    pickaxeLevel[selectedMine];
 
-  useEffect(() => {
-    if (storedMinerals <= 0) return;
-    if (wagonMoving) return;
+  const selectedMineLevel =
+    mineLevel[selectedMine];
 
-    setWagonMoving(true);
+  const selectedMinerals =
+    minerals[selectedMine];
 
-    const timer = setTimeout(() => {
-      setStoredMinerals((value) =>
-        Math.max(0, value - 1)
-      );
+  const managerPrice =
+    selected.managerPrice;
 
-      setCoins((value) => value + 5);
+  const mineUpgradePrice =
+    100 * selectedMineLevel;
 
-      setWagonMoving(false);
-    }, 3000);
+  const pickaxeUpgradePrice =
+    75 * selectedPickaxe;
 
-    return () => clearTimeout(timer);
-  }, [storedMinerals, wagonMoving]);
+  function Miner3D({
+    working,
+    pickaxeLevel,
+  }: {
+    working: boolean;
+    pickaxeLevel: number;
+  }) {
+    const group = useMemo(
+      () => new THREE.Group(),
+      []
+    );
 
-  const goTo = (path: string) => {
-    router.push(path);
-  };
+    useFrame((state) => {
+      const time = state.clock.getElapsedTime();
 
-  const avatarLetter =
-    username.charAt(0).toUpperCase();
+      if (working) {
+        const cycle = time * 4;
+        const hit = Math.sin(cycle);
 
-  const elevatorPercent =
-    unlockedMines <= 1
-      ? 0
-      : (elevatorFloor /
-          (unlockedMines - 1)) *
-        100;
+        group.rotation.z =
+          hit > 0 ? hit * 0.08 : 0;
+
+        group.position.y =
+          Math.abs(hit) * 0.025;
+      } else {
+        group.rotation.z =
+          Math.sin(time * 1.5) * 0.015;
+
+        group.position.y =
+          Math.sin(time * 1.5) * 0.01;
+      }
+    });
+
+    const pickaxeLength =
+      0.72 + pickaxeLevel * 0.035;
+
+    return (
+      <group ref={group}>
+
+        {/* SOMBRA */}
+        <mesh
+          position={[0, 0.03, 0]}
+          rotation={[
+            -Math.PI / 2,
+            0,
+            0,
+          ]}
+        >
+          <circleGeometry
+            args={[0.32, 32]}
+          />
+          <meshBasicMaterial
+            transparent
+            opacity={0.35}
+          />
+        </mesh>
+
+        {/* BOTAS */}
+        <RoundedBox
+          args={[
+            0.18,
+            0.16,
+            0.25,
+          ]}
+          radius={0.035}
+          position={[-0.12, 0.2, 0]}
+        >
+          <meshStandardMaterial
+            color="#20252a"
+            roughness={0.8}
+          />
+        </RoundedBox>
+
+        <RoundedBox
+          args={[
+            0.18,
+            0.16,
+            0.25,
+          ]}
+          radius={0.035}
+          position={[0.12, 0.2, 0]}
+        >
+          <meshStandardMaterial
+            color="#20252a"
+            roughness={0.8}
+          />
+        </RoundedBox>
+
+        {/* PIERNAS */}
+        <RoundedBox
+          args={[
+            0.16,
+            0.35,
+            0.16,
+          ]}
+          radius={0.035}
+          position={[-0.12, 0.42, 0]}
+        >
+          <meshStandardMaterial
+            color="#263b4c"
+            roughness={0.8}
+          />
+        </RoundedBox>
+
+        <RoundedBox
+          args={[
+            0.16,
+            0.35,
+            0.16,
+          ]}
+          radius={0.035}
+          position={[0.12, 0.42, 0]}
+        >
+          <meshStandardMaterial
+            color="#263b4c"
+            roughness={0.8}
+          />
+        </RoundedBox>
+
+        {/* CUERPO */}
+        <RoundedBox
+          args={[
+            0.48,
+            0.48,
+            0.28,
+          ]}
+          radius={0.08}
+          position={[0, 0.78, 0]}
+        >
+          <meshStandardMaterial
+            color="#d98b25"
+            roughness={0.75}
+          />
+        </RoundedBox>
+
+        {/* CHALECO */}
+        <RoundedBox
+          args={[
+            0.36,
+            0.32,
+            0.3,
+          ]}
+          radius={0.05}
+          position={[0, 0.81, 0.15]}
+        >
+          <meshStandardMaterial
+            color="#f2a52e"
+            roughness={0.7}
+          />
+        </RoundedBox>
+
+        {/* CABEZA */}
+        <mesh
+          position={[0, 1.17, 0]}
+        >
+          <sphereGeometry
+            args={[0.25, 24, 24]}
+          />
+
+          <meshStandardMaterial
+            color="#d99a6c"
+            roughness={0.8}
+          />
+        </mesh>
+
+        {/* OREJAS */}
+        <mesh
+          position={[-0.245, 1.17, 0]}
+        >
+          <sphereGeometry
+            args={[0.055, 16, 16]}
+          />
+
+          <meshStandardMaterial
+            color="#d99a6c"
+          />
+        </mesh>
+
+        <mesh
+          position={[0.245, 1.17, 0]}
+        >
+          <sphereGeometry
+            args={[0.055, 16, 16]}
+          />
+
+          <meshStandardMaterial
+            color="#d99a6c"
+          />
+        </mesh>
+
+        {/* CASCO */}
+        <mesh
+          position={[0, 1.38, 0]}
+        >
+          <sphereGeometry
+            args={[
+              0.29,
+              24,
+              16,
+              0,
+              Math.PI * 2,
+              0,
+              Math.PI / 2,
+            ]}
+          />
+
+          <meshStandardMaterial
+            color="#f4b52d"
+            roughness={0.65}
+          />
+        </mesh>
+
+        {/* VISERA DEL CASCO */}
+        <RoundedBox
+          args={[
+            0.42,
+            0.055,
+            0.18,
+          ]}
+          radius={0.025}
+          position={[
+            0,
+            1.29,
+            0.14,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#e5a322"
+            roughness={0.7}
+          />
+        </RoundedBox>
+
+        {/* LÁMPARA */}
+        <mesh
+          position={[
+            0,
+            1.39,
+            0.265,
+          ]}
+        >
+          <sphereGeometry
+            args={[0.055, 16, 16]}
+          />
+
+          <meshStandardMaterial
+            color="#fff1a3"
+            emissive="#fff1a3"
+            emissiveIntensity={2}
+          />
+        </mesh>
+
+        {/* OJOS */}
+        <mesh
+          position={[
+            -0.09,
+            1.19,
+            0.23,
+          ]}
+        >
+          <sphereGeometry
+            args={[0.025, 12, 12]}
+          />
+
+          <meshStandardMaterial
+            color="#111"
+          />
+        </mesh>
+
+        <mesh
+          position={[
+            0.09,
+            1.19,
+            0.23,
+          ]}
+        >
+          <sphereGeometry
+            args={[0.025, 12, 12]}
+          />
+
+          <meshStandardMaterial
+            color="#111"
+          />
+        </mesh>
+
+        {/* BRAZO IZQUIERDO */}
+        <RoundedBox
+          args={[
+            0.14,
+            0.38,
+            0.14,
+          ]}
+          radius={0.04}
+          position={[
+            -0.31,
+            0.77,
+            0,
+          ]}
+          rotation={[
+            0,
+            0,
+            working
+              ? -0.7
+              : -0.15,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#d99a6c"
+          />
+        </RoundedBox>
+
+        {/* BRAZO DERECHO */}
+        <RoundedBox
+          args={[
+            0.14,
+            0.38,
+            0.14,
+          ]}
+          radius={0.04}
+          position={[
+            0.31,
+            0.77,
+            0,
+          ]}
+          rotation={[
+            0,
+            0,
+            working
+              ? 0.7
+              : 0.15,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#d99a6c"
+          />
+        </RoundedBox>
+
+        {/* PICO */}
+        <group
+          position={[
+            0,
+            0.95,
+            0.16,
+          ]}
+          rotation={[
+            0,
+            0,
+            working
+              ? -0.8
+              : -0.25,
+          ]}
+        >
+
+          <RoundedBox
+            args={[
+              0.055,
+              pickaxeLength,
+              0.055,
+            ]}
+            radius={0.02}
+            position={[
+              0,
+              -0.15,
+              0,
+            ]}
+          >
+            <meshStandardMaterial
+              color="#704524"
+              roughness={0.8}
+            />
+          </RoundedBox>
+
+          <mesh
+            position={[
+              0,
+              pickaxeLength / 2 -
+                0.12,
+              0,
+            ]}
+            rotation={[
+              0,
+              0,
+              Math.PI / 2,
+            ]}
+          >
+            <boxGeometry
+              args={[
+                0.42,
+                0.07,
+                0.07,
+              ]}
+            />
+
+            <meshStandardMaterial
+              color="#72777b"
+              metalness={0.8}
+              roughness={0.35}
+            />
+          </mesh>
+
+        </group>
+
+      </group>
+    );
+          }
+
+  function Manager3D({
+    active,
+  }: {
+    active: boolean;
+  }) {
+    const group = useMemo(
+      () => new THREE.Group(),
+      []
+    );
+
+    useFrame((state) => {
+      const time =
+        state.clock.getElapsedTime();
+
+      if (active) {
+        group.position.y =
+          Math.sin(time * 2) * 0.025;
+      } else {
+        group.position.y =
+          Math.sin(time) * 0.01;
+      }
+    });
+
+    return (
+      <group ref={group}>
+
+        {/* SOMBRA */}
+        <mesh
+          position={[0, 0.02, 0]}
+          rotation={[
+            -Math.PI / 2,
+            0,
+            0,
+          ]}
+        >
+          <circleGeometry
+            args={[0.3, 24]}
+          />
+
+          <meshBasicMaterial
+            transparent
+            opacity={0.3}
+          />
+        </mesh>
+
+        {/* BOTAS */}
+        <RoundedBox
+          args={[
+            0.2,
+            0.18,
+            0.28,
+          ]}
+          radius={0.04}
+          position={[
+            -0.12,
+            0.2,
+            0,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#20242a"
+          />
+        </RoundedBox>
+
+        <RoundedBox
+          args={[
+            0.2,
+            0.18,
+            0.28,
+          ]}
+          radius={0.04}
+          position={[
+            0.12,
+            0.2,
+            0,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#20242a"
+          />
+        </RoundedBox>
+
+        {/* PIERNAS */}
+        <RoundedBox
+          args={[
+            0.17,
+            0.35,
+            0.17,
+          ]}
+          radius={0.04}
+          position={[
+            -0.12,
+            0.45,
+            0,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#26313b"
+          />
+        </RoundedBox>
+
+        <RoundedBox
+          args={[
+            0.17,
+            0.35,
+            0.17,
+          ]}
+          radius={0.04}
+          position={[
+            0.12,
+            0.45,
+            0,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#26313b"
+          />
+        </RoundedBox>
+
+        {/* CUERPO */}
+        <RoundedBox
+          args={[
+            0.52,
+            0.48,
+            0.3,
+          ]}
+          radius={0.08}
+          position={[
+            0,
+            0.78,
+            0,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#263b52"
+          />
+        </RoundedBox>
+
+        {/* CHAQUETA */}
+        <RoundedBox
+          args={[
+            0.38,
+            0.34,
+            0.32,
+          ]}
+          radius={0.05}
+          position={[
+            0,
+            0.82,
+            0.16,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#344f69"
+          />
+        </RoundedBox>
+
+        {/* CABEZA */}
+        <mesh
+          position={[
+            0,
+            1.18,
+            0,
+          ]}
+        >
+          <sphereGeometry
+            args={[
+              0.25,
+              24,
+              24,
+            ]}
+          />
+
+          <meshStandardMaterial
+            color="#d99a6c"
+            roughness={0.8}
+          />
+        </mesh>
+
+        {/* CABELLO */}
+        <mesh
+          position={[
+            0,
+            1.33,
+            -0.02,
+          ]}
+        >
+          <sphereGeometry
+            args={[
+              0.255,
+              20,
+              16,
+            ]}
+          />
+
+          <meshStandardMaterial
+            color="#3b271d"
+            roughness={1}
+          />
+        </mesh>
+
+        {/* CASCO DEL JEFE */}
+        <mesh
+          position={[
+            0,
+            1.39,
+            0,
+          ]}
+        >
+          <sphereGeometry
+            args={[
+              0.29,
+              24,
+              16,
+              0,
+              Math.PI * 2,
+              0,
+              Math.PI / 2,
+            ]}
+          />
+
+          <meshStandardMaterial
+            color="#e5b52e"
+            metalness={0.05}
+            roughness={0.55}
+          />
+        </mesh>
+
+        {/* VISERA */}
+        <RoundedBox
+          args={[
+            0.43,
+            0.055,
+            0.17,
+          ]}
+          radius={0.025}
+          position={[
+            0,
+            1.30,
+            0.14,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#c8951f"
+          />
+        </RoundedBox>
+
+        {/* LÁMPARA */}
+        <mesh
+          position={[
+            0,
+            1.40,
+            0.27,
+          ]}
+        >
+          <sphereGeometry
+            args={[
+              0.055,
+              16,
+              16,
+            ]}
+          />
+
+          <meshStandardMaterial
+            color="#fff0a0"
+            emissive="#fff0a0"
+            emissiveIntensity={
+              active ? 3 : 1
+            }
+          />
+        </mesh>
+
+        {/* OJOS */}
+        <mesh
+          position={[
+            -0.09,
+            1.18,
+            0.23,
+          ]}
+        >
+          <sphereGeometry
+            args={[
+              0.025,
+              12,
+              12,
+            ]}
+          />
+
+          <meshStandardMaterial
+            color="#111"
+          />
+        </mesh>
+
+        <mesh
+          position={[
+            0.09,
+            1.18,
+            0.23,
+          ]}
+        >
+          <sphereGeometry
+            args={[
+              0.025,
+              12,
+              12,
+            ]}
+          />
+
+          <meshStandardMaterial
+            color="#111"
+          />
+        </mesh>
+
+        {/* BRAZO IZQUIERDO */}
+        <RoundedBox
+          args={[
+            0.14,
+            0.38,
+            0.14,
+          ]}
+          radius={0.04}
+          position={[
+            -0.31,
+            0.77,
+            0,
+          ]}
+          rotation={[
+            0,
+            0,
+            -0.15,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#d99a6c"
+          />
+        </RoundedBox>
+
+        {/* BRAZO DERECHO */}
+        <RoundedBox
+          args={[
+            0.14,
+            0.38,
+            0.14,
+          ]}
+          radius={0.04}
+          position={[
+            0.31,
+            0.77,
+            0,
+          ]}
+          rotation={[
+            0,
+            0,
+            0.15,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#d99a6c"
+          />
+        </RoundedBox>
+
+        {/* CARPETA DEL JEFE */}
+        <RoundedBox
+          args={[
+            0.28,
+            0.36,
+            0.055,
+          ]}
+          radius={0.02}
+          position={[
+            0.32,
+            0.72,
+            0.16,
+          ]}
+          rotation={[
+            0,
+            0,
+            -0.2,
+          ]}
+        >
+          <meshStandardMaterial
+            color="#8b572a"
+          />
+        </RoundedBox>
+
+      </group>
+    );
+  }
+
+  const managerStatus =
+    selectedManager
+      ? "ACTIVO"
+      : "SIN CONTRATAR";
+
+  const managerButtonText =
+    selectedManager
+      ? "👑 JEFE CONTRATADO"
+      : `👑 CONTRATAR JEFE · ${managerPrice} 🪙`;
+
+  const mineStatus =
+    selectedMine < unlockedMines
+      ? "ACTIVA"
+      : "BLOQUEADA";
+
+  const currentIncome =
+    selected.baseIncome *
+    selectedMineLevel *
+    selectedPickaxe;
+
+  const totalMinerals =
+    minerals.reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+  const totalManagers =
+    managerOwned.filter(Boolean).length;
+
+  const totalMineLevels =
+    mineLevel.reduce(
+      (sum, value) => sum + value,
+      0
+    );
 
   return (
     <main className="game-page">
 
+      {/* HEADER */}
       <header className="top-header">
 
         <button
           className="profile-top"
-          onClick={() => setShowProfile(true)}
+          onClick={() => router.push("/profile")}
         >
           <div className="avatar">
-            {avatarLetter}
+            {username.charAt(0).toUpperCase()}
           </div>
 
-          <div className="username-box">
+          <div className="user-info">
             <strong>
               @{username}
             </strong>
 
             <span>
-              ⛏️ MINERO ACTIVO
+              ⛏️ MINERO
             </span>
           </div>
         </button>
 
-        <div className="wallet">
+        <div className="coin-box">
           <span>🪙</span>
           <strong>{coins}</strong>
         </div>
@@ -365,87 +1269,134 @@ export default function GamePage() {
         </div>
       )}
 
-      <section className="mine-world">
+      {/* MUNDO */}
+      <section className="mine-world-3d">
 
-        <div className="sky">
-          <div className="moon">🌙</div>
-          <div className="cloud cloud-1">☁️</div>
-          <div className="cloud cloud-2">☁️</div>
+        {/* SUPERFICIE */}
+        <div className="surface-3d">
+
+          <div className="surface-sky">
+            <div className="moon-3d" />
+          </div>
+
+          <div className="mountains-3d">
+            <div />
+            <div />
+            <div />
+          </div>
+
+          <div className="surface-ground">
+
+            <div className="mine-sign">
+              🇨🇺 CUBAN-MINER
+            </div>
+
+            {/* ASCENSOR */}
+            <div className="surface-elevator">
+              <div className="elevator-roof" />
+              <div className="elevator-door">
+                <span>🛗</span>
+              </div>
+            </div>
+
+            {/* ALMACÉN */}
+            <div className="warehouse-3d">
+
+              <div className="warehouse-roof" />
+
+              <div className="warehouse-front">
+                <strong>
+                  ALMACÉN
+                </strong>
+
+                <div className="warehouse-door" />
+
+                <span>
+                  🪨 {totalMinerals}
+                </span>
+              </div>
+
+            </div>
+
+            {/* SUPERVISOR GENERAL */}
+            <div className="surface-manager">
+
+              <div className="manager-badge">
+                SUPERVISOR
+              </div>
+
+              <Canvas
+                camera={{
+                  position: [
+                    0,
+                    1.4,
+                    4
+                  ],
+                  fov: 35
+                }}
+              >
+                <ambientLight intensity={1.8} />
+
+                <directionalLight
+                  position={[
+                    2,
+                    4,
+                    3
+                  ]}
+                  intensity={3}
+                />
+
+                <Manager3D
+                  active={
+                    totalManagers > 0
+                  }
+                />
+
+                <OrbitControls
+                  enableZoom={false}
+                  enablePan={false}
+                  enableRotate={false}
+                />
+              </Canvas>
+
+              <small>
+                JEFE DE MINA
+              </small>
+
+            </div>
+
+          </div>
+
         </div>
 
-        <div className="mountains">
-          ⛰️ ⛰️ ⛰️
-        </div>
+        {/* SUBTERRÁNEO */}
+        <div className="underground-3d">
 
-        <div className="surface">
-
-          <div className="mine-entrance">
-            <div className="entrance-sign">
-              ⛏️ CUBAN MINER
-            </div>
-
-            <div className="entrance-hole">
-              <span>MINA</span>
-            </div>
+          <div className="rock-ceiling-3d">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
           </div>
 
-          <div className="warehouse">
-            <div className="warehouse-title">
-              🏭 ALMACÉN
-            </div>
-
-            <div className="warehouse-door">
-              {storedMinerals} 🪨
-            </div>
-          </div>
-
-          <div className="boss-supervisor">
-
-            <div className="supervisor-label">
-              👑 SUPERVISOR
-            </div>
-
-            <div className="supervisor-person">
-              🧑‍💼
-            </div>
-
-            <span>
-              JEFE DE MINA
-            </span>
-
-          </div>
-
-        </div>
-
-        <div className="underground">
-
-          <div className="rock-ceiling">
-            🪨 🪨 🪨 🪨 🪨 🪨
-          </div>
-
+          {/* ELEVADOR */}
           <div
-            className="elevator-system"
+            className="vertical-elevator"
             style={{
               height:
-                `${Math.max(
-                  100,
-                  unlockedMines * 120
-                )}px`
+                `${unlockedMines * 190}px`
             }}
           >
 
-            <div className="elevator-rail left" />
-            <div className="elevator-rail right" />
+            <div className="elevator-track left" />
+            <div className="elevator-track right" />
 
             <div
-              className={`elevator ${
-                elevatorWorking
-                  ? "elevator-active"
-                  : ""
-              }`}
+              className="elevator-cabin-3d"
               style={{
-                bottom:
-                  `${elevatorPercent}%`
+                top:
+                  `${selectedMine * 190}px`
               }}
             >
               🛗
@@ -453,268 +1404,403 @@ export default function GamePage() {
 
           </div>
 
-          {mineNames.map(
-            (name, index) => {
+          {/* MINAS */}
+          <div className="mine-list">
 
-              const unlocked =
-                index < unlockedMines;
+            {MINES.map(
+              (mine, index) => {
 
-              const level =
-                index + 1;
+                const unlocked =
+                  index <
+                  unlockedMines;
 
-              return (
-                <div
-                  key={name}
-                  className={`mine-level ${
-                    unlocked
-                      ? "mine-unlocked"
-                      : "mine-locked"
-                  }`}
-                >
+                const working =
+                  minerWorking[index];
 
-                  <div className="mine-rocks">
-                    🪨 🪨 🪨
-                  </div>
+                return (
+                  <div
+                    key={mine.name}
+                    className={`mine-room ${
+                      unlocked
+                        ? "mine-room-open"
+                        : "mine-room-locked"
+                    } ${
+                      selectedMine === index
+                        ? "mine-room-selected"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      unlocked &&
+                      startManualMining(index)
+                    }
+                  >
 
-                  <div className="mine-header">
+                    {/* CABECERA */}
+                    <div className="mine-room-header">
 
-                    <div>
-                      <small>
-                        NIVEL {level}
-                      </small>
+                      <div>
+                        <small>
+                          NIVEL {index + 1}
+                        </small>
 
-                      <strong>
-                        {name}
-                      </strong>
+                        <h2>
+                          {mine.name}
+                        </h2>
+                      </div>
+
+                      <div className="mine-header-right">
+
+                        {unlocked ? (
+                          <span className="active-status">
+                            ● ACTIVA
+                          </span>
+                        ) : (
+                          <span className="locked-status">
+                            🔒 BLOQUEADA
+                          </span>
+                        )}
+
+                      </div>
+
                     </div>
 
-                    <span>
-                      {unlocked
-                        ? "🟢 ACTIVA"
-                        : "🔒 BLOQUEADA"}
-                    </span>
+                    {unlocked ? (
+                      <>
 
-                  </div>
+                        {/* ESCENA 3D */}
+                        <div className="mine-scene">
 
-                  {unlocked ? (
-                    <>
+                          <Canvas
+                            camera={{
+                              position: [
+                                0,
+                                1.5,
+                                5
+                              ],
+                              fov: 42
+                            }}
+                          >
 
-                      <div className="mine-tunnel">
+                            <ambientLight
+                              intensity={1.4}
+                            />
 
-                        <div className="mine-light">
-                          💡
-                        </div>
+                            <directionalLight
+                              position={[
+                                3,
+                                5,
+                                4
+                              ]}
+                              intensity={3}
+                            />
 
-                        <div className="worker">
+                            <pointLight
+                              position={[
+                                0,
+                                2,
+                                1
+                              ]}
+                              intensity={5}
+                              distance={5}
+                            />
 
-                          <div className="worker-person">
-                            👷
+                            <Miner3D
+                              working={working}
+                              pickaxeLevel={
+                                pickaxeLevel[index]
+                              }
+                            />
+
+                            <OrbitControls
+                              enableZoom={false}
+                              enablePan={false}
+                              enableRotate={false}
+                            />
+
+                          </Canvas>
+
+                          {/* LUZ DE MINA */}
+                          <div className="mine-lamp">
+                            <span />
                           </div>
 
-                          <span>
-                            ENCARGADO
-                          </span>
+                          {/* VAGON */}
+                          <div
+                            className={`mine-wagon ${
+                              working
+                                ? "wagon-active"
+                                : ""
+                            }`}
+                          >
+                            <div className="wagon-body">
+                              <div className="wagon-ore">
+                                {mine.mineral}
+                              </div>
+                            </div>
+
+                            <div className="wagon-wheel" />
+                            <div className="wagon-wheel second" />
+                          </div>
+
+                          {/* ENCARGADO */}
+                          <div className="worker-label">
+                            MINERO
+                          </div>
 
                         </div>
 
-                        <div
-                          className={`ore-wagon ${
-                            wagonMoving
-                              ? "wagon-moving"
-                              : ""
-                          }`}
-                        >
-                          🛒
+                        {/* RIELES */}
+                        <div className="mine-rails">
+                          <span />
+                          <span />
                         </div>
 
-                        <div className="ore-pile">
-                          {index === 0 && "⚫"}
-                          {index === 1 && "🟠"}
-                          {index === 2 && "⚙️"}
-                          {index === 3 && "🟡"}
+                        {/* INFORMACIÓN */}
+                        <div className="mine-bottom">
+
+                          <div>
+                            <small>
+                              PRODUCCIÓN
+                            </small>
+
+                            <strong>
+                              +{currentIncome}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <small>
+                              MINERALES
+                            </small>
+
+                            <strong>
+                              {minerals[index]}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <small>
+                              PICO
+                            </small>
+
+                            <strong>
+                              NIVEL {
+                                pickaxeLevel[index]
+                              }
+                            </strong>
+                          </div>
+
+                          <div>
+                            <small>
+                              JEFE
+                            </small>
+
+                            <strong>
+                              {managerOwned[index]
+                                ? "ACTIVO"
+                                : "—"}
+                            </strong>
+                          </div>
+
                         </div>
 
-                      </div>
+                        {/* MENSAJE AL TOCAR */}
+                        {selectedMine === index &&
+                          !managerOwned[index] && (
+                            <div className="tap-hint">
+                              👆 MINA SELECCIONADA
+                            </div>
+                          )}
 
-                      <div className="rails">
-                        ═══════════════════
-                      </div>
-
-                      <div className="mine-status">
-                        <span>
-                          👷 Encargado trabajando
-                        </span>
-
-                        <span>
-                          🛒 Transporte
-                        </span>
-                      </div>
-
-                    </>
-                  ) : (
-                    <div className="locked-content">
-
-                      <div className="lock-icon">
-                        🔒
-                      </div>
-
-                      <strong>
-                        MINA DE {name}
-                      </strong>
-
-                      <span>
-                        Desbloquea este nivel
-                        para comenzar a extraer
-                      </span>
-
-                      <button
-                        className="unlock-button"
-                        onClick={() =>
-                          unlockMine(index)
+                      </>
+                    ) : (
+                      /* MINA BLOQUEADA */
+                      <div
+                        className="locked-mine-content"
+                        onClick={(event) =>
+                          event.stopPropagation()
                         }
                       >
-                        🔓 DESBLOQUEAR
-                        <b>
-                          {minePrices[index]} 🪙
-                        </b>
-                      </button>
 
-                    </div>
-                  )}
+                        <div className="big-lock">
+                          🔒
+                        </div>
 
-                </div>
-              );
-            }
-          )}
+                        <strong>
+                          MINA DE {mine.name}
+                        </strong>
+
+                        <span>
+                          Desbloquea este nivel
+                        </span>
+
+                        <button
+                          className="unlock-mine-button"
+                          onClick={() =>
+                            unlockMine(index)
+                          }
+                        >
+                          <span>
+                            🔓 DESBLOQUEAR
+                          </span>
+
+                          <b>
+                            {mine.unlockPrice}
+                            {" "}🪙
+                          </b>
+                        </button>
+
+                      </div>
+                    )}
+
+                  </div>
+                );
+              }
+            )}
+
+          </div>
 
         </div>
 
       </section>
 
-      <section className="mining-panel">
+      {/* PANEL DE LA MINA */}
+      <section className="mine-control-panel">
 
-        <div className="panel-title">
-          ⛏️ MINERÍA DE CARBÓN
-        </div>
-
-        <div className="mining-stats">
+        <div className="selected-mine-title">
 
           <div>
-            <span>🪨 MINERAL</span>
-            <strong>{minerals}</strong>
+            <small>
+              MINA SELECCIONADA
+            </small>
+
+            <h2>
+              ⛏️ {selected.name}
+            </h2>
           </div>
 
-          <div>
-            <span>⚡ ENERGÍA</span>
-            <strong>{energy}%</strong>
-          </div>
-
-          <div>
-            <span>💥 GOLPES</span>
-            <strong>
-              {hits}/{maxHits}
-            </strong>
+          <div className="mine-level-number">
+            NIVEL {selectedMineLevel}
           </div>
 
         </div>
 
-        <div className="energy-bar">
-          <div
-            style={{
-              width: `${energy}%`
-            }}
-          />
+        <div className="control-grid">
+
+          {/* UP MINA */}
+          <button
+            className="upgrade-card"
+            onClick={upgradeMine}
+          >
+
+            <span className="upgrade-icon">
+              ⬆️
+            </span>
+
+            <div>
+              <strong>
+                UP MINA
+              </strong>
+
+              <small>
+                Nivel {selectedMineLevel}
+                {" "}→{" "}
+                {selectedMineLevel + 1}
+              </small>
+            </div>
+
+            <b>
+              {mineUpgradePrice} 🪙
+            </b>
+
+          </button>
+
+          {/* UP PICO */}
+          <button
+            className="upgrade-card"
+            onClick={upgradePickaxe}
+          >
+
+            <span className="upgrade-icon">
+              ⛏️
+            </span>
+
+            <div>
+              <strong>
+                UP PICO
+              </strong>
+
+              <small>
+                Nivel {selectedPickaxe}
+                {" "}→{" "}
+                {selectedPickaxe + 1}
+              </small>
+            </div>
+
+            <b>
+              {pickaxeUpgradePrice} 🪙
+            </b>
+
+          </button>
+
         </div>
 
-        <div className="progress-bar">
-          <div
-            style={{
-              width: `${progress}%`
-            }}
-          />
-        </div>
-
+        {/* JEFE */}
         <button
-          className="start-button"
-          onClick={startMining}
-        >
-          {miningStarted
-            ? "🟢 MINERÍA ACTIVA"
-            : "⛏️ COMENZAR MINERÍA"}
-        </button>
-
-        <button
-          className={`mine-button ${
-            hitting ? "hitting" : ""
+          className={`manager-card ${
+            selectedManager
+              ? "manager-owned"
+              : ""
           }`}
-          onClick={mine}
+          onClick={buyManager}
         >
-          {hitting
-            ? "💥 ¡GOLPE!"
-            : "⛏️ EXTRAER CARBÓN"}
+
+          <div className="manager-card-icon">
+            👑
+          </div>
+
+          <div className="manager-card-text">
+
+            <strong>
+              {managerStatus}
+            </strong>
+
+            <small>
+              {selectedManager
+                ? "Esta mina trabaja automáticamente"
+                : "Contrata al jefe para automatizar la mina"}
+            </small>
+
+          </div>
+
+          <div className="manager-card-price">
+
+            {selectedManager
+              ? "✓"
+              : `${managerPrice} 🪙`}
+
+          </div>
+
         </button>
 
       </section>
 
-            <section className="info-section">
-
-        <div className="info-card">
-          <span>🏭</span>
-          <strong>
-            ALMACÉN
-          </strong>
-          <small>
-            {storedMinerals} minerales
-          </small>
-        </div>
-
-        <div className="info-card">
-          <span>🛗</span>
-          <strong>
-            ASCENSOR
-          </strong>
-          <small>
-            Nivel {elevatorFloor + 1}
-          </small>
-        </div>
-
-        <div className="info-card">
-          <span>👷</span>
-          <strong>
-            ENCARGADOS
-          </strong>
-          <small>
-            {unlockedMines} activos
-          </small>
-        </div>
-
-        <div className="info-card">
-          <span>🪙</span>
-          <strong>
-            GANANCIA
-          </strong>
-          <small>
-            +5 por carga
-          </small>
-        </div>
-
-      </section>
-
+            {/* MENÚ INFERIOR */}
       <nav className="bottom-nav">
 
         <button
-          className="nav-active"
+          className="nav-selected"
           onClick={() =>
-            goTo("/game")
+            router.push("/game")
           }
         >
-          <span>⛏️</span>
+          <span>⛏</span>
           <small>MINAS</small>
         </button>
 
         <button
           onClick={() =>
-            goTo("/shop")
+            router.push("/shop")
           }
         >
           <span>🛒</span>
@@ -723,7 +1809,7 @@ export default function GamePage() {
 
         <button
           onClick={() =>
-            goTo("/friends")
+            router.push("/friends")
           }
         >
           <span>👥</span>
@@ -732,7 +1818,7 @@ export default function GamePage() {
 
         <button
           onClick={() =>
-            goTo("/bank")
+            router.push("/bank")
           }
         >
           <span>🏦</span>
@@ -741,7 +1827,7 @@ export default function GamePage() {
 
         <button
           onClick={() =>
-            goTo("/missions")
+            router.push("/missions")
           }
         >
           <span>🎯</span>
@@ -750,7 +1836,7 @@ export default function GamePage() {
 
         <button
           onClick={() =>
-            goTo("/mapa")
+            router.push("/mapa")
           }
         >
           <span>🌍</span>
@@ -758,239 +1844,6 @@ export default function GamePage() {
         </button>
 
       </nav>
-
-      {showProfile && (
-        <div
-          className="profile-overlay"
-          onClick={() =>
-            setShowProfile(false)
-          }
-        >
-
-          <div
-            className="profile-panel"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-
-            <div className="profile-head">
-
-              <button
-                className="close-profile"
-                onClick={() =>
-                  setShowProfile(false)
-                }
-              >
-                ✕
-              </button>
-
-              <div className="profile-avatar">
-                {avatarLetter}
-              </div>
-
-              <div className="profile-name">
-                <strong>
-                  @{username}
-                </strong>
-
-                <span>
-                  ⛏️ MINERO
-                </span>
-              </div>
-
-            </div>
-
-            <div className="profile-level">
-
-              <div>
-                <span>
-                  NIVEL DE MINERO
-                </span>
-
-                <strong>
-                  NIVEL {unlockedMines}
-                </strong>
-              </div>
-
-              <div className="level-bar">
-                <div
-                  style={{
-                    width:
-                      `${Math.max(
-                        15,
-                        progress
-                      )}%`
-                  }}
-                />
-              </div>
-
-            </div>
-
-            <div className="profile-section-title">
-              📊 ESTADÍSTICAS
-            </div>
-
-            <div className="profile-rows">
-
-              <div className="profile-row">
-                <div className="row-icon">
-                  🪙
-                </div>
-
-                <div>
-                  <strong>
-                    Monedas
-                  </strong>
-
-                  <span>
-                    Balance disponible
-                  </span>
-                </div>
-
-                <b>
-                  {coins}
-                </b>
-              </div>
-
-              <div className="profile-row">
-                <div className="row-icon">
-                  🪨
-                </div>
-
-                <div>
-                  <strong>
-                    Minerales
-                  </strong>
-
-                  <span>
-                    Minerales extraídos
-                  </span>
-                </div>
-
-                <b>
-                  {minerals}
-                </b>
-              </div>
-
-              <div className="profile-row">
-                <div className="row-icon">
-                  ⚡
-                </div>
-
-                <div>
-                  <strong>
-                    Energía
-                  </strong>
-
-                  <span>
-                    Energía actual
-                  </span>
-                </div>
-
-                <b>
-                  {energy}%
-                </b>
-              </div>
-
-              <div className="profile-row">
-                <div className="row-icon">
-                  ⛏️
-                </div>
-
-                <div>
-                  <strong>
-                    Minas
-                  </strong>
-
-                  <span>
-                    Minas desbloqueadas
-                  </span>
-                </div>
-
-                <b>
-                  {unlockedMines}/4
-                </b>
-              </div>
-
-            </div>
-
-                        <div className="profile-section-title">
-              🧭 OPERACIONES
-            </div>
-
-            <button
-              className="profile-action"
-              onClick={() =>
-                goTo("/friends")
-              }
-            >
-              <div className="action-icon">
-                👥
-              </div>
-
-              <div>
-                <strong>
-                  Sistema de referidos
-                </strong>
-
-                <span>
-                  Invita amigos y gana
-                </span>
-              </div>
-
-              <b>›</b>
-            </button>
-
-            <button
-              className="profile-action"
-              onClick={() =>
-                goTo("/missions")
-              }
-            >
-              <div className="action-icon">
-                🎯
-              </div>
-
-              <div>
-                <strong>
-                  Misiones
-                </strong>
-
-                <span>
-                  Completa tareas
-                </span>
-              </div>
-
-              <b>›</b>
-            </button>
-
-            <button
-              className="profile-action"
-              onClick={() =>
-                goTo("/mapa")
-              }
-            >
-              <div className="action-icon">
-                🌍
-              </div>
-
-              <div>
-                <strong>
-                  Mapa de minas
-                </strong>
-
-                <span>
-                  Explora nuevos niveles
-                </span>
-              </div>
-
-              <b>›</b>
-            </button>
-
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
 
@@ -1000,644 +1853,899 @@ export default function GamePage() {
 
         .game-page {
           min-height: 100vh;
-          background:
-            linear-gradient(
-              180deg,
-              #07111c 0%,
-              #0d1820 45%,
-              #160f0a 100%
-            );
+          background: #090d11;
           color: #fff;
-          padding-bottom: 90px;
-          font-family: Arial, sans-serif;
+          padding-bottom: 88px;
+          font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
           overflow-x: hidden;
         }
 
+        /* HEADER */
+
         .top-header {
-          height: 72px;
-          padding: 10px 12px;
+          height: 68px;
+          padding: 9px 12px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: #0a121b;
-          border-bottom: 1px solid #263442;
+          background: #0d151c;
+          border-bottom:
+            1px solid #293640;
           position: sticky;
           top: 0;
-          z-index: 50;
+          z-index: 100;
         }
 
         .profile-top {
           border: 0;
           background: transparent;
-          color: white;
+          color: #fff;
           display: flex;
           align-items: center;
           gap: 9px;
           padding: 0;
-        }
-
-        .avatar,
-        .profile-avatar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          background: linear-gradient(
-            145deg,
-            #f6b73c,
-            #b8660b
-          );
-          border: 2px solid #ffd86a;
-          font-weight: 900;
-          box-shadow:
-            0 0 14px rgba(
-              255,
-              190,
-              50,
-              .3
-            );
+          cursor: pointer;
         }
 
         .avatar {
           width: 43px;
           height: 43px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background:
+            linear-gradient(
+              145deg,
+              #ffc94f,
+              #9d5b13
+            );
+          border:
+            2px solid #ffe08a;
+          color: #17100a;
+          font-size: 16px;
+          font-weight: 900;
         }
 
-        .username-box {
+        .user-info {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+          gap: 3px;
         }
 
-        .username-box strong {
-          font-size: 14px;
+        .user-info strong {
+          font-size: 13px;
         }
 
-        .username-box span {
-          color: #8393a3;
-          font-size: 9px;
-          margin-top: 3px;
-        }
-
-        .wallet {
-          background: #141f2a;
-          border: 1px solid #344351;
-          border-radius: 14px;
-          padding: 9px 12px;
-          display: flex;
-          gap: 5px;
-          align-items: center;
-        }
-
-        .wallet strong {
-          color: #ffd45a;
-        }
-
-        .game-message {
-          position: fixed;
-          top: 82px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: #182733;
-          border: 1px solid #456074;
-          padding: 11px 15px;
-          border-radius: 12px;
-          z-index: 100;
-          font-size: 12px;
-          box-shadow:
-            0 8px 25px rgba(0,0,0,.45);
-          white-space: nowrap;
-        }
-
-        .mine-world {
-          position: relative;
-          min-height: 940px;
-          overflow: hidden;
-          background: #111;
-        }
-
-        .sky {
-          height: 145px;
-          position: relative;
-          background:
-            linear-gradient(
-              180deg,
-              #142d47,
-              #203c52
-            );
-        }
-
-        .moon {
-          position: absolute;
-          right: 35px;
-          top: 20px;
-          font-size: 30px;
-        }
-
-        .cloud {
-          position: absolute;
-          opacity: .35;
-          font-size: 28px;
-        }
-
-        .cloud-1 {
-          left: 30px;
-          top: 35px;
-        }
-
-        .cloud-2 {
-          left: 150px;
-          top: 70px;
-        }
-
-        .mountains {
-          height: 50px;
-          background: #18242d;
-          text-align: center;
-          font-size: 38px;
-          line-height: 55px;
-          overflow: hidden;
-        }
-
-        .surface {
-          height: 170px;
-          background:
-            repeating-linear-gradient(
-              0deg,
-              #352216 0,
-              #352216 10px,
-              #422a19 11px,
-              #422a19 20px
-            );
-          position: relative;
-          border-bottom: 7px solid #24160d;
-        }
-
-        .mine-entrance {
-          position: absolute;
-          left: 12px;
-          bottom: 18px;
-          text-align: center;
-        }
-
-        .entrance-sign {
-          background: #171717;
-          border: 2px solid #d79b32;
-          border-radius: 6px;
-          padding: 5px 8px;
-          font-size: 9px;
-          font-weight: 900;
-        }
-
-        .entrance-hole {
-          width: 90px;
-          height: 72px;
-          margin-top: 4px;
-          background: #080808;
-          border-radius: 50px 50px 8px 8px;
-          border: 6px solid #6b4827;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          color: #7d6a58;
-          font-size: 10px;
-        }
-
-        .warehouse {
-          position: absolute;
-          right: 10px;
-          bottom: 15px;
-          background: #49301d;
-          border: 2px solid #a56d31;
-          width: 105px;
-          height: 95px;
-          border-radius: 8px;
-          text-align: center;
-        }
-
-        .warehouse-title {
-          background: #17120e;
-          padding: 6px;
-          font-size: 10px;
-          font-weight: 900;
-        }
-
-        .warehouse-door {
-          margin: 15px auto;
-          width: 43px;
-          height: 48px;
-          background: #17120e;
-          border: 2px solid #6e4b2c;
-          padding-top: 15px;
-          font-size: 10px;
-        }
-
-        .boss-supervisor {
-          position: absolute;
-          left: 50%;
-          bottom: 18px;
-          transform: translateX(-50%);
-          text-align: center;
-        }
-
-        .supervisor-label {
-          background: #171717;
-          border: 1px solid #e5a82d;
-          color: #ffd85b;
-          padding: 4px 8px;
-          border-radius: 8px;
-          font-size: 9px;
-          font-weight: 900;
-        }
-
-        .supervisor-person {
-          font-size: 45px;
-          line-height: 50px;
-        }
-
-        .boss-supervisor span {
-          color: #c2cbd3;
+        .user-info span {
+          color: #82919c;
           font-size: 8px;
         }
 
-        .underground {
+        .coin-box {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          background: #18232c;
+          border:
+            1px solid #34444f;
+          padding: 9px 12px;
+          border-radius: 13px;
+        }
+
+        .coin-box strong {
+          color: #ffd052;
+          font-size: 13px;
+        }
+
+        /* MENSAJE */
+
+        .game-message {
+          position: fixed;
+          left: 50%;
+          top: 78px;
+          transform: translateX(-50%);
+          z-index: 300;
+          background: #17232c;
+          border:
+            1px solid #566a78;
+          border-radius: 12px;
+          padding: 10px 14px;
+          font-size: 11px;
+          white-space: nowrap;
+          box-shadow:
+            0 10px 30px
+            rgba(0,0,0,.55);
+        }
+
+        /* MUNDO */
+
+        .mine-world-3d {
+          width: 100%;
+          overflow: hidden;
+        }
+
+        .surface-3d {
+          position: relative;
+          height: 280px;
+        }
+
+        .surface-sky {
+          height: 135px;
+          background:
+            linear-gradient(
+              180deg,
+              #10243a,
+              #27435a
+            );
+          position: relative;
+        }
+
+        .moon-3d {
+          position: absolute;
+          width: 35px;
+          height: 35px;
+          border-radius: 50%;
+          background: #fff1bd;
+          right: 32px;
+          top: 20px;
+          box-shadow:
+            0 0 20px
+            rgba(255,238,165,.5);
+        }
+
+        .mountains-3d {
+          height: 45px;
+          position: relative;
+          background: #17242d;
+          overflow: hidden;
+        }
+
+        .mountains-3d div {
+          position: absolute;
+          bottom: -35px;
+          width: 130px;
+          height: 90px;
+          background: #101a20;
+          transform: rotate(45deg);
+        }
+
+        .mountains-3d div:nth-child(1) {
+          left: -20px;
+        }
+
+        .mountains-3d div:nth-child(2) {
+          left: 105px;
+        }
+
+        .mountains-3d div:nth-child(3) {
+          right: -30px;
+        }
+
+        .surface-ground {
+          position: relative;
+          height: 100px;
+          background:
+            repeating-linear-gradient(
+              0deg,
+              #3b2818 0,
+              #3b2818 9px,
+              #49301d 10px,
+              #49301d 19px
+            );
+          border-bottom:
+            5px solid #21150c;
+        }
+
+        .mine-sign {
+          position: absolute;
+          left: 10px;
+          bottom: 23px;
+          padding: 6px 8px;
+          border-radius: 7px;
+          background: #151515;
+          border:
+            1px solid #d89a30;
+          color: #ffd267;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+        /* ASCENSOR */
+
+        .surface-elevator {
+          position: absolute;
+          left: 50%;
+          bottom: 0;
+          transform: translateX(-50%);
+          width: 45px;
+          height: 83px;
+          background: #1a2024;
+          border:
+            2px solid #73787b;
+          z-index: 4;
+        }
+
+        .elevator-roof {
+          height: 8px;
+          background: #a0a4a5;
+        }
+
+        .elevator-door {
+          height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background:
+            linear-gradient(
+              90deg,
+              #292f32,
+              #454a4d,
+              #292f32
+            );
+        }
+
+        .elevator-door span {
+          font-size: 21px;
+        }
+
+        /* ALMACÉN */
+
+        .warehouse-3d {
+          position: absolute;
+          right: 9px;
+          bottom: 9px;
+          width: 91px;
+          height: 82px;
+        }
+
+        .warehouse-roof {
+          height: 15px;
+          background: #722e1d;
+          clip-path:
+            polygon(
+              0 100%,
+              50% 0,
+              100% 100%
+            );
+        }
+
+        .warehouse-front {
+          height: 67px;
+          background: #56321f;
+          border:
+            1px solid #9a6438;
+          text-align: center;
+          padding-top: 5px;
+        }
+
+        .warehouse-front strong {
+          font-size: 8px;
+          color: #f1c06b;
+        }
+
+        .warehouse-door {
+          width: 27px;
+          height: 35px;
+          margin: 5px auto 2px;
+          background: #191513;
+          border:
+            1px solid #775035;
+        }
+
+        .warehouse-front span {
+          font-size: 7px;
+          color: #b6aaa0;
+        }
+
+        /* SUPERVISOR */
+
+        .surface-manager {
+          position: absolute;
+          left: 50%;
+          bottom: 3px;
+          width: 75px;
+          height: 102px;
+          transform: translateX(-50%);
+          text-align: center;
+          z-index: 5;
+        }
+
+        .surface-manager canvas {
+          width: 75px !important;
+          height: 78px !important;
+          display: block;
+        }
+
+        .manager-badge {
+          position: absolute;
+          z-index: 5;
+          left: 50%;
+          transform: translateX(-50%);
+          top: -4px;
+          background: #1c1a12;
+          border:
+            1px solid #e0aa39;
+          color: #ffd25d;
+          border-radius: 6px;
+          padding: 3px 6px;
+          font-size: 6px;
+          font-weight: 900;
+        }
+
+        .surface-manager small {
+          color: #918b84;
+          font-size: 6px;
+        }
+
+        /* SUBTERRÁNEO */
+
+        .underground-3d {
           position: relative;
           background:
             linear-gradient(
               180deg,
-              #17120e,
-              #0e0b09
+              #17120f,
+              #0b0908
             );
-          padding: 15px 8px 30px;
-          min-height: 575px;
+          padding: 10px 8px 30px;
         }
 
-        .rock-ceiling {
-          height: 28px;
+        .rock-ceiling-3d {
+          height: 18px;
+          display: flex;
+          justify-content: space-around;
           overflow: hidden;
-          opacity: .45;
-          text-align: center;
+          opacity: .35;
         }
 
-        .elevator-system {
+        .rock-ceiling-3d span {
+          width: 28px;
+          height: 28px;
+          background: #4b3b2d;
+          transform: rotate(45deg);
+          margin-top: -14px;
+        }
+
+        /* ELEVADOR VERTICAL */
+
+        .vertical-elevator {
           position: absolute;
+          top: 28px;
           left: 50%;
-          top: 40px;
-          width: 50px;
           transform: translateX(-50%);
+          width: 45px;
+          z-index: 2;
           pointer-events: none;
-          z-index: 3;
         }
 
-        .elevator-rail {
+        .elevator-track {
           position: absolute;
           top: 0;
           bottom: 0;
           width: 4px;
-          background: #62676b;
-          border-radius: 3px;
+          background:
+            linear-gradient(
+              180deg,
+              #777b7c,
+              #34383a
+            );
         }
 
-        .elevator-rail.left {
-          left: 10px;
+        .elevator-track.left {
+          left: 4px;
         }
 
-        .elevator-rail.right {
-          right: 10px;
+        .elevator-track.right {
+          right: 4px;
         }
 
-        .elevator {
+        .elevator-cabin-3d {
           position: absolute;
           left: 50%;
           transform: translateX(-50%);
-          font-size: 27px;
-          transition: bottom 1.2s ease;
-          background: #252b30;
-          border-radius: 8px;
-          padding: 3px;
+          width: 38px;
+          height: 42px;
+          border:
+            2px solid #777;
+          background: #292f32;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 5px;
+          transition:
+            top 1s ease;
         }
 
-        .elevator-active {
-          filter: drop-shadow(
-            0 0 7px #ffd34f
-          );
-        }
+        /* LISTA */
 
-        .mine-level {
+        .mine-list {
           position: relative;
-          min-height: 120px;
-          margin: 10px 0;
-          border-radius: 12px;
-          overflow: hidden;
-          border: 1px solid #40372e;
-          background:
-            linear-gradient(
-              90deg,
-              #211913,
-              #312319,
-              #211913
-            );
           z-index: 5;
         }
 
-        .mine-unlocked {
-          box-shadow:
-            inset 0 0 25px
-            rgba(214,137,45,.08);
+        .mine-room {
+          position: relative;
+          min-height: 235px;
+          margin: 10px 0;
+          border-radius: 14px;
+          overflow: hidden;
+          transition:
+            transform .15s ease;
         }
 
-        .mine-locked {
+        .mine-room:active {
+          transform: scale(.985);
+        }
+
+        .mine-room-open {
           background:
             linear-gradient(
-              90deg,
-              #161616,
-              #222,
-              #161616
+              135deg,
+              #302218,
+              #1a1511
             );
+          border:
+            1px solid #604a34;
         }
 
-        .mine-rocks {
-          height: 20px;
-          opacity: .3;
-          font-size: 12px;
-          padding-left: 10px;
+        .mine-room-selected {
+          border:
+            2px solid #d79b32;
+          box-shadow:
+            0 0 18px
+            rgba(216,155,50,.13);
         }
 
-        .mine-header {
+        .mine-room-locked {
+          min-height: 180px;
+          background:
+            linear-gradient(
+              135deg,
+              #181818,
+              #101010
+            );
+          border:
+            1px solid #373737;
+        }
+
+        .mine-room-header {
+          height: 49px;
+          padding: 7px 10px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 5px 10px;
-          border-bottom: 1px solid #493b30;
+          border-bottom:
+            1px solid #493a2c;
+          background:
+            rgba(0,0,0,.2);
         }
 
-        .mine-header div {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .mine-header small {
+        .mine-room-header small {
+          display: block;
+          color: #81766d;
           font-size: 7px;
-          color: #887c71;
         }
 
-        .mine-header strong {
-          font-size: 13px;
-          color: #f0c15b;
+        .mine-room-header h2 {
+          margin: 2px 0 0;
+          font-size: 15px;
+          color: #f2bf51;
         }
 
-        .mine-header span {
-          font-size: 8px;
+        .mine-header-right {
+          font-size: 7px;
+          font-weight: 900;
         }
 
-        .mine-tunnel {
-          height: 52px;
+        .active-status {
+          color: #62d878;
+        }
+
+        .locked-status {
+          color: #777;
+        }
+
+        /* ESCENA */
+
+        .mine-scene {
+          height: 130px;
+          position: relative;
+          background:
+            radial-gradient(
+              circle at 50% 35%,
+              #4a3420,
+              #211811 70%
+            );
+        }
+
+        .mine-scene canvas {
+          width: 100% !important;
+          height: 130px !important;
+          display: block;
+        }
+
+        .mine-lamp {
+          position: absolute;
+          left: 12%;
+          top: 8px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #fff0a0;
+          box-shadow:
+            0 0 22px 8px
+            rgba(255,219,98,.3);
+        }
+
+        /* VAGÓN */
+
+        .mine-wagon {
+          position: absolute;
+          right: 10%;
+          bottom: 20px;
+          width: 45px;
+          height: 31px;
+          transition:
+            transform 1s ease;
+        }
+
+        .wagon-active {
+          transform:
+            translateX(-18px);
+        }
+
+        .wagon-body {
+          width: 45px;
+          height: 22px;
+          background:
+            linear-gradient(
+              180deg,
+              #7a4a27,
+              #4b2c18
+            );
+          border:
+            2px solid #9b6636;
+          border-radius: 3px 3px 7px 7px;
           position: relative;
         }
 
-        .mine-light {
+        .wagon-ore {
           position: absolute;
-          left: 18%;
-          top: 4px;
-          font-size: 15px;
+          left: 5px;
+          top: -9px;
+          color: #8c8b87;
+          font-size: 11px;
         }
 
-        .worker {
+        .wagon-wheel {
           position: absolute;
-          left: 35%;
-          bottom: 2px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #202020;
+          border:
+            2px solid #777;
+          bottom: -6px;
+          left: 5px;
         }
 
-        .worker-person {
-          font-size: 31px;
-          line-height: 32px;
+        .wagon-wheel.second {
+          left: 30px;
         }
 
-        .worker span {
+        .worker-label {
+          position: absolute;
+          left: 29%;
+          bottom: 7px;
+          color: #b0a49a;
           font-size: 6px;
-          color: #9d968e;
         }
 
-        .ore-wagon {
+        .mine-rails {
+          height: 14px;
+          position: relative;
+          background: #17120e;
+        }
+
+        .mine-rails span {
           position: absolute;
-          left: 55%;
-          bottom: 5px;
-          font-size: 28px;
-          transition: transform 1s ease;
+          left: 8%;
+          right: 8%;
+          height: 3px;
+          background: #76706b;
         }
 
-        .wagon-moving {
-          transform: translateX(18px);
+        .mine-rails span:first-child {
+          top: 2px;
         }
 
-        .ore-pile {
-          position: absolute;
-          right: 12%;
-          bottom: 5px;
-          font-size: 24px;
+        .mine-rails span:last-child {
+          top: 9px;
         }
 
-        .rails {
+        /* INFORMACIÓN */
+
+        .mine-bottom {
+          display: grid;
+          grid-template-columns:
+            repeat(4, 1fr);
+          border-top:
+            1px solid #40342a;
+        }
+
+        .mine-bottom div {
+          min-width: 0;
+          padding: 7px 4px;
           text-align: center;
-          color: #787878;
+          border-right:
+            1px solid #352b24;
+        }
+
+        .mine-bottom div:last-child {
+          border-right: 0;
+        }
+
+        .mine-bottom small {
+          display: block;
+          color: #776e66;
+          font-size: 6px;
+        }
+
+        .mine-bottom strong {
+          display: block;
+          color: #e6b84e;
           font-size: 9px;
-          letter-spacing: 1px;
-          height: 13px;
-          overflow: hidden;
+          margin-top: 3px;
         }
 
-        .mine-status {
-          display: flex;
-          justify-content: space-around;
+        .tap-hint {
+          text-align: center;
+          color: #d7a33d;
+          background: #211a12;
+          padding: 5px;
           font-size: 7px;
-          color: #81766c;
-          padding-bottom: 5px;
+          border-top:
+            1px solid #443625;
         }
 
-        .locked-content {
-          min-height: 78px;
+        /* BLOQUEADA */
+
+        .locked-mine-content {
+          min-height: 130px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-direction: column;
-          gap: 3px;
+          gap: 5px;
           text-align: center;
-          padding-bottom: 8px;
         }
 
-        .lock-icon {
-          font-size: 23px;
+        .big-lock {
+          font-size: 27px;
+          opacity: .65;
         }
 
-        .locked-content strong {
-          font-size: 12px;
+        .locked-mine-content strong {
           color: #999;
+          font-size: 12px;
         }
 
-        .locked-content span {
-          color: #777;
+        .locked-mine-content span {
+          color: #666;
           font-size: 8px;
         }
 
-        .unlock-button {
-          margin-top: 5px;
-          border: 1px solid #b77a20;
-          background: #35230f;
-          color: #ffd15a;
-          border-radius: 7px;
-          padding: 6px 12px;
-          font-size: 9px;
-          font-weight: 900;
+        .unlock-mine-button {
+          margin-top: 4px;
+          border:
+            1px solid #8e6425;
+          background: #2c2114;
+          color: #ffd15c;
+          border-radius: 8px;
+          padding: 8px 13px;
           display: flex;
-          gap: 7px;
           align-items: center;
+          gap: 10px;
+          font-size: 8px;
+          font-weight: 900;
         }
 
-        .unlock-button b {
+        .unlock-mine-button b {
           color: #fff;
         }
 
-        .mining-panel {
+        /* CONTROL */
+
+        .mine-control-panel {
           margin: 12px;
-          padding: 15px;
-          background: #111b24;
-          border: 1px solid #30404e;
+          padding: 13px;
+          border:
+            1px solid #30414c;
           border-radius: 15px;
+          background:
+            linear-gradient(
+              145deg,
+              #14212a,
+              #0d151b
+            );
         }
 
-        .panel-title {
-          font-weight: 900;
-          color: #f2bd48;
+        .selected-mine-title {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
           margin-bottom: 12px;
         }
 
-        .mining-stats {
-          display: grid;
-          grid-template-columns:
-            repeat(3, 1fr);
-          gap: 7px;
-        }
-
-        .mining-stats div {
-          background: #17232e;
-          border-radius: 9px;
-          padding: 8px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .mining-stats span {
-          color: #7f909e;
+        .selected-mine-title small {
+          color: #71818d;
           font-size: 7px;
         }
 
-        .mining-stats strong {
-          font-size: 14px;
-        }
-
-        .energy-bar,
-        .progress-bar {
-          height: 7px;
-          background: #26313a;
-          border-radius: 8px;
-          overflow: hidden;
-          margin-top: 9px;
-        }
-
-        .energy-bar div,
-        .progress-bar div {
-          height: 100%;
-          background: #48a85d;
-          transition: width .3s;
-        }
-
-        .progress-bar div {
-          background: #e2a52d;
-        }
-
-        .start-button,
-        .mine-button {
-          width: 100%;
-          border: 0;
-          border-radius: 10px;
-          padding: 13px;
-          margin-top: 10px;
-          font-weight: 900;
-          color: #fff;
-        }
-
-        .start-button {
-          background: #285f3b;
-        }
-
-        .mine-button {
-          background:
-            linear-gradient(
-              135deg,
-              #a96313,
-              #dc9a28
-            );
+        .selected-mine-title h2 {
+          margin: 3px 0 0;
           font-size: 15px;
+          color: #f0bc4d;
         }
 
-        .mine-button.hitting {
-          transform: scale(.97);
+        .mine-level-number {
+          padding: 7px 9px;
+          background: #1b2b34;
+          border-radius: 8px;
+          color: #b9c4ca;
+          font-size: 8px;
+          font-weight: 900;
         }
 
-        .info-section {
+        .control-grid {
           display: grid;
           grid-template-columns:
             repeat(2, 1fr);
-          gap: 8px;
-          padding: 0 12px 12px;
+          gap: 7px;
         }
 
-        .info-card {
-          background: #121d26;
-          border: 1px solid #293944;
+        .upgrade-card {
+          border:
+            1px solid #344852;
+          background: #17242c;
+          color: #fff;
           border-radius: 11px;
-          padding: 10px;
+          min-height: 66px;
+          padding: 8px;
           display: flex;
-          flex-direction: column;
-          gap: 3px;
+          align-items: center;
+          gap: 7px;
+          text-align: left;
         }
 
-        .info-card span {
-          font-size: 20px;
+        .upgrade-icon {
+          width: 31px;
+          height: 31px;
+          border-radius: 9px;
+          background: #253640;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 15px;
         }
 
-        .info-card strong {
-          font-size: 10px;
+        .upgrade-card div {
+          flex: 1;
+          min-width: 0;
         }
 
-        .info-card small {
-          color: #82919d;
+        .upgrade-card strong {
+          display: block;
+          font-size: 9px;
+        }
+
+        .upgrade-card small {
+          display: block;
+          color: #71818c;
+          font-size: 7px;
+          margin-top: 3px;
+        }
+
+        .upgrade-card b {
+          color: #f1bd4b;
           font-size: 8px;
         }
 
+        /* JEFE */
+
+        .manager-card {
+          width: 100%;
+          margin-top: 8px;
+          min-height: 65px;
+          border:
+            1px solid #65502b;
+          background:
+            linear-gradient(
+              135deg,
+              #2b2114,
+              #1b1711
+            );
+          border-radius: 11px;
+          color: #fff;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 8px;
+          text-align: left;
+        }
+
+        .manager-owned {
+          border-color: #3d8d54;
+          background:
+            linear-gradient(
+              135deg,
+              #162b20,
+              #102019
+            );
+        }
+
+        .manager-card-icon {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #352817;
+          font-size: 18px;
+        }
+
+        .manager-card-text {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .manager-card-text strong {
+          display: block;
+          color: #f4c550;
+          font-size: 10px;
+        }
+
+        .manager-card-text small {
+          display: block;
+          color: #858f95;
+          font-size: 7px;
+          margin-top: 3px;
+        }
+
+        .manager-card-price {
+          color: #fff;
+          font-size: 8px;
+          font-weight: 900;
+        }
+
+        /* MENÚ */
+
         .bottom-nav {
           position: fixed;
-          bottom: 0;
           left: 0;
           right: 0;
+          bottom: 0;
           height: 72px;
-          background: #09121a;
-          border-top: 1px solid #2b3945;
+          z-index: 150;
+          background: #091219;
+          border-top:
+            1px solid #293943;
           display: grid;
           grid-template-columns:
             repeat(6, 1fr);
-          z-index: 60;
-          padding-bottom: 4px;
+          padding-bottom: 3px;
         }
 
         .bottom-nav button {
           border: 0;
           background: transparent;
-          color: #72808c;
+          color: #687984;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -1646,203 +2754,36 @@ export default function GamePage() {
         }
 
         .bottom-nav button span {
-          font-size: 19px;
+          font-size: 18px;
         }
 
         .bottom-nav button small {
-          font-size: 7px;
+          font-size: 6px;
           font-weight: 900;
         }
 
-        .bottom-nav .nav-active {
-          color: #ffc84a;
+        .bottom-nav .nav-selected {
+          color: #f3bd4b;
         }
 
-        .profile-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,.78);
-          z-index: 200;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-          padding: 0;
-        }
+        /* MÓVIL */
 
-        .profile-panel {
-          width: 100%;
-          max-width: 520px;
-          max-height: 90vh;
-          overflow-y: auto;
-          background:
-            linear-gradient(
-              180deg,
-              #14212c,
-              #0b1218
-            );
-          border: 1px solid #344754;
-          border-radius: 22px 22px 0 0;
-          padding: 18px 14px 25px;
-          box-shadow:
-            0 -15px 50px rgba(0,0,0,.6);
-        }
+        @media (
+          max-width: 360px
+        ) {
 
-        .profile-head {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          position: relative;
-          padding-bottom: 15px;
-          border-bottom: 1px solid #283844;
-        }
+          .bottom-nav button span {
+            font-size: 16px;
+          }
 
-        .profile-avatar {
-          width: 58px;
-          height: 58px;
-          font-size: 21px;
-        }
+          .bottom-nav button small {
+            font-size: 5px;
+          }
 
-        .profile-name {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
+          .mine-bottom strong {
+            font-size: 8px;
+          }
 
-        .profile-name strong {
-          font-size: 17px;
-        }
-
-        .profile-name span {
-          color: #8c9aa6;
-          font-size: 9px;
-        }
-
-        .close-profile {
-          position: absolute;
-          right: 0;
-          top: 0;
-          border: 0;
-          background: #202e38;
-          color: #fff;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-        }
-
-        .profile-level {
-          padding: 14px 0;
-        }
-
-        .profile-level > div:first-child {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 7px;
-        }
-
-        .profile-level span {
-          color: #7d8c98;
-          font-size: 8px;
-        }
-
-        .profile-level strong {
-          color: #f1bb42;
-          font-size: 9px;
-        }
-
-        .level-bar {
-          height: 7px;
-          background: #26343e;
-          border-radius: 10px;
-          overflow: hidden;
-        }
-
-        .level-bar div {
-          height: 100%;
-          background: #d99526;
-        }
-
-        .profile-section-title {
-          color: #71818d;
-          font-size: 8px;
-          font-weight: 900;
-          letter-spacing: .8px;
-          padding: 8px 3px;
-        }
-
-        .profile-rows {
-          border: 1px solid #293a46;
-          border-radius: 13px;
-          overflow: hidden;
-        }
-
-        .profile-row {
-          min-height: 62px;
-          padding: 8px 10px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          border-bottom: 1px solid #263640;
-        }
-
-        .profile-row:last-child {
-          border-bottom: 0;
-        }
-
-        .row-icon,
-        .action-icon {
-          width: 38px;
-          height: 38px;
-          border-radius: 11px;
-          background: #1c2b35;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          flex-shrink: 0;
-        }
-
-        .profile-row div:nth-child(2),
-        .profile-action div:nth-child(2) {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-        }
-
-        .profile-row strong,
-        .profile-action strong {
-          font-size: 11px;
-        }
-
-        .profile-row span,
-        .profile-action span {
-          color: #71818c;
-          font-size: 8px;
-        }
-
-        .profile-row > b {
-          color: #f3c24f;
-          font-size: 12px;
-        }
-
-        .profile-action {
-          width: 100%;
-          border: 1px solid #293b47;
-          background: #111c24;
-          color: white;
-          border-radius: 12px;
-          min-height: 60px;
-          margin-bottom: 7px;
-          padding: 9px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          text-align: left;
-        }
-
-        .profile-action > b {
-          color: #71818c;
-          font-size: 22px;
         }
 
       `}</style>
