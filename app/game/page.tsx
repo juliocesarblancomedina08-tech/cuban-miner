@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -409,10 +409,7 @@ export default function GamePage() {
     working: boolean;
     pickaxeLevel: number;
   }) {
-    const group = useMemo(
-      () => new THREE.Group(),
-      []
-    );
+    const group = useRef<THREE.Group>(null);
 
     useFrame((state) => {
       const time = state.clock.getElapsedTime();
@@ -421,17 +418,22 @@ export default function GamePage() {
         const cycle = time * 4;
         const hit = Math.sin(cycle);
 
-        group.rotation.z =
-          hit > 0 ? hit * 0.08 : 0;
+        if (group.current) {
+  group.current.rotation.z =
+    hit > 0 ? hit * 0.08 : 0;
 
-        group.position.y =
-          Math.abs(hit) * 0.025;
-      } else {
-        group.rotation.z =
-          Math.sin(time * 1.5) * 0.015;
+  group.current.position.y =
+    Math.abs(hit) * 0.025;
+        }
+        
+      if (group.current) {
+  group.current.rotation.z =
+    Math.sin(time * 1.5) * 0.015;
 
-        group.position.y =
-          Math.sin(time * 1.5) * 0.01;
+  group.current.position.y =
+    Math.sin(time * 1.5) * 0.01;
+      }
+      
       }
     });
 
@@ -439,7 +441,7 @@ export default function GamePage() {
       0.72 + pickaxeLevel * 0.035;
 
     return (
-      <group ref={group}>
+  <group ref={group}>
 
         {/* SOMBRA */}
         <mesh
