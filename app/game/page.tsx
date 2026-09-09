@@ -814,21 +814,24 @@ export default function GamePage() {
   }: {
     active: boolean;
   }) {
-    const group = useMemo(
-      () => new THREE.Group(),
-      []
-    );
+    const group = useRef<THREE.Group>(null);
 
     useFrame((state) => {
       const time =
         state.clock.getElapsedTime();
 
       if (active) {
-        group.position.y =
-          Math.sin(time * 2) * 0.025;
-      } else {
-        group.position.y =
-          Math.sin(time) * 0.01;
+  if (group.current) {
+    group.current.position.y =
+      Math.sin(time * 2) * 0.025;
+  }
+} else {
+  if (group.current) {
+    group.current.position.y =
+      Math.sin(time) * 0.01;
+  }
+      }
+      
       }
     });
 
