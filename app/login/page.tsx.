@@ -1,0 +1,130 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+
+export default function LoginPage() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+    setLoading(false);
+
+    if (error) {
+      setMessage(
+        "No se pudo iniciar sesión. Comprueba tu correo y contraseña y que hayas confirmado tu correo."
+      );
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
+  }
+
+  return (
+    <main
+      className="sg-container"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+      }}
+    >
+      <div className="sg-card">
+        <h1
+          style={{
+            color: "#48a5ff",
+            textAlign: "center",
+          }}
+        >
+          SG INVEST
+        </h1>
+
+        <h2 style={{ textAlign: "center" }}>
+          Bienvenido de nuevo
+        </h2>
+
+        <p
+          className="sg-muted"
+          style={{ textAlign: "center" }}
+        >
+          Accede a tu cuenta.
+        </p>
+
+        <form
+          onSubmit={handleLogin}
+          style={{
+            display: "grid",
+            gap: 16,
+            marginTop: 25,
+          }}
+        >
+          <input
+            className="sg-input"
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <input
+            className="sg-input"
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          {message && (
+            <p style={{ color: "#ff8585", fontSize: 14 }}>
+              {message}
+            </p>
+          )}
+
+          <button
+            className="sg-button"
+            disabled={loading}
+          >
+            {loading
+              ? "VERIFICANDO..."
+              : "INICIAR SESIÓN"}
+          </button>
+        </form>
+
+        <p style={{ textAlign: "center", marginTop: 25 }}>
+          ¿No tienes cuenta?{" "}
+          <Link href="/register" className="sg-link">
+            Regístrate
+          </Link>
+        </p>
+
+        <p style={{ textAlign: "center" }}>
+          <Link href="/" className="sg-link">
+            Volver al inicio
+          </Link>
+        </p>
+      </div>
+    </main>
+  );
+}
