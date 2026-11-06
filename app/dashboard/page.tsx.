@@ -1,0 +1,117 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+
+export default function DashboardPage() {
+  const router = useRouter();
+
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function checkUser() {
+      const { data } = await supabase.auth.getUser();
+
+      if (!data.user) {
+        router.replace("/login");
+        return;
+      }
+
+      setName(
+        data.user.user_metadata?.full_name ||
+        data.user.email ||
+        "Usuario"
+      );
+
+      setLoading(false);
+    }
+
+    checkUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          router.replace("/login");
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  async function logout() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
+
+  if (loading) {
+    return (
+      <main className="sg-container"
+        style={{ padding: 40, textAlign: "center" }}>
+        CARGANDO SG INVEST...
+      </main>
+    );
+  }
+
+  return (
+    <main className="sg-container" style={{ padding: 25 }}>
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 15,
+        }}
+      >
+        <h2 style={{ color: "#48a5ff" }}>
+          SG INVEST
+        </h2>
+
+        <button
+          onClick={logout}
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            background: "#173957",
+            color: "white",
+            border: 0,
+          }}
+        >
+          Cerrar sesión
+        </button>
+      </header>
+
+      <section style={{ marginTop: 60 }}>
+        <p className="sg-muted">
+          PANEL DE USUARIO
+        </p>
+
+        <h1>¡Bienvenido, {name}!</h1>
+
+        <p className="sg-muted">
+          Tu cuenta está lista para comenzar.
+        </p>
+
+        <div
+          className="sg-card"
+          style={{ marginTop: 30 }}
+        >
+          <h3>Tu cuenta SG INVEST</h3>
+
+          <p className="sg-muted">
+            Esta es tu área personal de demostración.
+          </p>
+
+          <p style={{ color: "#48a5ff" }}>
+            Estado: Cuenta autenticada
+          </p>
+        </div>
+      </section>
+    </main>
+  );
+}
